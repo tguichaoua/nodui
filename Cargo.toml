@@ -9,7 +9,7 @@ edition = "2021"
 authors = ["Tristan Guichaoua <tguichaoua.dev@gmail.com>"]
 repository = "https://github.com/tguichaoua/nodui"
 license = "MIT OR Apache-2.0"
-keywords = ["egui", "visual editor", "graph"]
+keywords = ["egui", "visual_editor", "graph"]
 categories = ["game-development", "graphics", "gui", "visualization"]
 rust-version = "1.79"
 
