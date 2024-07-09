@@ -1,0 +1,83 @@
+[workspace]
+members = ["playground", "crates/*", "examples/*"]
+resolver = "2"
+
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Tristan Guichaoua <tguichaoua.dev@gmail.com>"]
+repository = "https://github.com/tguichaoua/nodui"
+license = "MIT OR Apache-2.0"
+keywords = ["egui", "visual editor", "graph"]
+categories = ["game-development", "graphics", "gui", "visualization"]
+rust-version = "1.79"
+
+
+[workspace.dependencies]
+nodui = { version = "0.1.0", path = "crates/nodui", default-features = false }
+nodui_core = { version = "0.1.0", path = "crates/nodui_core", default-features = false }
+nodui_egui = { version = "0.1.0", path = "crates/nodui_egui", default-features = false }
+
+egui = { version = "0.28", default-features = false }
+eframe = { version = "0.28", default-features = false, features = [
+    "default_fonts",
+    "glow",
+] }
+
+
+[workspace.lints.rust]
+
+elided_lifetimes_in_paths = "warn"
+ffi_unwind_calls = "warn"
+keyword_idents_2024 = "warn"       # Edition 2024
+let_underscore_drop = "warn"
+missing_abi = "warn"
+missing_docs = "warn"
+non_ascii_idents = "warn"
+non_local_definitions = "warn"     # deny-by-default in edition 2024
+redundant_lifetimes = "warn"
+trivial_casts = "warn"             # may become warn-by-default
+trivial_numeric_casts = "warn"     # may become warn-by-default
+unit_bindings = "warn"
+unnameable_types = "warn"
+unreachable_pub = "warn"
+unsafe_code = "forbid"
+unsafe_op_in_unsafe_fn = "warn"    # warn-by-default in edition 2024
+unstable_features = "deny"
+unused_import_braces = "warn"
+unused_lifetimes = "warn"          # noisy ?
+unused_macro_rules = "warn"
+unused_qualifications = "warn"
+variant_size_differences = "warn"
+
+
+[workspace.lints.clippy]
+
+pedantic = "warn"
+module_name_repetitions = "allow"
+
+
+# Restriction
+exit = "deny"
+expect_used = "warn"
+get_unwrap = "warn"
+indexing_slicing = "warn"
+panic = "warn"
+pub_without_shorthand = "warn"
+mem_forget = "warn"
+missing_docs_in_private_items = "warn"
+missing_inline_in_public_items = "warn"
+redundant_type_annotations = "warn"
+renamed_function_params = "warn"
+rest_pat_in_fully_bound_structs = "warn"
+same_name_method = "warn"
+self_named_module_files = "warn"
+str_to_string = "warn"
+string_to_string = "warn"
+tests_outside_test_module = "warn"
+try_err = "warn"
+unimplemented = "warn"
+unseparated_literal_suffix = "warn"
+unwrap_used = "warn"
+wildcard_enum_match_arm = "warn"

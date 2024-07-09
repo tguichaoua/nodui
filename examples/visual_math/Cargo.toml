@@ -1,0 +1,18 @@
+[package]
+name = "visual_math"
+version = "0.1.0"
+edition = "2021"
+
+publish = false
+
+[dependencies]
+nodui.workspace = true
+
+eframe.workspace = true
+egui.workspace = true
+uuid = { version = "1.8.0", features = ["v4"] }
+either = { version = "1.12.0", default-features = false }
+
+
+[lints]
+workspace = true
