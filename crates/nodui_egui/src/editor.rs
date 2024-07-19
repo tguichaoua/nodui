@@ -43,6 +43,7 @@ pub struct GraphEditor<'a, G: GraphAdapter> {
 
     look_at: Option<Pos>,
 
+    can_connect_socket: bool,
     connection_renderer: ConnectionRenderer,
 
     context_menu: Option<ContextMenuContent<'a, G>>,
@@ -68,6 +69,7 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
 
             look_at: None,
 
+            can_connect_socket: true,
             connection_renderer: ConnectionRenderer::from(LineConnectionRenderer::default()),
 
             context_menu: None,
@@ -133,6 +135,18 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
     pub fn height(mut self, height: f32) -> Self {
         self.min_size.y = height;
         self.height = Some(height);
+        self
+    }
+
+    /// If `true` the user can drag-n-drop a socket to create a connection.
+    ///
+    /// Can be useful to prevent user to edit the graph.
+    ///
+    /// Default to `true`.
+    #[inline]
+    #[must_use]
+    pub fn can_connect_socket(mut self, can_connect_socket: bool) -> Self {
+        self.can_connect_socket = can_connect_socket;
         self
     }
 
@@ -329,6 +343,7 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
 
             look_at,
 
+            can_connect_socket,
             connection_renderer,
 
             mut context_menu,
@@ -553,57 +568,17 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
         /* Handle socket responses                        */
         /* ---------------------------------------------- */
 
-        if let Some(socket_id) = state.dragged_socket.as_ref() {
-            // There is a socket being dragged.
-
-            if let Some(socket) = socket_responses.get(socket_id) {
-                // Check the response of the dragged socket.
-
-                if socket.response.drag_stopped() {
-                    // The drag has stopped.
-
-                    if let Some((hovered_id, _)) = socket_responses.contains_pointer() {
-                        // Another socket contains the pointer, the user want to connect the sockets.
-
-                        graph.connect(socket_id.clone(), hovered_id.clone());
-                    } else {
-                        // The pointer is not on any socket.
-                    }
-
-                    // Reset the state.
-                    state.dragged_socket = None;
-                } else {
-                    // The dragging is still happening.
-
-                    // Draw the on-going connection.
-
-                    let hint = if let Some((other_id, _)) = socket_responses.contains_pointer() {
-                        let hint = graph.connection_hint(socket_id.clone(), other_id.clone());
-
-                        if let ConnectionHint::Reject = hint {
-                            ui.ctx().set_cursor_icon(CursorIcon::NoDrop);
-                        }
-
-                        Some(hint)
-                    } else {
-                        None
-                    };
-
-                    if let Some(pointer_pos) = socket.response.interact_pointer_pos() {
-                        ui.painter().add(connection_renderer.socket_to_pointer(
-                            socket,
-                            pointer_pos,
-                            hint,
-                        ));
-                    }
-                }
-            } else {
-                // The currently dragged socket has been removed.
-                state.dragged_socket = None;
-            }
-        } else if let Some((id, _)) = socket_responses.drag_started() {
-            // A socket is being dragged.
-            state.dragged_socket = Some(id.clone());
+        if can_connect_socket {
+            handle_socket_responses(
+                &mut state,
+                &socket_responses,
+                &mut graph,
+                &mut ui,
+                &connection_renderer,
+            );
+        } else {
+            // Stop the currently dragged socket if creating connection is disabled.
+            state.dragged_socket = None;
         }
 
         if let Some(context_menu) = socket_context_menu.as_mut() {
@@ -709,6 +684,75 @@ impl<SocketId: NoduiId> SocketResponses<SocketId> {
         self.0
             .iter()
             .find(|(_, socket)| socket.response.drag_started())
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+/// Handle the socket responses.
+///
+/// E.g. when the user drag-n-drop a socket to create a connection.
+fn handle_socket_responses<G>(
+    state: &mut GraphMemory<G::NodeId, G::SocketId>,
+    socket_responses: &SocketResponses<G::SocketId>,
+    graph: &mut G,
+    ui: &mut Ui,
+    connection_renderer: &ConnectionRenderer,
+) where
+    G: GraphAdapter,
+{
+    if let Some(socket_id) = state.dragged_socket.as_ref() {
+        // There is a socket being dragged.
+
+        if let Some(socket) = socket_responses.get(socket_id) {
+            // Check the response of the dragged socket.
+
+            if socket.response.drag_stopped() {
+                // The drag has stopped.
+
+                if let Some((hovered_id, _)) = socket_responses.contains_pointer() {
+                    // Another socket contains the pointer, the user want to connect the sockets.
+
+                    graph.connect(socket_id.clone(), hovered_id.clone());
+                } else {
+                    // The pointer is not on any socket.
+                    // Do nothing.
+                }
+
+                // In all cases, reset the state.
+                state.dragged_socket = None;
+            } else {
+                // The dragging is still happening.
+
+                // Draw the on-going connection.
+
+                let hint = if let Some((other_id, _)) = socket_responses.contains_pointer() {
+                    let hint = graph.connection_hint(socket_id.clone(), other_id.clone());
+
+                    if let ConnectionHint::Reject = hint {
+                        ui.ctx().set_cursor_icon(CursorIcon::NoDrop);
+                    }
+
+                    Some(hint)
+                } else {
+                    None
+                };
+
+                if let Some(pointer_pos) = socket.response.interact_pointer_pos() {
+                    ui.painter().add(connection_renderer.socket_to_pointer(
+                        socket,
+                        pointer_pos,
+                        hint,
+                    ));
+                }
+            }
+        } else {
+            // The currently dragged socket has been removed.
+            state.dragged_socket = None;
+        }
+    } else if let Some((id, _)) = socket_responses.drag_started() {
+        // A socket is being dragged.
+        state.dragged_socket = Some(id.clone());
     }
 }
 
