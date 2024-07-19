@@ -4,7 +4,7 @@ use egui::{Color32, Grid, Ui};
 use nodui::{GraphEditor, Pos};
 use serde::{Deserialize, Serialize};
 
-use crate::graph::{self, DummyGraph};
+use crate::graph::{self, DummyGraph, NodeId};
 
 #[derive(Serialize, Deserialize)]
 pub struct App {
@@ -18,6 +18,9 @@ pub struct App {
     #[serde(skip)]
     graph_pointer_pos: Option<Pos>,
 
+    #[serde(skip)]
+    last_interacted_node_id: Option<NodeId>,
+
     background_color: Color32,
 }
 
@@ -28,6 +31,7 @@ impl Default for App {
             look_at: None,
             menu_look_at: Pos::default(),
             graph_pointer_pos: None,
+            last_interacted_node_id: None,
             background_color: Color32::BLACK,
         }
     }
@@ -70,9 +74,32 @@ impl eframe::App for App {
 
             ui.separator();
 
-            Grid::new("left panel grid").show(ui, |ui| {
+            Grid::new("selected node").show(ui, |ui| {
+                {
+                    ui.label("node id");
+
+                    let node_id = if let Some(node_id) = self.last_interacted_node_id {
+                        if let Some(node) = self.graph.get_node(node_id) {
+                            node.id().to_string()
+                        } else {
+                            String::from("node not found")
+                        }
+                    } else {
+                        String::from("no node selected")
+                    };
+
+                    ui.label(node_id);
+                }
+
+                ui.end_row();
+            });
+
+            ui.separator();
+
+            Grid::new("editor settings").show(ui, |ui| {
                 ui.label("background color");
                 ui.color_edit_button_srgba(&mut self.background_color);
+                ui.end_row();
             });
         });
 
@@ -145,6 +172,9 @@ impl App {
         let response = graph.show(ui);
 
         self.graph_pointer_pos = response.pointer_latest_pos();
+        if let Some(last_interacted_node_id) = response.last_interacted_node_id {
+            self.last_interacted_node_id = Some(last_interacted_node_id);
+        }
     }
 }
 /* -------------------------------------------------------------------------- */

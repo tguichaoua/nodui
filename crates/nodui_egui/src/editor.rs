@@ -278,18 +278,23 @@ impl From<NodePainter> for Shape {
 /* -------------------------------------------------------------------------- */
 
 /// The response of adding a [`GraphEditor`] to a [`Ui`].
-pub struct GraphOutput {
+pub struct GraphOutput<NodeId> {
     /// The response of the background of the editor background.
     pub response: Response,
 
     /// The graph position of the point on the middle of the viewport.
     pub position: Pos,
 
+    /// The id of the last node that received an interaction from the user.
+    ///
+    /// `None` if no node get interaction.
+    pub last_interacted_node_id: Option<NodeId>,
+
     /// The current viewport.
     viewport: Viewport,
 }
 
-impl GraphOutput {
+impl<NodeId> GraphOutput<NodeId> {
     /// Latest reported pointer's graph position.
     ///
     /// Based on [`Context::pointer_latest_pos`](egui::Context::pointer_latest_pos).
@@ -309,7 +314,7 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
     /// Show the graph editor.
     #[allow(clippy::too_many_lines)] // TODO: split this method for readability
     #[inline]
-    pub fn show(self, ui: &mut Ui) -> GraphOutput {
+    pub fn show(self, ui: &mut Ui) -> GraphOutput<G::NodeId> {
         let Self {
             mut graph,
             id,
@@ -469,6 +474,8 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
         // Paints the nodes and collect the nodes and sockets responses.
         let mut socket_responses: SocketResponses<G::SocketId> = SocketResponses::new();
 
+        let mut last_interacted_node_id = None;
+
         let mut nodes = graph.nodes();
         let mut node_responses = Vec::with_capacity(nodes.size_hint().0);
 
@@ -517,7 +524,9 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
                 }
             }
 
-            if node_response.clicked() || node_response.dragged() {
+            if node_response.clicked || node_response.fake_primary_click || node_response.dragged()
+            {
+                last_interacted_node_id = Some(node_id.clone());
                 state.set_node_on_top(node_id.clone());
             }
 
@@ -640,6 +649,7 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
         let output = GraphOutput {
             response,
             position: viewport.grid.canvas_to_graph(state.viewport_position),
+            last_interacted_node_id,
             viewport,
         };
 
