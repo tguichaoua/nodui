@@ -21,6 +21,7 @@ pub struct App {
     #[serde(skip)]
     last_interacted_node_id: Option<NodeId>,
 
+    can_connect_socket: bool,
     background_color: Color32,
 }
 
@@ -32,6 +33,7 @@ impl Default for App {
             menu_look_at: Pos::default(),
             graph_pointer_pos: None,
             last_interacted_node_id: None,
+            can_connect_socket: true,
             background_color: Color32::BLACK,
         }
     }
@@ -97,6 +99,10 @@ impl eframe::App for App {
             ui.separator();
 
             Grid::new("editor settings").show(ui, |ui| {
+                ui.label("can connect socket");
+                ui.checkbox(&mut self.can_connect_socket, "");
+                ui.end_row();
+
                 ui.label("background color");
                 ui.color_edit_button_srgba(&mut self.background_color);
                 ui.end_row();
@@ -123,6 +129,7 @@ impl App {
             self::adapter::GraphAdapter::new(&mut self.graph),
             "graph editor",
         )
+        .can_connect_socket(self.can_connect_socket)
         .background_color(self.background_color)
         .context_menu(|ui, context| {
             ui.label(format!("Pos: {:?}", context.pos));
