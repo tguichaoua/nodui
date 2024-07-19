@@ -1,5 +1,7 @@
 pub mod connections;
 
+use std::fmt::Display;
+
 pub use connections::Connections;
 use nodui::Pos;
 use serde::{Deserialize, Serialize};
@@ -51,6 +53,12 @@ impl From<(NodeId, SocketIndex)> for SocketId {
 impl NodeId {
     pub fn new() -> Self {
         Self(uuid::Uuid::new_v4())
+    }
+}
+
+impl Display for NodeId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.0, f)
     }
 }
 
@@ -141,6 +149,10 @@ impl DummyGraph {
             self.nodes.swap_remove(idx);
             self.connections.remove_by_node(node_id);
         }
+    }
+
+    pub fn get_node(&self, id: NodeId) -> Option<&DummyNode> {
+        self.nodes.iter().find(|n| id == n.id)
     }
 
     // pub fn get_socket(&self, id: SocketId) -> Option<&DummySocket> {
