@@ -524,7 +524,8 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
                 }
             }
 
-            if node_response.clicked() || node_response.dragged() {
+            if node_response.clicked || node_response.fake_primary_click || node_response.dragged()
+            {
                 last_interacted_node_id = Some(node_id.clone());
                 state.set_node_on_top(node_id.clone());
             }
