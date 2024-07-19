@@ -1,6 +1,6 @@
 mod adapter;
 
-use egui::Ui;
+use egui::{Color32, Grid, Ui};
 use nodui::{GraphEditor, Pos};
 use serde::{Deserialize, Serialize};
 
@@ -17,6 +17,8 @@ pub struct App {
 
     #[serde(skip)]
     graph_pointer_pos: Option<Pos>,
+
+    background_color: Color32,
 }
 
 impl Default for App {
@@ -26,6 +28,7 @@ impl Default for App {
             look_at: None,
             menu_look_at: Pos::default(),
             graph_pointer_pos: None,
+            background_color: Color32::BLACK,
         }
     }
 }
@@ -64,6 +67,13 @@ impl eframe::App for App {
             if ui.button("look at").clicked() {
                 self.look_at = Some(self.menu_look_at);
             }
+
+            ui.separator();
+
+            Grid::new("left panel grid").show(ui, |ui| {
+                ui.label("background color");
+                ui.color_edit_button_srgba(&mut self.background_color);
+            });
         });
 
         egui::TopBottomPanel::bottom("bottom panel").show(ctx, |ui| {
@@ -86,6 +96,7 @@ impl App {
             self::adapter::GraphAdapter::new(&mut self.graph),
             "graph editor",
         )
+        .background_color(self.background_color)
         .context_menu(|ui, context| {
             ui.label(format!("Pos: {:?}", context.pos));
 

@@ -96,6 +96,14 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
         self
     }
 
+    /// The color of the editor's background.
+    #[inline]
+    #[must_use]
+    pub fn background_color(mut self, background_color: impl Into<Color32>) -> Self {
+        self.background_color = background_color.into();
+        self
+    }
+
     /// `width / height` ratio of the editor region.
     ///
     /// By default no fixed aspect ratio is set (and width/height will fill the ui it is in).
