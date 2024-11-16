@@ -6,7 +6,7 @@ use std::hash::Hash;
 use egui::epaint::RectShape;
 use egui::{
     pos2, vec2, Color32, CursorIcon, NumExt, Rect, Response, Rounding, Sense, Shape, Stroke, Ui,
-    Vec2,
+    UiBuilder, Vec2,
 };
 use indexmap::IndexSet;
 use nodui_core::adapter::{
@@ -383,7 +383,12 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
 
         ui.advance_cursor_after_rect(rect);
 
-        let mut ui = ui.child_ui_with_id_source(rect, *ui.layout(), id, None);
+        let mut ui = ui.new_child(
+            UiBuilder::new()
+                .id_salt(id)
+                .max_rect(rect)
+                .layout(*ui.layout()),
+        );
         ui.set_clip_rect(rect);
 
         /* ---- */
