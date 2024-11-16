@@ -248,12 +248,12 @@ where
 {
     /// Loads the editor state.
     fn load(ctx: &egui::Context, id: egui::Id) -> Self {
-        ctx.memory(|memory| memory.data.get_temp(id).unwrap_or_default())
+        ctx.data(|data| data.get_temp(id).unwrap_or_default())
     }
 
     /// Store the editor state.
     fn store(self, ctx: &egui::Context, id: egui::Id) {
-        ctx.memory_mut(|memory| memory.data.insert_temp(id, self));
+        ctx.data_mut(|data| data.insert_temp(id, self));
     }
 }
 
