@@ -156,17 +156,21 @@ impl App {
 
             ui.separator();
 
-            match context.socket_id {
-                graph::SocketId::Input(socket_id) => {
-                    context.graph.graph.connections_mut().disconnect(socket_id);
+            if ui.button("Disconnect").clicked() {
+                match context.socket_id {
+                    graph::SocketId::Input(socket_id) => {
+                        context.graph.graph.connections_mut().disconnect(socket_id);
+                    }
+                    graph::SocketId::Output(socket_id) => {
+                        context
+                            .graph
+                            .graph
+                            .connections_mut()
+                            .disconnect_all(socket_id);
+                    }
                 }
-                graph::SocketId::Output(socket_id) => {
-                    context
-                        .graph
-                        .graph
-                        .connections_mut()
-                        .disconnect_all(socket_id);
-                }
+
+                ui.close_menu();
             }
         });
 
