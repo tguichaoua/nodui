@@ -54,7 +54,7 @@ variant_size_differences = "warn"
 
 [workspace.lints.clippy]
 
-pedantic = "warn"
+pedantic = { level = "warn", priority = -1 }
 module_name_repetitions = "allow"
 
 
