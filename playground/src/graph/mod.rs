@@ -102,16 +102,16 @@ pub struct DummySocket {
 /* -------------------------------------------------------------------------- */
 
 impl DummyGraph {
+    pub fn nodes(&self) -> &[DummyNode] {
+        &self.nodes
+    }
+
     pub fn connections(&self) -> &Connections {
         &self.connections
     }
 
     pub fn connections_mut(&mut self) -> &mut Connections {
         &mut self.connections
-    }
-
-    pub fn nodes_and_connections_mut(&mut self) -> (&mut [DummyNode], &mut Connections) {
-        (&mut self.nodes, &mut self.connections)
     }
 
     pub fn add_node(
@@ -176,10 +176,6 @@ impl DummyNode {
 
     pub fn pos(&self) -> Pos {
         self.pos
-    }
-
-    pub fn set_pos(&mut self, pos: Pos) {
-        self.pos = pos
     }
 }
 

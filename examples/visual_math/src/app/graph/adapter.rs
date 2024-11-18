@@ -1,10 +1,11 @@
 //! Implementation of [`nodui::GraphAdapter`].
 
+use either::Either;
 use nodui::ConnectionHint;
 
 use crate::graph::{NodeId, SocketId};
 
-use super::node::NodeIter;
+use super::node::NodeAdapter;
 use super::GraphApp;
 
 /* -------------------------------------------------------------------------- */
@@ -14,16 +15,32 @@ impl nodui::GraphAdapter for GraphApp {
     type SocketId = SocketId;
 
     fn nodes(
-        &mut self,
-    ) -> impl nodui::NodeIterator<NodeId = Self::NodeId, SocketId = Self::SocketId> {
-        NodeIter {
-            nodes: self.graph.op_nodes().iter(),
-            inputs: self.graph.inputs().iter(),
-            connections: self.graph.connections(),
+        &self,
+    ) -> impl Iterator<Item: nodui::NodeAdapter<NodeId = Self::NodeId, SocketId = Self::SocketId>>
+    {
+        let op_nodes = self
+            .graph
+            .op_nodes()
+            .iter()
+            .map(|node| (NodeId::from(node.id()), Either::Left(node)));
 
-            positions: &mut self.positions,
-            selected_node: self.selected_node,
-        }
+        let input_nodes = self
+            .graph
+            .inputs()
+            .iter()
+            .map(|node| (NodeId::from(node.id()), Either::Right(node)));
+
+        let connections = self.graph.connections();
+
+        op_nodes.chain(input_nodes).map(|(id, node)| {
+            let pos = self.positions.get(&id).copied().unwrap_or_default();
+            NodeAdapter {
+                pos,
+                node,
+                connections,
+                selected_node: self.selected_node,
+            }
+        })
     }
 
     fn connection_hint(&self, a: Self::SocketId, b: Self::SocketId) -> ConnectionHint {
