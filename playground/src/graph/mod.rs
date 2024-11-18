@@ -155,6 +155,10 @@ impl DummyGraph {
         self.nodes.iter().find(|n| id == n.id)
     }
 
+    pub fn get_node_mut(&mut self, id: NodeId) -> Option<&mut DummyNode> {
+        self.nodes.iter_mut().find(|n| id == n.id)
+    }
+
     // pub fn get_socket(&self, id: SocketId) -> Option<&DummySocket> {
     //     let node_id = id.node_id();
 
@@ -176,6 +180,10 @@ impl DummyNode {
 
     pub fn pos(&self) -> Pos {
         self.pos
+    }
+
+    pub fn set_pos(&mut self, pos: Pos) {
+        self.pos = pos;
     }
 }
 

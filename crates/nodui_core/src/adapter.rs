@@ -24,6 +24,9 @@ pub trait GraphAdapter {
         &self,
     ) -> impl Iterator<Item: NodeAdapter<NodeId = Self::NodeId, SocketId = Self::SocketId>>;
 
+    /// Set the position of a node.
+    fn set_node_pos(&mut self, node_id: Self::NodeId, pos: Pos);
+
     /// A hint about the connection between the sockets `a` and `b`.
     ///
     /// This hint is used to provide a feedback to the user before they submit the connection.
@@ -84,6 +87,11 @@ impl<'a, T: GraphAdapter + ?Sized> GraphAdapter for &'a mut T {
         &self,
     ) -> impl Iterator<Item: NodeAdapter<NodeId = Self::NodeId, SocketId = Self::SocketId>> {
         GraphAdapter::nodes(*self)
+    }
+
+    #[inline]
+    fn set_node_pos(&mut self, node_id: Self::NodeId, pos: Pos) {
+        GraphAdapter::set_node_pos(*self, node_id, pos);
     }
 
     #[inline]

@@ -43,6 +43,10 @@ impl nodui::GraphAdapter for GraphApp {
         })
     }
 
+    fn set_node_pos(&mut self, node_id: Self::NodeId, pos: nodui::Pos) {
+        self.positions.insert(node_id, pos);
+    }
+
     fn connection_hint(&self, a: Self::SocketId, b: Self::SocketId) -> ConnectionHint {
         if crate::graph::Connections::can_connect(a, b) {
             ConnectionHint::Accept

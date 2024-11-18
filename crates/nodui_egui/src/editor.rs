@@ -494,10 +494,6 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
 
         let mut last_interacted_node_id = None;
 
-        // let mut nodes = graph.nodes();
-
-        // let mut node_responses = Vec::with_capacity(nodes.size_hint().0);
-
         let node_responses = graph
             .nodes()
             .map(|node| {
@@ -533,90 +529,30 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
                     ui.painter().add(node_painter);
                 }
 
-                if node_response.drag_stopped() {
-                    state.dragged_node = None;
-                    let _new_pos = pos + node_response.drag_delta();
-                    // TODO: set the position of the node
-                    // node.set_pos(viewport.grid.canvas_to_graph_nearest(new_pos));
-                } else if node_response.drag_started() {
-                    state.dragged_node = Some((node_id.clone(), node_response.drag_delta()));
-                } else if node_response.dragged() {
-                    if let Some(dragged_node) = state.dragged_node.as_mut() {
-                        dragged_node.1 += node_response.drag_delta();
-                    }
-                }
-
-                if node_response.clicked
-                    || node_response.fake_primary_click
-                    || node_response.dragged()
-                {
-                    last_interacted_node_id = Some(node_id.clone());
-                    state.set_node_on_top(node_id.clone());
-                }
-
                 // node_responses.push((node_id, node_response));
-                (node_id, node_response)
+                (node_id, node_response, pos)
             })
             .collect::<Vec<_>>();
 
-        // while let Some(mut node) = nodes.next() {
-        //     let node_id = node.id();
+        for (id, response, pos) in node_responses {
+            if response.drag_stopped() {
+                state.dragged_node = None;
+                let new_pos = pos + response.drag_delta();
+                graph.set_node_pos(id.clone(), viewport.grid.canvas_to_graph_nearest(new_pos));
+            } else if response.drag_started() {
+                state.dragged_node = Some((id.clone(), response.drag_delta()));
+            } else if response.dragged() {
+                if let Some(dragged_node) = state.dragged_node.as_mut() {
+                    dragged_node.1 += response.drag_delta();
+                }
+            }
 
-        //     // If this is a new node, insert it on top, does nothing otherwise.
-        //     state.node_order.insert(node_id.clone());
+            if response.clicked || response.fake_primary_click || response.dragged() {
+                last_interacted_node_id = Some(id.clone());
+                state.set_node_on_top(id.clone());
+            }
 
-        //     let pos = {
-        //         let delta_pos = match state.dragged_node.clone() {
-        //             Some((id, delta_pos)) if id == node_id => delta_pos,
-        //             _ => Vec2::ZERO,
-        //         };
-
-        //         viewport.grid.graph_to_canvas(node.pos()) + delta_pos
-        //     };
-
-        //     let mut node_painter = NodePainter::new();
-
-        //     let node_response = node::show_node(
-        //         &mut ui,
-        //         node_id.clone(),
-        //         node.ui(),
-        //         &mut socket_responses,
-        //         node.sockets(),
-        //         viewport.canvas_to_viewport(pos),
-        //         &mut node_painter,
-        //     );
-
-        //     if let Some(shape_id) = node_shape_indices.get(&node_id).copied() {
-        //         ui.painter().set(shape_id, node_painter);
-        //     } else {
-        //         ui.painter().add(node_painter);
-        //     }
-
-        //     if node_response.drag_stopped() {
-        //         state.dragged_node = None;
-        //         let new_pos = pos + node_response.drag_delta();
-        //         node.set_pos(viewport.grid.canvas_to_graph_nearest(new_pos));
-        //     } else if node_response.drag_started() {
-        //         state.dragged_node = Some((node_id.clone(), node_response.drag_delta()));
-        //     } else if node_response.dragged() {
-        //         if let Some(dragged_node) = state.dragged_node.as_mut() {
-        //             dragged_node.1 += node_response.drag_delta();
-        //         }
-        //     }
-
-        //     if node_response.clicked || node_response.fake_primary_click || node_response.dragged()
-        //     {
-        //         last_interacted_node_id = Some(node_id.clone());
-        //         state.set_node_on_top(node_id.clone());
-        //     }
-
-        //     node_responses.push((node_id, node_response));
-        // }
-
-        // drop(nodes);
-
-        if let Some(context_menu) = node_context_menu.as_mut() {
-            for (id, response) in node_responses {
+            if let Some(context_menu) = node_context_menu.as_mut() {
                 response.context_menu(|ui| {
                     context_menu(
                         ui,

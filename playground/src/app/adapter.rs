@@ -30,6 +30,12 @@ impl<'a> nodui::GraphAdapter for GraphAdapter<'a> {
         nodes.iter().map(|node| NodeAdapter { node, connections })
     }
 
+    fn set_node_pos(&mut self, node_id: Self::NodeId, pos: Pos) {
+        if let Some(node) = self.graph.get_node_mut(node_id) {
+            node.set_pos(pos);
+        }
+    }
+
     fn connection_hint(&self, a: Self::SocketId, b: Self::SocketId) -> ConnectionHint {
         if crate::graph::connections::can_connect(a, b) {
             ConnectionHint::Accept
