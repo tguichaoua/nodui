@@ -12,9 +12,10 @@
 //! # impl nodui::GraphAdapter for MyGraph {
 //! #    type NodeId = ();
 //! #    type SocketId = ();
-//! #    fn nodes(&mut self) -> impl nodui::NodeIterator<NodeId = Self::NodeId, SocketId = Self::SocketId> {
+//! #    fn nodes(&self) -> impl Iterator<Item: nodui::NodeAdapter<NodeId = Self::NodeId, SocketId = Self::SocketId>> {
 //! #        core::iter::empty::<Foo>()
 //! #    }
+//! #    fn set_node_pos(&mut self, node_id: Self::NodeId, pos: nodui::Pos) { }
 //! #    fn connection_hint(&self, a: Self::SocketId, b: Self::SocketId) -> nodui::ConnectionHint { unreachable!() }
 //! #    fn connect(&mut self, a: Self::SocketId, b: Self::SocketId) { }
 //! #    fn connections(&self) -> impl Iterator<Item = (Self::SocketId, Self::SocketId)> { std::iter::empty() }
@@ -27,7 +28,6 @@
 //! #    }
 //! #    fn id(&self) -> Self::NodeId { unreachable!() }
 //! #    fn pos(&self) -> nodui::Pos { unreachable!() }
-//! #    fn set_pos(&mut self, pos: nodui::Pos) { }
 //! # }
 //! # impl nodui::SocketAdapter for Foo {
 //! #   type SocketId = ();
