@@ -20,7 +20,12 @@ pub trait GraphAdapter {
     type SocketId: Id;
 
     /// An iterator over the node's adapters of the graph.
-    fn nodes(&mut self) -> impl NodeIterator<NodeId = Self::NodeId, SocketId = Self::SocketId>;
+    fn nodes(
+        &self,
+    ) -> impl Iterator<Item: NodeAdapter<NodeId = Self::NodeId, SocketId = Self::SocketId>>;
+
+    /// Set the position of a node.
+    fn set_node_pos(&mut self, node_id: Self::NodeId, pos: Pos);
 
     /// A hint about the connection between the sockets `a` and `b`.
     ///
@@ -51,9 +56,6 @@ pub trait NodeAdapter {
     /// The current position of this node in the graph.
     fn pos(&self) -> Pos;
 
-    /// Set the position of this node in the graph.
-    fn set_pos(&mut self, pos: Pos);
-
     /// Defines how the node should be rendered.
     #[inline]
     fn ui(&self) -> NodeUI {
@@ -75,69 +77,21 @@ pub trait SocketAdapter {
 
 /* -------------------------------------------------------------------------- */
 
-/// A lending iterator over the node's adapters of a graph.
-pub trait NodeIterator {
-    /// An identifier used to identify a node over the graph.
-    type NodeId: Id;
-
-    /// An identifier used to identify a socket over the graph.
-    type SocketId: Id;
-
-    /// An adapter that represents a node.
-    type Item<'this>: NodeAdapter<NodeId = Self::NodeId, SocketId = Self::SocketId>
-    where
-        Self: 'this;
-
-    /// Advances the iterator and returns the next value.
-    ///
-    /// See [`Iterator::next`] for more details.
-    fn next(&mut self) -> Option<Self::Item<'_>>;
-
-    /// Returns the bounds on the remaining length of the iterator.
-    ///
-    /// This methods should be implemented the same way [`Iterator::size_hint`] is implemented.
-    ///
-    /// The default implementation returns <code>(0, [None])</code> which is correct for any
-    /// iterator.
-    #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        (0, None)
-    }
-}
-
-impl<I> NodeIterator for I
-where
-    I: Iterator,
-    I::Item: NodeAdapter,
-{
-    type NodeId = <I::Item as NodeAdapter>::NodeId;
-    type SocketId = <I::Item as NodeAdapter>::SocketId;
-
-    type Item<'this> = I::Item
-    where
-        Self: 'this;
-
-    #[inline]
-    fn next(&mut self) -> Option<Self::Item<'_>> {
-        Iterator::next(self)
-    }
-
-    #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        Iterator::size_hint(self)
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
 #[warn(clippy::missing_trait_methods)]
 impl<'a, T: GraphAdapter + ?Sized> GraphAdapter for &'a mut T {
     type NodeId = T::NodeId;
     type SocketId = T::SocketId;
 
     #[inline]
-    fn nodes(&mut self) -> impl NodeIterator<NodeId = Self::NodeId, SocketId = Self::SocketId> {
+    fn nodes(
+        &self,
+    ) -> impl Iterator<Item: NodeAdapter<NodeId = Self::NodeId, SocketId = Self::SocketId>> {
         GraphAdapter::nodes(*self)
+    }
+
+    #[inline]
+    fn set_node_pos(&mut self, node_id: Self::NodeId, pos: Pos) {
+        GraphAdapter::set_node_pos(*self, node_id, pos);
     }
 
     #[inline]
@@ -176,11 +130,6 @@ impl<'a, T: NodeAdapter + ?Sized> NodeAdapter for &'a mut T {
     #[inline]
     fn pos(&self) -> Pos {
         NodeAdapter::pos(*self)
-    }
-
-    #[inline]
-    fn set_pos(&mut self, pos: Pos) {
-        NodeAdapter::set_pos(*self, pos);
     }
 
     #[inline]

@@ -21,13 +21,19 @@ impl<'a> nodui::GraphAdapter for GraphAdapter<'a> {
     type SocketId = SocketId;
 
     fn nodes(
-        &mut self,
-    ) -> impl nodui::NodeIterator<NodeId = Self::NodeId, SocketId = Self::SocketId> {
-        let (nodes, connections) = self.graph.nodes_and_connections_mut();
+        &self,
+    ) -> impl Iterator<Item: nodui::NodeAdapter<NodeId = Self::NodeId, SocketId = Self::SocketId>>
+    {
+        let nodes = self.graph.nodes();
+        let connections = self.graph.connections();
 
-        nodes
-            .iter_mut()
-            .map(|node| NodeAdapter { node, connections })
+        nodes.iter().map(|node| NodeAdapter { node, connections })
+    }
+
+    fn set_node_pos(&mut self, node_id: Self::NodeId, pos: Pos) {
+        if let Some(node) = self.graph.get_node_mut(node_id) {
+            node.set_pos(pos);
+        }
     }
 
     fn connection_hint(&self, a: Self::SocketId, b: Self::SocketId) -> ConnectionHint {
@@ -51,7 +57,7 @@ impl<'a> nodui::GraphAdapter for GraphAdapter<'a> {
 }
 
 struct NodeAdapter<'a> {
-    node: &'a mut DummyNode,
+    node: &'a DummyNode,
     connections: &'a Connections,
 }
 
@@ -80,10 +86,6 @@ impl<'a> nodui::NodeAdapter for NodeAdapter<'a> {
 
     fn pos(&self) -> Pos {
         self.node.pos()
-    }
-
-    fn set_pos(&mut self, pos: Pos) {
-        self.node.set_pos(pos);
     }
 
     fn ui(&self) -> NodeUI {

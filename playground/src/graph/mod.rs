@@ -102,16 +102,16 @@ pub struct DummySocket {
 /* -------------------------------------------------------------------------- */
 
 impl DummyGraph {
+    pub fn nodes(&self) -> &[DummyNode] {
+        &self.nodes
+    }
+
     pub fn connections(&self) -> &Connections {
         &self.connections
     }
 
     pub fn connections_mut(&mut self) -> &mut Connections {
         &mut self.connections
-    }
-
-    pub fn nodes_and_connections_mut(&mut self) -> (&mut [DummyNode], &mut Connections) {
-        (&mut self.nodes, &mut self.connections)
     }
 
     pub fn add_node(
@@ -155,6 +155,10 @@ impl DummyGraph {
         self.nodes.iter().find(|n| id == n.id)
     }
 
+    pub fn get_node_mut(&mut self, id: NodeId) -> Option<&mut DummyNode> {
+        self.nodes.iter_mut().find(|n| id == n.id)
+    }
+
     // pub fn get_socket(&self, id: SocketId) -> Option<&DummySocket> {
     //     let node_id = id.node_id();
 
@@ -179,7 +183,7 @@ impl DummyNode {
     }
 
     pub fn set_pos(&mut self, pos: Pos) {
-        self.pos = pos
+        self.pos = pos;
     }
 }
 
