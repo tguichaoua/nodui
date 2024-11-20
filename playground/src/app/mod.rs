@@ -1,4 +1,5 @@
 mod adapter;
+mod visitor;
 
 use egui::{Color32, Grid, Ui};
 use nodui::{GraphEditor, Pos};
@@ -180,7 +181,8 @@ impl App {
             graph
         };
 
-        let response = graph.show(ui);
+        // let response = graph.show(ui);
+        let response = graph.show_using_visitor(ui);
 
         self.graph_pointer_pos = response.pointer_latest_pos();
         if let Some(last_interacted_node_id) = response.last_interacted_node_id {

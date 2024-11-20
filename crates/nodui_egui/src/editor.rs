@@ -1,5 +1,8 @@
 //! The visual editor.
 
+// TODO: due to some experimentation with the visitor api, I change visibility of some items here
+// that need to be refactored if visitor api is kept.
+
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -11,12 +14,14 @@ use egui::{
 use indexmap::IndexSet;
 use nodui_core::adapter::{ConnectionHint, GraphAdapter, Id as NoduiId, NodeAdapter, Pos};
 use nodui_core::ui::NodeSide;
+use nodui_core::visitor;
 
 use crate::connection::{ConnectionRenderer, LineConnectionRenderer};
 use crate::context_menu::{
     ContextMenuContent, MenuContext, NodeContextMenuContent, NodeMenuContext,
     SocketContextMenuContent, SocketMenuContext,
 };
+use crate::misc::collect::NoCollect;
 use crate::node;
 use crate::socket::RenderedSocket;
 use crate::viewport::{CanvasPos, Grid, Viewport};
@@ -207,24 +212,25 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
 
 /* -------------------------------------------------------------------------- */
 
+// TODO: visibility changed due to experimentation with visitor API.
 /// The state of the editor saved from on frame to another.
 #[derive(Clone)]
-struct GraphMemory<NodeId, SocketId> {
+pub(crate) struct GraphMemory<NodeId, SocketId> {
     /// The current viewport position.
-    viewport_position: CanvasPos,
+    pub viewport_position: CanvasPos,
     /// The grid of the editor.
-    grid: Grid,
+    pub grid: Grid,
 
     /// The node currently being dragged and the delta position form it's current position.
-    dragged_node: Option<(NodeId, Vec2)>,
+    pub dragged_node: Option<(NodeId, Vec2)>,
     /// The socket currently being dragged.
-    dragged_socket: Option<SocketId>,
+    pub dragged_socket: Option<SocketId>,
 
     /// The last know position of the pointer in graph coordinates.
-    last_known_pointer_pos: Pos,
+    pub last_known_pointer_pos: Pos,
 
     /// The order in which render the node from back to top.
-    node_order: IndexSet<NodeId>,
+    pub node_order: IndexSet<NodeId>,
 }
 
 impl<N, S> Default for GraphMemory<N, S> {
@@ -256,8 +262,9 @@ where
 }
 
 impl<N: NoduiId, S> GraphMemory<N, S> {
+    // TODO: visibility changed due to experimentation with visitor API.
     /// Move the specified node to the top of the nodes.
-    fn set_node_on_top(&mut self, node_id: N) {
+    pub(crate) fn set_node_on_top(&mut self, node_id: N) {
         self.node_order.shift_remove(&node_id);
         self.node_order.insert(node_id);
     }
@@ -269,8 +276,9 @@ impl<N: NoduiId, S> GraphMemory<N, S> {
 pub(crate) struct NodePainter(Vec<Shape>);
 
 impl NodePainter {
+    // TODO: visibility changed due to experimentation with visitor API.
     /// Creates a [`NodePainter`].
-    fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self(Vec::new())
     }
 
@@ -754,6 +762,307 @@ fn handle_socket_responses<G>(
     } else if let Some((id, _)) = socket_responses.drag_started() {
         // A socket is being dragged.
         state.dragged_socket = Some(id.clone());
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+impl<
+        'a,
+        G: GraphAdapter
+            + visitor::GraphAdapter<
+                SocketId = <G as GraphAdapter>::SocketId,
+                NodeId = <G as GraphAdapter>::NodeId,
+            >,
+    > GraphEditor<'a, G>
+{
+    /// Show the graph editor using the experimental visitor API.
+    #[allow(clippy::too_many_lines)] // TODO: split this method for readability
+    #[inline]
+    pub fn show_using_visitor(self, ui: &mut Ui) -> GraphOutput<<G as GraphAdapter>::NodeId> {
+        let Self {
+            mut graph,
+            id,
+
+            width,
+            height,
+            view_aspect,
+            min_size,
+
+            grid_stroke,
+            background_color,
+
+            look_at,
+
+            can_connect_socket,
+            connection_renderer,
+
+            mut context_menu,
+            mut node_context_menu,
+            mut socket_context_menu,
+        } = self;
+
+        /* ---- */
+
+        let pos = ui.available_rect_before_wrap().min;
+
+        let size = {
+            let width = width
+                .unwrap_or_else(|| {
+                    if let (Some(height), Some(aspect)) = (height, view_aspect) {
+                        height * aspect
+                    } else {
+                        ui.available_size_before_wrap().x
+                    }
+                })
+                .at_least(min_size.x);
+
+            let height = height
+                .unwrap_or_else(|| {
+                    if let Some(aspect) = view_aspect {
+                        width / aspect
+                    } else {
+                        ui.available_size_before_wrap().y
+                    }
+                })
+                .at_least(min_size.y);
+
+            vec2(width, height)
+        };
+
+        let rect = Rect::from_min_size(pos, size);
+
+        ui.advance_cursor_after_rect(rect);
+
+        let mut ui = ui.new_child(
+            UiBuilder::new()
+                .id_salt(id)
+                .max_rect(rect)
+                .layout(*ui.layout()),
+        );
+        ui.set_clip_rect(rect);
+
+        /* ---- */
+
+        let mut state =
+            GraphMemory::<<G as GraphAdapter>::NodeId, <G as GraphAdapter>::SocketId>::load(
+                ui.ctx(),
+                id,
+            );
+
+        /* ---- */
+
+        let response = ui.interact(rect, id, Sense::click_and_drag());
+
+        if response.dragged() {
+            response.ctx.set_cursor_icon(CursorIcon::Grabbing);
+            state.viewport_position -= response.drag_delta();
+        }
+
+        let viewport = {
+            if let Some(look_at) = look_at {
+                let pos = state.grid.graph_to_canvas(look_at);
+                // state.viewport_position = -pos.to_vec2();
+                state.viewport_position = pos;
+            }
+
+            Viewport {
+                position: rect.center().to_vec2() - state.viewport_position.to_vec2(),
+                grid: state.grid.clone(),
+            }
+        };
+
+        if let Some(context_menu) = context_menu.as_mut() {
+            response.context_menu(|ui| {
+                if let Some(pointer) = response.interact_pointer_pos() {
+                    state.last_known_pointer_pos = viewport.viewport_to_graph(pointer);
+                }
+                context_menu(
+                    ui,
+                    MenuContext {
+                        graph: &mut graph,
+                        pos: state.last_known_pointer_pos,
+                    },
+                );
+            });
+        }
+
+        /* ---- */
+
+        // Paint the background
+        ui.painter()
+            .add(RectShape::filled(rect, Rounding::ZERO, background_color));
+
+        /* ---- */
+
+        // Paint the grid
+
+        if !grid_stroke.is_empty() {
+            let dx = state.viewport_position.to_vec2().x % state.grid.size;
+            let dy = state.viewport_position.to_vec2().y % state.grid.size;
+
+            let center = rect.center() - vec2(dx, dy);
+
+            #[allow(clippy::cast_possible_truncation)]
+            let n = (size.x / state.grid.size) as i32 / 2;
+            #[allow(clippy::cast_possible_truncation)]
+            let m = (size.y / state.grid.size) as i32 / 2;
+
+            for x in (-n)..(n + 2) {
+                #[allow(clippy::cast_precision_loss)]
+                let x = x as f32;
+                let x = x.mul_add(state.grid.size, center.x);
+
+                ui.painter().add(Shape::LineSegment {
+                    points: [pos2(x, rect.min.y), pos2(x, rect.max.y)],
+                    stroke: grid_stroke.into(),
+                });
+            }
+
+            for y in (-m)..(m + 2) {
+                #[allow(clippy::cast_precision_loss)]
+                let y = y as f32;
+                let y = y.mul_add(state.grid.size, center.y);
+
+                ui.painter().add(Shape::LineSegment {
+                    points: [pos2(rect.min.x, y), pos2(rect.max.x, y)],
+                    stroke: grid_stroke.into(),
+                });
+            }
+        }
+
+        /* ---- */
+
+        let connections_shape_idx = ui.painter().add(Shape::Noop);
+
+        // Reserve space to draw nodes
+        let node_shape_indices: HashMap<_, _> = state
+            .node_order
+            .iter()
+            .cloned()
+            .map(|node_id| {
+                let shape_id = ui.painter().add(Shape::Noop);
+                (node_id, shape_id)
+            })
+            .collect();
+
+        let mut last_interacted_node_id = None;
+
+        let mut socket_responses = SocketResponses::new();
+
+        // PERF: if the user don't use a node context menu, we didn't need to collect node's responses
+        // so we avoid to allocate using `NoCollect`.
+        if let Some(context_menu) = node_context_menu.as_mut() {
+            let mut node_responses = Vec::new();
+
+            crate::visitor::visit_graph(
+                &mut graph,
+                &ui,
+                &mut state,
+                &viewport,
+                &node_shape_indices,
+                &mut last_interacted_node_id,
+                &mut socket_responses,
+                &mut node_responses,
+            );
+
+            for (id, response) in node_responses {
+                response.context_menu(|ui| {
+                    context_menu(
+                        ui,
+                        NodeMenuContext {
+                            graph: &mut graph,
+                            node_id: id,
+                        },
+                    );
+                });
+            }
+        } else {
+            let mut node_responses = NoCollect::default();
+
+            crate::visitor::visit_graph(
+                &mut graph,
+                &ui,
+                &mut state,
+                &viewport,
+                &node_shape_indices,
+                &mut last_interacted_node_id,
+                &mut socket_responses,
+                &mut node_responses,
+            );
+        }
+
+        /* ---------------------------------------------- */
+        /* Handle socket responses                        */
+        /* ---------------------------------------------- */
+
+        if can_connect_socket {
+            handle_socket_responses(
+                &mut state,
+                &socket_responses,
+                &mut graph,
+                &mut ui,
+                &connection_renderer,
+            );
+        } else {
+            // Stop the currently dragged socket if creating connection is disabled.
+            state.dragged_socket = None;
+        }
+
+        if let Some(context_menu) = socket_context_menu.as_mut() {
+            for (socket_id, RenderedSocket { response, .. }) in &socket_responses.0 {
+                response.context_menu(|ui| {
+                    context_menu(
+                        ui,
+                        SocketMenuContext {
+                            graph: &mut graph,
+                            socket_id: socket_id.clone(),
+                        },
+                    );
+                });
+            }
+        }
+
+        /* ---- */
+
+        {
+            let connections = graph
+                .connections()
+                .filter_map(|(a, b)| {
+                    let a = socket_responses.get(&a)?;
+                    let b = socket_responses.get(&b)?;
+                    Some((a, b))
+                })
+                .map(|(a, b)| connection_renderer.socket_to_socket(a, b))
+                .collect::<Vec<_>>();
+
+            ui.painter().set(connections_shape_idx, connections);
+        }
+
+        /* ---- */
+
+        ui.painter().add(RectShape::stroke(
+            rect,
+            Rounding::ZERO,
+            (1.0, grid_stroke.color),
+        ));
+
+        /* ---- */
+
+        let output = GraphOutput {
+            response,
+            position: viewport.grid.canvas_to_graph(state.viewport_position),
+            last_interacted_node_id,
+            viewport,
+        };
+
+        /* ---- */
+
+        state.store(ui.ctx(), id);
+
+        /* ---- */
+
+        output
     }
 }
 

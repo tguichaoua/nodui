@@ -86,6 +86,11 @@ pub struct DummyGraph {
     connections: Connections,
 }
 
+pub struct ViewMut<'a> {
+    pub nodes: &'a mut [DummyNode],
+    pub connections: &'a mut Connections,
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct DummyNode {
     id: NodeId,
@@ -97,11 +102,20 @@ pub struct DummyNode {
 pub struct DummySocket {
     pub index: SocketIndex,
     pub name: String,
+
+    pub field: Option<f32>,
 }
 
 /* -------------------------------------------------------------------------- */
 
 impl DummyGraph {
+    pub fn view_mut(&mut self) -> ViewMut {
+        ViewMut {
+            nodes: &mut self.nodes,
+            connections: &mut self.connections,
+        }
+    }
+
     pub fn nodes(&self) -> &[DummyNode] {
         &self.nodes
     }
@@ -128,6 +142,8 @@ impl DummyGraph {
             .map(|(i, name)| DummySocket {
                 index: SocketIndex::Input(i.try_into().unwrap()),
                 name: name.into(),
+
+                field: None,
             });
 
         let output_sockets = output_sockets
@@ -136,6 +152,8 @@ impl DummyGraph {
             .map(|(i, name)| DummySocket {
                 index: SocketIndex::Output(i.try_into().unwrap()),
                 name: name.into(),
+
+                field: None,
             });
 
         let sockets = input_sockets.chain(output_sockets).collect();
@@ -170,6 +188,10 @@ impl DummyGraph {
 }
 
 impl DummyNode {
+    pub fn sockets_mut(&mut self) -> &mut [DummySocket] {
+        &mut self.sockets
+    }
+
     pub fn sockets(&self) -> &[DummySocket] {
         &self.sockets
     }
