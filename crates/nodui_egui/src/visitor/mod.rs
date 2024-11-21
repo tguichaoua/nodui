@@ -4,7 +4,7 @@ mod body;
 mod header;
 
 use egui::{epaint::RectShape, vec2, Color32, LayerId, Rect, Response, Rounding, Sense, Ui, Vec2};
-use nodui_core::{ui::NodeUI, GraphAdapter, NodeAdapter, NodeSeq, SizeHint};
+use nodui_core::{ui::NodeUI, NodeAdapter, NodeSeq, SizeHint};
 
 use crate::{
     conversion::IntoEgui,
@@ -37,45 +37,20 @@ const SOCKET_NAME_FIELD_GAP: f32 = 5.0;
 
 /* -------------------------------------------------------------------------- */
 
-/// Visit a graph and render its nodes.
-#[allow(clippy::too_many_arguments)] // TODO: refactor this
-pub(crate) fn visit_graph<G>(
-    graph: &mut G,
-    ui: &mut Ui,
-    state: &mut GraphMemory<G::NodeId, G::SocketId>,
-    viewport: &Viewport,
-    last_interacted_node_id: &mut Option<G::NodeId>,
-    socket_responses: &mut SocketResponses<G::SocketId>,
-    collect_node_response: &mut impl Collect<(G::NodeId, Response)>,
-) where
-    G: GraphAdapter,
-{
-    graph.accept(GraphVisitor {
-        ui,
-        state,
-        viewport,
-        last_interacted_node_id,
-        socket_responses,
-        collect_node_response,
-    });
-}
-
-/* -------------------------------------------------------------------------- */
-
 /// A visitor to visit a graph and render its nodes.
-struct GraphVisitor<'a, N, S, C> {
+pub(crate) struct GraphVisitor<'a, N, S, C> {
     /// The [`Ui`] used to render the nodes.
-    ui: &'a mut Ui,
+    pub(crate) ui: &'a mut Ui,
     /// The state of the graph editor.
-    state: &'a mut GraphMemory<N, S>,
+    pub(crate) state: &'a mut GraphMemory<N, S>,
     /// The viewport of the editor.
-    viewport: &'a Viewport,
+    pub(crate) viewport: &'a Viewport,
     /// A reference to the id of the last interacted node, if any.
-    last_interacted_node_id: &'a mut Option<N>,
+    pub(crate) last_interacted_node_id: &'a mut Option<N>,
     /// The socket responses.
-    socket_responses: &'a mut SocketResponses<S>,
+    pub(crate) socket_responses: &'a mut SocketResponses<S>,
     /// A collector to collect nodes' response.
-    collect_node_response: &'a mut C,
+    pub(crate) collect_node_response: &'a mut C,
 }
 
 impl<'graph, N, S, C> nodui_core::GraphVisitor<'graph, N, S> for GraphVisitor<'_, N, S, C>

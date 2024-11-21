@@ -22,6 +22,7 @@ use crate::context_menu::{
 use crate::misc::collect::NoCollect;
 use crate::socket::RenderedSocket;
 use crate::viewport::{CanvasPos, Grid, Viewport};
+use crate::visitor::GraphVisitor;
 
 /* -------------------------------------------------------------------------- */
 
@@ -458,15 +459,14 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
         if let Some(context_menu) = node_context_menu.as_mut() {
             let mut node_responses = Vec::new();
 
-            crate::visitor::visit_graph(
-                &mut graph,
-                &mut ui,
-                &mut state,
-                &viewport,
-                &mut last_interacted_node_id,
-                &mut socket_responses,
-                &mut node_responses,
-            );
+            graph.accept(GraphVisitor {
+                ui: &mut ui,
+                state: &mut state,
+                viewport: &viewport,
+                last_interacted_node_id: &mut last_interacted_node_id,
+                socket_responses: &mut socket_responses,
+                collect_node_response: &mut node_responses,
+            });
 
             for (id, response) in node_responses {
                 response.context_menu(|ui| {
@@ -482,15 +482,14 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
         } else {
             let mut node_responses = NoCollect::default();
 
-            crate::visitor::visit_graph(
-                &mut graph,
-                &mut ui,
-                &mut state,
-                &viewport,
-                &mut last_interacted_node_id,
-                &mut socket_responses,
-                &mut node_responses,
-            );
+            graph.accept(GraphVisitor {
+                ui: &mut ui,
+                state: &mut state,
+                viewport: &viewport,
+                last_interacted_node_id: &mut last_interacted_node_id,
+                socket_responses: &mut socket_responses,
+                collect_node_response: &mut node_responses,
+            });
         }
 
         /* ---------------------------------------------- */
