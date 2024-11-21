@@ -1,8 +1,5 @@
 //! The visual editor.
 
-// TODO: due to some experimentation with the visitor api, I change visibility of some items here
-// that need to be refactored if visitor api is kept.
-
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -210,22 +207,21 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
 
 /* -------------------------------------------------------------------------- */
 
-// TODO: visibility changed due to experimentation with visitor API.
 /// The state of the editor saved from on frame to another.
 #[derive(Clone)]
-pub(crate) struct GraphMemory<NodeId, SocketId> {
+struct GraphMemory<NodeId, SocketId> {
     /// The current viewport position.
-    pub viewport_position: CanvasPos,
+    viewport_position: CanvasPos,
     /// The grid of the editor.
-    pub grid: Grid,
+    grid: Grid,
 
     /// The node currently being dragged and the delta position form it's current position.
-    pub dragged_node: Option<(NodeId, Vec2)>,
+    dragged_node: Option<(NodeId, Vec2)>,
     /// The socket currently being dragged.
-    pub dragged_socket: Option<SocketId>,
+    dragged_socket: Option<SocketId>,
 
     /// The last know position of the pointer in graph coordinates.
-    pub last_known_pointer_pos: Pos,
+    last_known_pointer_pos: Pos,
 }
 
 impl<N, S> Default for GraphMemory<N, S> {
@@ -461,7 +457,7 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
 
             graph.accept(GraphVisitor {
                 ui: &mut ui,
-                state: &mut state,
+                dragged_node: &mut state.dragged_node,
                 viewport: &viewport,
                 last_interacted_node_id: &mut last_interacted_node_id,
                 socket_responses: &mut socket_responses,
@@ -484,7 +480,7 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
 
             graph.accept(GraphVisitor {
                 ui: &mut ui,
-                state: &mut state,
+                dragged_node: &mut state.dragged_node,
                 viewport: &viewport,
                 last_interacted_node_id: &mut last_interacted_node_id,
                 socket_responses: &mut socket_responses,

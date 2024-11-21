@@ -7,10 +7,7 @@ use egui::{epaint::RectShape, vec2, Color32, LayerId, Rect, Response, Rounding, 
 use nodui_core::{ui::NodeUI, NodeAdapter, NodeSeq, SizeHint};
 
 use crate::{
-    conversion::IntoEgui,
-    editor::{GraphMemory, SocketResponses},
-    misc::collect::Collect,
-    viewport::Viewport,
+    conversion::IntoEgui, editor::SocketResponses, misc::collect::Collect, viewport::Viewport,
 };
 
 /* -------------------------------------------------------------------------- */
@@ -41,8 +38,8 @@ const SOCKET_NAME_FIELD_GAP: f32 = 5.0;
 pub(crate) struct GraphVisitor<'a, N, S, C> {
     /// The [`Ui`] used to render the nodes.
     pub(crate) ui: &'a mut Ui,
-    /// The state of the graph editor.
-    pub(crate) state: &'a mut GraphMemory<N, S>,
+    /// The node currently being dragged and the delta position form it's current position
+    pub(crate) dragged_node: &'a mut Option<(N, Vec2)>,
     /// The viewport of the editor.
     pub(crate) viewport: &'a Viewport,
     /// A reference to the id of the last interacted node, if any.
@@ -64,7 +61,7 @@ where
 
         GraphVisitor {
             ui: self.ui,
-            state: self.state,
+            dragged_node: self.dragged_node,
             viewport: self.viewport,
             last_interacted_node_id: self.last_interacted_node_id,
             socket_responses: self.socket_responses,
@@ -82,7 +79,7 @@ where
     fn visit_node(&mut self, mut node: impl NodeAdapter<NodeId = N, SocketId = S>) {
         let Self {
             ui,
-            state,
+            dragged_node,
             viewport,
             last_interacted_node_id,
             socket_responses,
@@ -92,7 +89,7 @@ where
         let id = node.id();
 
         let canvas_pos = {
-            let delta_pos = match state.dragged_node.clone() {
+            let delta_pos = match dragged_node.clone() {
                 Some((dragged_id, delta_pos)) if dragged_id == id => delta_pos,
                 _ => Vec2::ZERO,
             };
@@ -155,13 +152,13 @@ where
             .inner;
 
         if response.drag_stopped() {
-            state.dragged_node = None;
+            **dragged_node = None;
             let new_pos = canvas_pos + response.drag_delta();
             node.set_pos(viewport.grid.canvas_to_graph_nearest(new_pos));
         } else if response.drag_started() {
-            state.dragged_node = Some((id.clone(), response.drag_delta()));
+            **dragged_node = Some((id.clone(), response.drag_delta()));
         } else if response.dragged() {
-            if let Some(dragged_node) = state.dragged_node.as_mut() {
+            if let Some(dragged_node) = dragged_node.as_mut() {
                 dragged_node.1 += response.drag_delta();
             }
         }
