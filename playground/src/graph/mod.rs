@@ -134,26 +134,37 @@ impl DummyGraph {
         input_sockets: impl IntoIterator<Item: Into<String>>,
         output_sockets: impl IntoIterator<Item: Into<String>>,
     ) -> NodeId {
+        self.add_node_with_field(
+            pos,
+            input_sockets.into_iter().map(|name| (name, None)),
+            output_sockets.into_iter().map(|name| (name, None)),
+        )
+    }
+
+    pub fn add_node_with_field(
+        &mut self,
+        pos: Pos,
+        input_sockets: impl IntoIterator<Item = (impl Into<String>, Option<f32>)>,
+        output_sockets: impl IntoIterator<Item = (impl Into<String>, Option<f32>)>,
+    ) -> NodeId {
         let id = NodeId::new();
 
         let input_sockets = input_sockets
             .into_iter()
             .enumerate()
-            .map(|(i, name)| DummySocket {
+            .map(|(i, (name, field))| DummySocket {
                 index: SocketIndex::Input(i.try_into().unwrap()),
                 name: name.into(),
-
-                field: None,
+                field,
             });
 
         let output_sockets = output_sockets
             .into_iter()
             .enumerate()
-            .map(|(i, name)| DummySocket {
+            .map(|(i, (name, field))| DummySocket {
                 index: SocketIndex::Output(i.try_into().unwrap()),
                 name: name.into(),
-
-                field: None,
+                field,
             });
 
         let sockets = input_sockets.chain(output_sockets).collect();
@@ -216,7 +227,11 @@ pub fn make_dummy() -> DummyGraph {
 
     graph.add_node(Pos::new(-5, -2), ["In"], ["Out", "Charles", "David"]);
 
-    graph.add_node(Pos::new(5, 3), ["In", "Charles", "David"], ["Out"]);
+    graph.add_node_with_field(
+        Pos::new(5, 3),
+        [("In", None), ("Charles", None), ("David", None)],
+        [("Out", Some(0.0))],
+    );
 
     graph
 }

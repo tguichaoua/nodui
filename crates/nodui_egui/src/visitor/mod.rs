@@ -6,7 +6,8 @@ mod header;
 use std::collections::HashMap;
 
 use egui::{
-    epaint::RectShape, layers::ShapeIdx, vec2, Color32, Rect, Response, Rounding, Sense, Ui, Vec2,
+    epaint::RectShape, layers::ShapeIdx, vec2, Color32, LayerId, Rect, Response, Rounding, Sense,
+    Ui, Vec2,
 };
 use nodui_core::{ui::NodeUI, visitor};
 
@@ -33,12 +34,18 @@ const NODE_ROUNDING: Rounding = Rounding::same(5.0);
 /// The default color to apply to the texts.
 const DEFAULT_TEXT_COLOR: Color32 = Color32::WHITE;
 
+/// The space reserved for the socket's field.
+const SOCKET_FIELD_SIZE: Vec2 = vec2(50.0, ROW_HEIGHT);
+
+/// Space between socket's name and field.
+const SOCKET_NAME_FIELD_GAP: f32 = 5.0;
+
 /* -------------------------------------------------------------------------- */
 
 #[allow(clippy::too_many_arguments)] // TODO: refactor this
 pub(crate) fn visit_graph<G>(
     graph: &mut G,
-    ui: &Ui,
+    ui: &mut Ui,
     state: &mut GraphMemory<G::NodeId, G::SocketId>,
     viewport: &Viewport,
     node_shape_indices: &HashMap<G::NodeId, ShapeIdx>,
@@ -62,7 +69,7 @@ pub(crate) fn visit_graph<G>(
 /* -------------------------------------------------------------------------- */
 
 struct GraphVisitor<'a, N, S, C> {
-    ui: &'a Ui,
+    ui: &'a mut Ui,
     state: &'a mut GraphMemory<N, S>,
     viewport: &'a Viewport,
     node_shape_indices: &'a HashMap<N, ShapeIdx>,

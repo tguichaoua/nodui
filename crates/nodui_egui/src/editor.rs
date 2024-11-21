@@ -957,7 +957,7 @@ impl<
 
             crate::visitor::visit_graph(
                 &mut graph,
-                &ui,
+                &mut ui,
                 &mut state,
                 &viewport,
                 &node_shape_indices,
@@ -982,7 +982,7 @@ impl<
 
             crate::visitor::visit_graph(
                 &mut graph,
-                &ui,
+                &mut ui,
                 &mut state,
                 &viewport,
                 &node_shape_indices,

@@ -3,8 +3,8 @@ use std::sync::Arc;
 use egui::{
     epaint::RectShape,
     text::{Fonts, LayoutJob},
-    vec2, Align, Color32, CursorIcon, FontId, Galley, Margin, Pos2, Rect, Rounding, Sense, Ui,
-    Vec2,
+    vec2, Align, Color32, CursorIcon, DragValue, FontId, Galley, Margin, Pos2, Rect, Rounding,
+    Sense, Ui, Vec2,
 };
 use nodui_core::{
     ui::{NodeBody, NodeLayout, NodeSide, SocketShape, SocketUI},
@@ -13,7 +13,10 @@ use nodui_core::{
 
 use crate::{editor::SocketResponses, socket};
 
-use super::{IntoEgui, NodePainter, DEFAULT_TEXT_COLOR, ROW_HEIGHT, SOCKET_WIDTH};
+use super::{
+    IntoEgui, NodePainter, DEFAULT_TEXT_COLOR, ROW_HEIGHT, SOCKET_FIELD_SIZE,
+    SOCKET_NAME_FIELD_GAP, SOCKET_WIDTH,
+};
 
 /* -------------------------------------------------------------------------- */
 
@@ -57,7 +60,7 @@ struct PreparedSocket<'field, SocketId> {
     shape: SocketShape,
 
     /// The socket field.
-    _field: Option<SocketField<'field>>, // TODO: use socket field
+    field: Option<SocketField<'field>>,
 }
 
 /// Prepare the node body for its rendering.
@@ -181,7 +184,7 @@ fn prepare_socket<'field, SocketId>(
         is_connected,
         color,
         shape,
-        _field: field,
+        field,
     }
 }
 
@@ -233,7 +236,7 @@ where
 {
     pub(super) fn show(
         self,
-        ui: &Ui,
+        ui: &mut Ui,
         painter: &mut NodePainter,
         pos: Pos2,
         node_size: Vec2,
@@ -284,7 +287,7 @@ where
 
 /// Render the node body with a single column layout.
 fn show_single_column_body<SocketId>(
-    ui: &Ui,
+    ui: &mut Ui,
     painter: &mut NodePainter,
     socket_responses: &mut SocketResponses<SocketId>,
     sockets: Vec<PreparedSocket<'_, SocketId>>,
@@ -296,16 +299,29 @@ fn show_single_column_body<SocketId>(
     let mut pos = rect.min;
 
     for socket in sockets {
-        let (socket_x, text_x) = match socket.side {
-            NodeSide::Left => (0.0, SOCKET_WIDTH + socket_text_gap),
+        // TODO: may be refactored
+        // TODO: DRY this part and the other from `show_double_column_body`
+        let (socket_x, text_x, field_x) = match socket.side {
+            NodeSide::Left => (
+                0.0,
+                SOCKET_WIDTH + socket_text_gap,
+                SOCKET_WIDTH + socket_text_gap + socket.text.size().x + SOCKET_NAME_FIELD_GAP,
+            ),
             NodeSide::Right => (
                 rect.width() - SOCKET_WIDTH,
-                rect.width() - SOCKET_WIDTH - socket_text_gap,
+                rect.width() - (SOCKET_WIDTH + socket_text_gap),
+                rect.width()
+                    - (SOCKET_WIDTH
+                        + socket_text_gap
+                        + socket.text.size().x
+                        + SOCKET_FIELD_SIZE.x
+                        + SOCKET_NAME_FIELD_GAP),
             ),
         };
 
         let socket_center = pos + Vec2::new(socket_x + SOCKET_WIDTH / 2.0, ROW_HEIGHT / 2.0);
         let text_pos = pos + Vec2::new(text_x, (ROW_HEIGHT - socket.text.rect.height()) / 2.0);
+        let field_pos = pos + Vec2::new(field_x, (ROW_HEIGHT - SOCKET_FIELD_SIZE.y) / 2.0);
 
         show_socket(
             ui,
@@ -313,6 +329,7 @@ fn show_single_column_body<SocketId>(
             socket_responses,
             socket_center,
             text_pos,
+            field_pos,
             socket,
         );
 
@@ -322,7 +339,7 @@ fn show_single_column_body<SocketId>(
 
 /// Render the node body with a double columns layout.
 fn show_double_column_body<SocketId>(
-    ui: &Ui,
+    ui: &mut Ui,
     painter: &mut NodePainter,
     socket_responses: &mut SocketResponses<SocketId>,
     sockets: Vec<PreparedSocket<'_, SocketId>>,
@@ -335,17 +352,29 @@ fn show_double_column_body<SocketId>(
     let mut right = rect.min;
 
     for socket in sockets {
-        let (pos, socket_x, text_x) = match socket.side {
-            NodeSide::Left => (&mut left, 0.0, SOCKET_WIDTH + socket_text_gap),
+        let (pos, socket_x, text_x, field_x) = match socket.side {
+            NodeSide::Left => (
+                &mut left,
+                0.0,
+                SOCKET_WIDTH + socket_text_gap,
+                SOCKET_WIDTH + socket_text_gap + socket.text.size().x + SOCKET_NAME_FIELD_GAP,
+            ),
             NodeSide::Right => (
                 &mut right,
                 rect.width() - SOCKET_WIDTH,
-                rect.width() - SOCKET_WIDTH - socket_text_gap,
+                rect.width() - (SOCKET_WIDTH + socket_text_gap),
+                rect.width()
+                    - (SOCKET_WIDTH
+                        + socket_text_gap
+                        + socket.text.size().x
+                        + SOCKET_FIELD_SIZE.x
+                        + SOCKET_NAME_FIELD_GAP),
             ),
         };
 
         let socket_center = *pos + Vec2::new(socket_x + SOCKET_WIDTH / 2.0, ROW_HEIGHT / 2.0);
         let text_pos = *pos + Vec2::new(text_x, (ROW_HEIGHT - socket.text.rect.height()) / 2.0);
+        let field_pos = *pos + Vec2::new(field_x, (ROW_HEIGHT - SOCKET_FIELD_SIZE.y) / 2.0);
 
         show_socket(
             ui,
@@ -353,6 +382,7 @@ fn show_double_column_body<SocketId>(
             socket_responses,
             socket_center,
             text_pos,
+            field_pos,
             socket,
         );
 
@@ -362,11 +392,12 @@ fn show_double_column_body<SocketId>(
 
 /// Render a socket.
 fn show_socket<SocketId>(
-    ui: &Ui,
+    ui: &mut Ui,
     painter: &mut NodePainter,
     socket_responses: &mut SocketResponses<SocketId>,
     socket_center: Pos2,
     text_pos: Pos2,
+    field_pos: Pos2,
     socket: PreparedSocket<'_, SocketId>,
 ) where
     SocketId: nodui_core::Id,
@@ -379,7 +410,7 @@ fn show_socket<SocketId>(
         color,
         shape,
 
-        _field, // TODO: use socket field
+        field, // TODO: use socket field
     } = socket;
 
     {
@@ -398,6 +429,17 @@ fn show_socket<SocketId>(
     ));
 
     painter.add(egui::Shape::galley(text_pos, text, Color32::WHITE));
+
+    if let Some(field) = field {
+        let rect = Rect::from_min_size(field_pos, SOCKET_FIELD_SIZE);
+
+        let response = match field {
+            SocketField::Bool(_) => todo!(),
+            SocketField::F32(value) => ui.put(rect, DragValue::new(value)),
+            SocketField::F64(_) => todo!(),
+            SocketField::I32(_) => todo!(),
+        };
+    }
 }
 
 /* -------------------------------------------------------------------------- */
