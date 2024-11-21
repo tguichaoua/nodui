@@ -28,8 +28,6 @@ impl<'field, Id> SocketData<'field, Id> {
         }
     }
 
-    // TODO: inline `SocketUI` fields into `SocketData`?
-
     /// Sets the [`SocketUI`] used to render the socket.
     #[inline]
     #[must_use]
