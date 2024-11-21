@@ -3,6 +3,7 @@
 mod adapter;
 mod node;
 mod socket;
+mod visitor;
 
 use std::collections::HashMap;
 

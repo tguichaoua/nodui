@@ -149,7 +149,8 @@ impl App {
                 }
             });
 
-        let response = graph.show(ui);
+        // let response = graph.show(ui);
+        let response = graph.show_using_visitor(ui);
 
         self.current_graph_pos = response.position;
     }
