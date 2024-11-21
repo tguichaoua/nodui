@@ -70,11 +70,15 @@ impl<'graph> visitor::NodeAdapter for NodeAdapter<'graph> {
                 SocketIndex::Output(_) => NodeSide::Right,
             };
 
-            socket_seq.visit_socket(
-                SocketData::new(id, side)
-                    .with_connected(self.connections.is_connected(id))
-                    .with_name(&socket.name),
-            );
+            let mut data = SocketData::new(id, side)
+                .with_connected(self.connections.is_connected(id))
+                .with_name(&socket.name);
+
+            if let Some(field) = socket.field.as_mut() {
+                data = data.with_field(field)
+            }
+
+            socket_seq.visit_socket(data);
         }
     }
 }

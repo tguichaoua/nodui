@@ -8,7 +8,7 @@ use egui::{
 };
 use nodui_core::{
     ui::{NodeBody, NodeLayout, NodeSide, SocketShape, SocketUI},
-    visitor::{self, SocketData},
+    visitor::{self, SocketData, SocketField},
 };
 
 use crate::{editor::SocketResponses, socket};
@@ -42,7 +42,7 @@ impl<S> PreparedBody<'_, S> {
 }
 
 /// The prepared data for a socket.
-struct PreparedSocket<'socket, SocketId> {
+struct PreparedSocket<'field, SocketId> {
     /// The unique identifier of the socket.
     id: SocketId,
     /// The side on which the socket is rendered.
@@ -57,7 +57,7 @@ struct PreparedSocket<'socket, SocketId> {
     shape: SocketShape,
 
     /// The socket field.
-    _field: Option<&'socket mut f32>, // TODO: use socket field
+    _field: Option<SocketField<'field>>, // TODO: use socket field
 }
 
 /// Prepare the node body for its rendering.

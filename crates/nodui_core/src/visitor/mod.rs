@@ -1,11 +1,15 @@
 #![allow(missing_docs, clippy::missing_docs_in_private_items)] // TODO: docs
 
+mod socket_field;
+
 use std::ops::Add;
 
 use crate::{
     ui::{Color, NodeSide, NodeUI, SocketShape, SocketUI, TextUi},
     Id, Pos,
 };
+
+pub use socket_field::SocketField;
 
 /* -------------------------------------------------------------------------- */
 
@@ -62,8 +66,7 @@ pub trait SocketSeq<'node, S> {
 pub struct SocketData<'field, SocketId> {
     pub id: SocketId,
     pub ui: SocketUI,
-    // TODO: make `field` generic
-    pub field: Option<&'field mut f32>,
+    pub field: Option<SocketField<'field>>,
 }
 
 impl<'field, Id> SocketData<'field, Id> {
@@ -107,6 +110,14 @@ impl<'field, Id> SocketData<'field, Id> {
     #[must_use]
     pub fn with_shape(mut self, shape: SocketShape) -> Self {
         self.ui = self.ui.with_shape(shape);
+        self
+    }
+
+    /// Sets the socket field.
+    #[inline]
+    #[must_use]
+    pub fn with_field(mut self, field: impl Into<SocketField<'field>>) -> Self {
+        self.field = Some(field.into());
         self
     }
 }
