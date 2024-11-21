@@ -1,9 +1,16 @@
+//! Socket's field.
+
+/// Create the type `SocketField`.
 macro_rules! socket_field {
     (
         $( $name:ident($ty:ty) )*
     ) => {
+        /// A mutably borrowed socket field value.
         pub enum SocketField<'a> {
-            $( $name(&'a mut $ty), )*
+            $(
+                #[allow(missing_docs)]
+                $name(&'a mut $ty),
+            )*
         }
 
         $(

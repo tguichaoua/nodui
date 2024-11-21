@@ -1,16 +1,23 @@
+//! Socket's data.
+
 use crate::ui::{Color, NodeSide, SocketShape, SocketUI, TextUi};
 
 use super::SocketField;
 
+/// The data about a socket.
 pub struct SocketData<'field, SocketId> {
+    /// The unique identifier of the socket.
     pub id: SocketId,
     /// The side of the node this socket should be placed.
     pub side: NodeSide,
+    /// Defines how a socket should be rendered.
     pub ui: SocketUI,
+    /// The field of the socket, if any.
     pub field: Option<SocketField<'field>>,
 }
 
 impl<'field, Id> SocketData<'field, Id> {
+    /// Creates a [`SocketData`] with the specified `id` and `side`.
     #[inline]
     pub fn new(id: Id, side: NodeSide) -> Self {
         Self {

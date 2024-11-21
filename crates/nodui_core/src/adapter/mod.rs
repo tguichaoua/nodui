@@ -1,5 +1,3 @@
-#![allow(missing_docs, clippy::missing_docs_in_private_items)] // TODO: docs
-
 //! Types and traits for interactions between the ui editor and the graph data.
 
 mod size_hint;
@@ -65,6 +63,7 @@ pub trait GraphAdapter {
     /// An identifier used to identify a socket over the graph.
     type SocketId: Id;
 
+    /// Accepts an [`GraphVisitor`] and provides it graph's information.
     fn accept<'graph, V>(&'graph mut self, visitor: V)
     where
         V: GraphVisitor<'graph, Self::NodeId, Self::SocketId>;
@@ -104,6 +103,7 @@ pub trait NodeAdapter {
         NodeUI::default()
     }
 
+    /// Accepts an [`NodeVisitor`] and provides it node's information.
     fn accept<'node, V>(&'node mut self, visitor: V)
     where
         V: NodeVisitor<'node, Self::SocketId>;
