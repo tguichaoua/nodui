@@ -22,5 +22,3 @@ workspace = true
 nodui_core.workspace = true
 
 egui.workspace = true
-indexmap = { version = "2", default-features = false, features = ["std"] }
-itertools = { version = "0.13", default-features = false }
