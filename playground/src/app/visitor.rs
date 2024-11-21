@@ -1,6 +1,6 @@
 use nodui::{
-    ui::{Color, NodeSide, NodeUI, SocketUI, TitleHeader},
-    visitor::{self, NodeSeq, SizeHint, SocketSeq},
+    ui::{Color, NodeSide, NodeUI, TitleHeader},
+    visitor::{self, NodeSeq, SizeHint, SocketData, SocketSeq},
 };
 
 use crate::graph::{self, Connections, DummyNode, NodeId, SocketId, SocketIndex};
@@ -65,16 +65,16 @@ impl<'graph> visitor::NodeAdapter for NodeAdapter<'graph> {
         for socket in sockets {
             let id = SocketId::from((node_id, socket.index));
 
-            let ui = {
-                let side = match socket.index {
-                    SocketIndex::Input(_) => NodeSide::Left,
-                    SocketIndex::Output(_) => NodeSide::Right,
-                };
-
-                SocketUI::new(side, self.connections.is_connected(id)).with_name(&socket.name)
+            let side = match socket.index {
+                SocketIndex::Input(_) => NodeSide::Left,
+                SocketIndex::Output(_) => NodeSide::Right,
             };
 
-            socket_seq.visit_socket(id, ui, socket.field.as_mut());
+            socket_seq.visit_socket(
+                SocketData::new(id, side)
+                    .with_connected(self.connections.is_connected(id))
+                    .with_name(&socket.name),
+            );
         }
     }
 }

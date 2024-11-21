@@ -1,8 +1,8 @@
 //! Implementation of the `GraphAdapter` trait.
 
 use nodui::{
-    ui::{Color, NodeSide, NodeUI, SocketUI},
-    visitor::{self, NodeSeq, SizeHint, SocketSeq},
+    ui::{Color, NodeSide, NodeUI},
+    visitor::{self, NodeSeq, SizeHint, SocketData, SocketSeq},
     Pos,
 };
 
@@ -104,9 +104,11 @@ impl visitor::NodeAdapter for NodeAdapter<'_, OpNode> {
             visitor.sockets(SizeHint::of_iter(&input_sockets) + SizeHint::exact(1));
 
         for socket in input_sockets {
-            let ui = SocketUI::new(NodeSide::Left, self.connections.is_connected(socket.into()))
-                .with_name(socket.name());
-            socket_seq.visit_socket(socket.into(), ui, None);
+            socket_seq.visit_socket(
+                SocketData::new(socket.into(), NodeSide::Left)
+                    .with_connected(self.connections.is_connected(socket.into()))
+                    .with_name(socket.name()),
+            );
         }
 
         {
@@ -120,9 +122,11 @@ impl visitor::NodeAdapter for NodeAdapter<'_, OpNode> {
                 Op::Binary(BinaryOp::Div) => "A/B",
             };
 
-            let ui = SocketUI::new(NodeSide::Right, self.connections.is_connected(output_id))
-                .with_name(output_name);
-            socket_seq.visit_socket(output_id, ui, None);
+            socket_seq.visit_socket(
+                SocketData::new(output_id, NodeSide::Right)
+                    .with_connected(self.connections.is_connected(output_id))
+                    .with_name(output_name),
+            );
         }
     }
 }
@@ -162,10 +166,9 @@ impl visitor::NodeAdapter for NodeAdapter<'_, Input> {
 
         let socket_id = self.node.output_socket_id().into();
         socket_seq.visit_socket(
-            socket_id,
-            SocketUI::new(NodeSide::Right, self.connections.is_connected(socket_id))
+            SocketData::new(socket_id, NodeSide::Right)
+                .with_connected(self.connections.is_connected(socket_id))
                 .with_name(self.node.name()),
-            None,
         );
     }
 }

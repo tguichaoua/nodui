@@ -8,7 +8,7 @@ use egui::{
 };
 use nodui_core::{
     ui::{NodeBody, NodeLayout, NodeSide, SocketShape, SocketUI},
-    visitor,
+    visitor::{self, SocketData},
 };
 
 use crate::{editor::SocketResponses, socket};
@@ -143,11 +143,15 @@ where
 }
 
 fn prepare_socket<'field, SocketId>(
-    id: SocketId,
-    ui: SocketUI,
+    // id: SocketId,
+    // ui: SocketUI,
+    // fonts: &Fonts,
+    // field: Option<&'field mut f32>,
+    socket: SocketData<'field, SocketId>,
     fonts: &Fonts,
-    field: Option<&'field mut f32>,
 ) -> PreparedSocket<'field, SocketId> {
+    let SocketData { id, ui, field } = socket;
+
     let SocketUI {
         name: text,
         side,
@@ -215,8 +219,9 @@ impl<'graph, S> visitor::NodeVisitor<'graph, S> for NodeVisitor<'_, 'graph, S> {
 
 impl<'node, S> visitor::SocketSeq<'node, S> for &mut NodeVisitor<'_, 'node, S> {
     #[inline]
-    fn visit_socket(&mut self, id: S, ui: SocketUI, field: Option<&'node mut f32>) {
-        self.sockets.push(prepare_socket(id, ui, self.fonts, field));
+    fn visit_socket(&mut self, socket: SocketData<'node, S>) {
+        // self.sockets.push(prepare_socket(id, ui, self.fonts, field));
+        self.sockets.push(prepare_socket(socket, self.fonts));
     }
 }
 
