@@ -1,4 +1,4 @@
-#![allow(missing_docs, clippy::missing_docs_in_private_items)] // TODO: docs
+//! Implementation of the visitor to visit graphs.
 
 mod body;
 mod header;
@@ -37,6 +37,7 @@ const SOCKET_NAME_FIELD_GAP: f32 = 5.0;
 
 /* -------------------------------------------------------------------------- */
 
+/// Visit a graph and render its nodes.
 #[allow(clippy::too_many_arguments)] // TODO: refactor this
 pub(crate) fn visit_graph<G>(
     graph: &mut G,
@@ -61,12 +62,19 @@ pub(crate) fn visit_graph<G>(
 
 /* -------------------------------------------------------------------------- */
 
+/// A visitor to visit a graph and render its nodes.
 struct GraphVisitor<'a, N, S, C> {
+    /// The [`Ui`] used to render the nodes.
     ui: &'a mut Ui,
+    /// The state of the graph editor.
     state: &'a mut GraphMemory<N, S>,
+    /// The viewport of the editor.
     viewport: &'a Viewport,
+    /// A reference to the id of the last interacted node, if any.
     last_interacted_node_id: &'a mut Option<N>,
+    /// The socket responses.
     socket_responses: &'a mut SocketResponses<S>,
+    /// A collector to collect nodes' response.
     collect_node_response: &'a mut C,
 }
 

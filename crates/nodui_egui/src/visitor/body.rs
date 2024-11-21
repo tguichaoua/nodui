@@ -1,3 +1,5 @@
+//! Preparation and rendering of node's body part.
+
 use std::sync::Arc;
 
 use egui::{
@@ -39,6 +41,7 @@ pub(super) struct PreparedBody<'field, SocketId> {
 }
 
 impl<S> PreparedBody<'_, S> {
+    /// The total size occupied by the body.
     pub(super) fn size(&self) -> Vec2 {
         self.size
     }
@@ -145,11 +148,8 @@ where
     }
 }
 
+/// Prepares the socket to be rendered.
 fn prepare_socket<'field, SocketId>(
-    // id: SocketId,
-    // ui: SocketUI,
-    // fonts: &Fonts,
-    // field: Option<&'field mut f32>,
     socket: SocketData<'field, SocketId>,
     fonts: &Fonts,
 ) -> PreparedSocket<'field, SocketId> {
@@ -194,6 +194,7 @@ fn prepare_socket<'field, SocketId>(
 
 /* -------------------------------------------------------------------------- */
 
+/// Collects the [`SocketData`] from the node.
 fn collect_sockets<'node, Node>(
     node: &'node mut Node,
     fonts: &Fonts,
@@ -211,20 +212,26 @@ where
     sockets
 }
 
-struct NodeVisitor<'a, 'graph, S> {
+/// A node visitor to collect and prepare socket to be rendered.
+struct NodeVisitor<'a, 'node, S> {
+    /// The [`Fonts`] used to render texts.
     fonts: &'a Fonts,
-    sockets: &'a mut Vec<PreparedSocket<'graph, S>>,
+    /// Where to store the prepared sockets.
+    sockets: &'a mut Vec<PreparedSocket<'node, S>>,
 }
 
-impl<'graph, S> nodui_core::NodeVisitor<'graph, S> for NodeVisitor<'_, 'graph, S> {
-    fn sockets(&mut self, size_hint: SizeHint) -> impl SocketSeq<'graph, S> {
+impl<'node, S> nodui_core::NodeVisitor<'node, S> for NodeVisitor<'_, 'node, S> {
+    fn sockets(&mut self, size_hint: SizeHint) -> impl SocketSeq<'node, S> {
         self.sockets.reserve(size_hint.min());
 
-        self
+        NodeVisitor {
+            fonts: self.fonts,
+            sockets: self.sockets,
+        }
     }
 }
 
-impl<'node, S> SocketSeq<'node, S> for &mut NodeVisitor<'_, 'node, S> {
+impl<'node, S> SocketSeq<'node, S> for NodeVisitor<'_, 'node, S> {
     #[inline]
     fn visit_socket(&mut self, socket: SocketData<'node, S>) {
         // self.sockets.push(prepare_socket(id, ui, self.fonts, field));
@@ -238,6 +245,7 @@ impl<S> PreparedBody<'_, S>
 where
     S: nodui_core::Id,
 {
+    /// Render the body.
     pub(super) fn show(
         self,
         ui: &mut Ui,

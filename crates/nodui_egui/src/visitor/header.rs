@@ -1,3 +1,5 @@
+//! Preparation and rendering of node's header part.
+
 use std::sync::Arc;
 
 use egui::{
@@ -18,10 +20,12 @@ pub(super) struct PreparedHeader {
 }
 
 impl PreparedHeader {
+    /// The total size of the header.
     pub(super) fn size(&self) -> Vec2 {
         self.size
     }
 
+    /// Whether or not the header has content to render.
     pub(super) fn has_content(&self) -> bool {
         !matches!(self.content, HeaderContent::None)
     }
@@ -82,6 +86,7 @@ pub(crate) fn prepare(fonts: &Fonts, header: NodeHeader) -> PreparedHeader {
 }
 
 impl PreparedHeader {
+    /// Render the header.
     pub(super) fn show(self, ui: &Ui, pos: Pos2, node_size: Vec2, rounding: Rounding) {
         let Self { content, size } = self;
 
