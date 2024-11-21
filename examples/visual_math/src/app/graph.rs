@@ -1,6 +1,6 @@
 //! Graph adapter for a math graph.
 
-mod visitor;
+mod adapter;
 
 use std::collections::HashMap;
 

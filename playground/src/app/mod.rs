@@ -1,5 +1,4 @@
 mod adapter;
-mod visitor;
 
 use egui::{Color32, Grid, Ui};
 use nodui::{GraphEditor, Pos};
