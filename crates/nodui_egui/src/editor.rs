@@ -935,17 +935,6 @@ impl<
 
         let connections_shape_idx = ui.painter().add(Shape::Noop);
 
-        // Reserve space to draw nodes
-        let node_shape_indices: HashMap<_, _> = state
-            .node_order
-            .iter()
-            .cloned()
-            .map(|node_id| {
-                let shape_id = ui.painter().add(Shape::Noop);
-                (node_id, shape_id)
-            })
-            .collect();
-
         let mut last_interacted_node_id = None;
 
         let mut socket_responses = SocketResponses::new();
@@ -960,7 +949,6 @@ impl<
                 &mut ui,
                 &mut state,
                 &viewport,
-                &node_shape_indices,
                 &mut last_interacted_node_id,
                 &mut socket_responses,
                 &mut node_responses,
@@ -985,7 +973,6 @@ impl<
                 &mut ui,
                 &mut state,
                 &viewport,
-                &node_shape_indices,
                 &mut last_interacted_node_id,
                 &mut socket_responses,
                 &mut node_responses,

@@ -3,11 +3,11 @@ use std::sync::Arc;
 use egui::{
     epaint::{RectShape, TextShape},
     text::{Fonts, LayoutJob},
-    vec2, Align, Color32, FontId, Galley, Margin, Pos2, Rect, Rounding, Vec2,
+    vec2, Align, Color32, FontId, Galley, Margin, Pos2, Rect, Rounding, Ui, Vec2,
 };
 use nodui_core::ui::{NodeHeader, TitleHeader};
 
-use super::{IntoEgui, NodePainter};
+use super::IntoEgui;
 
 /// The prepared data to render the header of the node.
 pub(super) struct PreparedHeader {
@@ -82,13 +82,7 @@ pub(crate) fn prepare(fonts: &Fonts, header: NodeHeader) -> PreparedHeader {
 }
 
 impl PreparedHeader {
-    pub(super) fn show(
-        self,
-        painter: &mut NodePainter,
-        pos: Pos2,
-        node_size: Vec2,
-        rounding: Rounding,
-    ) {
+    pub(super) fn show(self, ui: &Ui, pos: Pos2, node_size: Vec2, rounding: Rounding) {
         let Self { content, size } = self;
 
         match content {
@@ -99,9 +93,10 @@ impl PreparedHeader {
                 background,
             }) => {
                 let rect = Rect::from_min_size(pos, vec2(node_size.x, size.y));
-                painter.add(RectShape::filled(rect, rounding, background));
+                ui.painter()
+                    .add(RectShape::filled(rect, rounding, background));
 
-                painter.add(TextShape::new(
+                ui.painter().add(TextShape::new(
                     pos + padding.left_top(),
                     title,
                     Color32::WHITE,

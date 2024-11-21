@@ -14,8 +14,8 @@ use nodui_core::{
 use crate::{editor::SocketResponses, socket};
 
 use super::{
-    IntoEgui, NodePainter, DEFAULT_TEXT_COLOR, ROW_HEIGHT, SOCKET_FIELD_SIZE,
-    SOCKET_NAME_FIELD_GAP, SOCKET_WIDTH,
+    IntoEgui, DEFAULT_TEXT_COLOR, ROW_HEIGHT, SOCKET_FIELD_SIZE, SOCKET_NAME_FIELD_GAP,
+    SOCKET_WIDTH,
 };
 
 /* -------------------------------------------------------------------------- */
@@ -237,7 +237,6 @@ where
     pub(super) fn show(
         self,
         ui: &mut Ui,
-        painter: &mut NodePainter,
         pos: Pos2,
         node_size: Vec2,
         rounding: Rounding,
@@ -253,7 +252,8 @@ where
         } = self;
 
         let rect = Rect::from_min_size(pos, vec2(node_size.x, size.y));
-        painter.add(RectShape::filled(rect, rounding, background_color));
+        ui.painter()
+            .add(RectShape::filled(rect, rounding, background_color));
 
         {
             let rect = Rect::from_min_size(pos, vec2(node_size.x, size.y));
@@ -261,24 +261,10 @@ where
 
             match layout {
                 NodeLayout::Single => {
-                    show_single_column_body(
-                        ui,
-                        painter,
-                        socket_responses,
-                        sockets,
-                        socket_text_gap,
-                        rect,
-                    );
+                    show_single_column_body(ui, socket_responses, sockets, socket_text_gap, rect);
                 }
                 NodeLayout::Double => {
-                    show_double_column_body(
-                        ui,
-                        painter,
-                        socket_responses,
-                        sockets,
-                        socket_text_gap,
-                        rect,
-                    );
+                    show_double_column_body(ui, socket_responses, sockets, socket_text_gap, rect);
                 }
             }
         }
@@ -288,7 +274,6 @@ where
 /// Render the node body with a single column layout.
 fn show_single_column_body<SocketId>(
     ui: &mut Ui,
-    painter: &mut NodePainter,
     socket_responses: &mut SocketResponses<SocketId>,
     sockets: Vec<PreparedSocket<'_, SocketId>>,
     socket_text_gap: f32,
@@ -325,7 +310,6 @@ fn show_single_column_body<SocketId>(
 
         show_socket(
             ui,
-            painter,
             socket_responses,
             socket_center,
             text_pos,
@@ -340,7 +324,6 @@ fn show_single_column_body<SocketId>(
 /// Render the node body with a double columns layout.
 fn show_double_column_body<SocketId>(
     ui: &mut Ui,
-    painter: &mut NodePainter,
     socket_responses: &mut SocketResponses<SocketId>,
     sockets: Vec<PreparedSocket<'_, SocketId>>,
     socket_text_gap: f32,
@@ -378,7 +361,6 @@ fn show_double_column_body<SocketId>(
 
         show_socket(
             ui,
-            painter,
             socket_responses,
             socket_center,
             text_pos,
@@ -393,7 +375,6 @@ fn show_double_column_body<SocketId>(
 /// Render a socket.
 fn show_socket<SocketId>(
     ui: &mut Ui,
-    painter: &mut NodePainter,
     socket_responses: &mut SocketResponses<SocketId>,
     socket_center: Pos2,
     text_pos: Pos2,
@@ -420,7 +401,7 @@ fn show_socket<SocketId>(
         socket_responses.insert(id, response, color, side);
     }
 
-    painter.add(socket::make_shape(
+    ui.painter().add(socket::make_shape(
         shape,
         socket_center,
         SOCKET_WIDTH,
@@ -428,12 +409,13 @@ fn show_socket<SocketId>(
         is_connected,
     ));
 
-    painter.add(egui::Shape::galley(text_pos, text, Color32::WHITE));
+    ui.painter()
+        .add(egui::Shape::galley(text_pos, text, Color32::WHITE));
 
     if let Some(field) = field {
         let rect = Rect::from_min_size(field_pos, SOCKET_FIELD_SIZE);
 
-        let response = match field {
+        let _response = match field {
             SocketField::Bool(_) => todo!(),
             SocketField::F32(value) => ui.put(rect, DragValue::new(value)),
             SocketField::F64(_) => todo!(),

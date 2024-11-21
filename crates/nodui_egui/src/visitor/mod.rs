@@ -3,17 +3,12 @@
 mod body;
 mod header;
 
-use std::collections::HashMap;
-
-use egui::{
-    epaint::RectShape, layers::ShapeIdx, vec2, Color32, LayerId, Rect, Response, Rounding, Sense,
-    Ui, Vec2,
-};
+use egui::{epaint::RectShape, vec2, Color32, LayerId, Rect, Response, Rounding, Sense, Ui, Vec2};
 use nodui_core::{ui::NodeUI, visitor};
 
 use crate::{
     conversion::IntoEgui,
-    editor::{GraphMemory, NodePainter, SocketResponses},
+    editor::{GraphMemory, SocketResponses},
     misc::collect::Collect,
     viewport::Viewport,
 };
@@ -48,7 +43,6 @@ pub(crate) fn visit_graph<G>(
     ui: &mut Ui,
     state: &mut GraphMemory<G::NodeId, G::SocketId>,
     viewport: &Viewport,
-    node_shape_indices: &HashMap<G::NodeId, ShapeIdx>,
     last_interacted_node_id: &mut Option<G::NodeId>,
     socket_responses: &mut SocketResponses<G::SocketId>,
     collect_node_response: &mut impl Collect<(G::NodeId, Response)>,
@@ -59,7 +53,6 @@ pub(crate) fn visit_graph<G>(
         ui,
         state,
         viewport,
-        node_shape_indices,
         last_interacted_node_id,
         socket_responses,
         collect_node_response,
@@ -72,7 +65,6 @@ struct GraphVisitor<'a, N, S, C> {
     ui: &'a mut Ui,
     state: &'a mut GraphMemory<N, S>,
     viewport: &'a Viewport,
-    node_shape_indices: &'a HashMap<N, ShapeIdx>,
     last_interacted_node_id: &'a mut Option<N>,
     socket_responses: &'a mut SocketResponses<S>,
     collect_node_response: &'a mut C,
@@ -91,7 +83,6 @@ where
             ui: self.ui,
             state: self.state,
             viewport: self.viewport,
-            node_shape_indices: self.node_shape_indices,
             last_interacted_node_id: self.last_interacted_node_id,
             socket_responses: self.socket_responses,
             collect_node_response: self.collect_node_response,
@@ -110,7 +101,6 @@ where
             ui,
             state,
             viewport,
-            node_shape_indices,
             last_interacted_node_id,
             socket_responses,
             collect_node_response,
@@ -152,42 +142,36 @@ where
             vec2(width, height)
         };
 
-        let response = ui.interact(
-            Rect::from_min_size(pos, node_size),
-            ui.id().with(id.clone()),
-            Sense::click_and_drag(),
-        );
+        let layer_id = LayerId::new(egui::Order::Middle, ui.id().with(id.clone()));
 
-        let header_pos = pos;
-        let body_pos = pos + vec2(0.0, header.size().y);
+        let response = ui
+            .with_layer_id(layer_id, |ui| {
+                let response = ui.interact(
+                    Rect::from_min_size(pos, node_size),
+                    ui.id().with(id.clone()),
+                    Sense::click_and_drag(),
+                );
 
-        let (header_rounding, body_rounding) = split_rounding(NODE_ROUNDING, header.has_content());
+                let header_pos = pos;
+                let body_pos = pos + vec2(0.0, header.size().y);
 
-        let mut painter = NodePainter::new();
+                let (header_rounding, body_rounding) =
+                    split_rounding(NODE_ROUNDING, header.has_content());
 
-        header.show(&mut painter, header_pos, node_size, header_rounding);
+                header.show(ui, header_pos, node_size, header_rounding);
 
-        body.show(
-            ui,
-            &mut painter,
-            body_pos,
-            node_size,
-            body_rounding,
-            socket_responses,
-        );
+                body.show(ui, body_pos, node_size, body_rounding, socket_responses);
 
-        // Add a stroke around the node to make it easier to see.
-        painter.add(RectShape::stroke(
-            Rect::from_min_size(pos, node_size),
-            NODE_ROUNDING,
-            outline.into_egui(),
-        ));
+                // Add a stroke around the node to make it easier to see.
+                ui.painter().add(RectShape::stroke(
+                    Rect::from_min_size(pos, node_size),
+                    NODE_ROUNDING,
+                    outline.into_egui(),
+                ));
 
-        if let Some(shape_id) = node_shape_indices.get(&id).copied() {
-            ui.painter().set(shape_id, painter);
-        } else {
-            ui.painter().add(painter);
-        }
+                response
+            })
+            .inner;
 
         if response.drag_stopped() {
             state.dragged_node = None;
@@ -203,7 +187,7 @@ where
 
         if response.clicked || response.fake_primary_click || response.dragged() {
             **last_interacted_node_id = Some(id.clone());
-            state.set_node_on_top(id.clone());
+            ui.ctx().move_to_top(layer_id);
         }
 
         collect_node_response.collect((id, response));
