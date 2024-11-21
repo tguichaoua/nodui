@@ -5,7 +5,7 @@ use super::{Color, TextUi};
 /* -------------------------------------------------------------------------- */
 
 /// Defines how a socket should be rendered.
-#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SocketUI {
     /// The text next to the socket's handle.
     pub name: TextUi,
@@ -15,6 +15,18 @@ pub struct SocketUI {
     pub color: Color,
     /// The shape of the handle of the socket.
     pub shape: SocketShape,
+}
+
+impl Default for SocketUI {
+    #[inline]
+    fn default() -> Self {
+        Self {
+            name: TextUi::default(),
+            is_connected: false,
+            color: Color::WHITE,
+            shape: SocketShape::default(),
+        }
+    }
 }
 
 impl SocketUI {
