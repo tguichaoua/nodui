@@ -107,8 +107,6 @@ where
         } = self;
 
         let id = node.id();
-        // If this is a new node, insert it on top, does nothing otherwise.
-        state.node_order.insert(id.clone());
 
         let canvas_pos = {
             let delta_pos = match state.dragged_node.clone() {

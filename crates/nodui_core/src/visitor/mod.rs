@@ -6,32 +6,55 @@ use std::ops::Add;
 
 use crate::{
     ui::{Color, NodeSide, NodeUI, SocketShape, SocketUI, TextUi},
-    Id, Pos,
+    ConnectionHint, Id, Pos,
 };
 
 pub use socket_field::SocketField;
 
 /* -------------------------------------------------------------------------- */
 
+/// An adapter for a graph to interact with a visual editor.
 pub trait GraphAdapter {
+    /// An identifier used to identify a node over the graph.
     type NodeId: Id;
+
+    /// An identifier used to identify a socket over the graph.
     type SocketId: Id;
 
     fn accept<'graph, V>(&'graph mut self, visitor: V)
     where
         V: GraphVisitor<'graph, Self::NodeId, Self::SocketId>;
+
+    /// A hint about the connection between the sockets `a` and `b`.
+    ///
+    /// This hint is used to provide a feedback to the user before they submit the connection.
+    fn connection_hint(&self, a: Self::SocketId, b: Self::SocketId) -> ConnectionHint;
+
+    /// The user submit a connection between the sockets `a` and `b`.
+    fn connect(&mut self, a: Self::SocketId, b: Self::SocketId);
+
+    /// An iterator over the connections between sockets.
+    fn connections(&self) -> impl Iterator<Item = (Self::SocketId, Self::SocketId)>;
 }
 
+/// An adapter that represent a node of a graph.
 pub trait NodeAdapter {
+    /// An identifier used to identify a node over the graph.
     type NodeId: Id;
+
+    /// An identifier used to identify a socket over the graph.
     type SocketId: Id;
 
+    /// The unique identifier of this node.
     fn id(&self) -> Self::NodeId;
 
+    /// The current position of this node in the graph.
     fn pos(&self) -> Pos;
 
+    /// Sets the position of this node.
     fn set_pos(&mut self, pos: Pos);
 
+    /// Defines how the node should be rendered.
     #[inline]
     fn ui(&self) -> NodeUI {
         NodeUI::default()
@@ -138,6 +161,21 @@ where
         V: GraphVisitor<'graph, Self::NodeId, Self::SocketId>,
     {
         <T as GraphAdapter>::accept(*self, visitor);
+    }
+
+    #[inline]
+    fn connection_hint(&self, a: Self::SocketId, b: Self::SocketId) -> ConnectionHint {
+        GraphAdapter::connection_hint(*self, a, b)
+    }
+
+    #[inline]
+    fn connect(&mut self, a: Self::SocketId, b: Self::SocketId) {
+        GraphAdapter::connect(*self, a, b);
+    }
+
+    #[inline]
+    fn connections(&self) -> impl Iterator<Item = (Self::SocketId, Self::SocketId)> {
+        GraphAdapter::connections(*self)
     }
 }
 

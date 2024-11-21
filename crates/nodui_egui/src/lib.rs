@@ -7,7 +7,6 @@ pub mod context_menu;
 mod conversion;
 mod editor;
 mod misc;
-mod node;
 mod socket;
 mod viewport;
 mod visitor;

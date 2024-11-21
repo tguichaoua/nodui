@@ -181,8 +181,7 @@ impl App {
             graph
         };
 
-        // let response = graph.show(ui);
-        let response = graph.show_using_visitor(ui);
+        let response = graph.show(ui);
 
         self.graph_pointer_pos = response.pointer_latest_pos();
         if let Some(last_interacted_node_id) = response.last_interacted_node_id {

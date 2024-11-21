@@ -1,6 +1,7 @@
 use nodui::{
     ui::{Color, NodeSide, NodeUI, TitleHeader},
     visitor::{self, NodeSeq, SizeHint, SocketData, SocketSeq},
+    ConnectionHint,
 };
 
 use crate::graph::{self, Connections, DummyNode, NodeId, SocketId, SocketIndex};
@@ -27,6 +28,25 @@ impl visitor::GraphAdapter for GraphAdapter<'_> {
         for node in nodes {
             node_seq.visit_node(NodeAdapter { node, connections });
         }
+    }
+
+    fn connection_hint(&self, a: Self::SocketId, b: Self::SocketId) -> ConnectionHint {
+        if crate::graph::connections::can_connect(a, b) {
+            ConnectionHint::Accept
+        } else {
+            ConnectionHint::Reject
+        }
+    }
+
+    fn connect(&mut self, a: Self::SocketId, b: Self::SocketId) {
+        self.graph.connections_mut().connect(a, b);
+    }
+
+    fn connections(&self) -> impl Iterator<Item = (Self::SocketId, Self::SocketId)> {
+        self.graph
+            .connections()
+            .iter()
+            .map(|(a, b)| (SocketId::from(a), SocketId::from(b)))
     }
 }
 

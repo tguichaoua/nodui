@@ -6,4 +6,4 @@ pub mod adapter;
 pub mod ui;
 pub mod visitor;
 
-pub use crate::adapter::{ConnectionHint, GraphAdapter, Id, NodeAdapter, Pos, SocketAdapter};
+pub use crate::adapter::{ConnectionHint, Id, Pos};

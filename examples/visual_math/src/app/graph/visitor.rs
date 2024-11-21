@@ -3,7 +3,7 @@
 use nodui::{
     ui::{Color, NodeSide, NodeUI},
     visitor::{self, NodeSeq, SizeHint, SocketData, SocketSeq},
-    Pos,
+    ConnectionHint, Pos,
 };
 
 use crate::graph::{BinaryOp, Connections, Input, NodeId, Op, OpNode, SocketId, UnaryOp};
@@ -64,6 +64,27 @@ impl visitor::GraphAdapter for GraphApp {
                 });
             }
         }
+    }
+
+    fn connection_hint(&self, a: Self::SocketId, b: Self::SocketId) -> ConnectionHint {
+        if Connections::can_connect(a, b) {
+            ConnectionHint::Accept
+        } else {
+            ConnectionHint::Reject
+        }
+    }
+
+    fn connect(&mut self, a: Self::SocketId, b: Self::SocketId) {
+        if self.graph.connections_mut().connect(a, b) {
+            self.may_need_to_rebuild_expr = true;
+        }
+    }
+
+    fn connections(&self) -> impl Iterator<Item = (Self::SocketId, Self::SocketId)> {
+        self.graph
+            .connections()
+            .iter()
+            .map(|(a, b)| (SocketId::from(a), SocketId::from(b)))
     }
 }
 

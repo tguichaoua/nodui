@@ -116,9 +116,9 @@ impl DummyGraph {
         }
     }
 
-    pub fn nodes(&self) -> &[DummyNode] {
-        &self.nodes
-    }
+    // pub fn nodes(&self) -> &[DummyNode] {
+    //     &self.nodes
+    // }
 
     pub fn connections(&self) -> &Connections {
         &self.connections
@@ -184,9 +184,9 @@ impl DummyGraph {
         self.nodes.iter().find(|n| id == n.id)
     }
 
-    pub fn get_node_mut(&mut self, id: NodeId) -> Option<&mut DummyNode> {
-        self.nodes.iter_mut().find(|n| id == n.id)
-    }
+    // pub fn get_node_mut(&mut self, id: NodeId) -> Option<&mut DummyNode> {
+    //     self.nodes.iter_mut().find(|n| id == n.id)
+    // }
 
     // pub fn get_socket(&self, id: SocketId) -> Option<&DummySocket> {
     //     let node_id = id.node_id();
@@ -203,9 +203,9 @@ impl DummyNode {
         &mut self.sockets
     }
 
-    pub fn sockets(&self) -> &[DummySocket] {
-        &self.sockets
-    }
+    // pub fn sockets(&self) -> &[DummySocket] {
+    //     &self.sockets
+    // }
 
     pub fn id(&self) -> NodeId {
         self.id

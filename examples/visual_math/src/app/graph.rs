@@ -1,8 +1,5 @@
 //! Graph adapter for a math graph.
 
-mod adapter;
-mod node;
-mod socket;
 mod visitor;
 
 use std::collections::HashMap;
