@@ -1,6 +1,10 @@
 //! Preparation and rendering of node's body part.
 
-use std::sync::Arc;
+use std::{
+    iter::Sum,
+    ops::{Add, AddAssign},
+    sync::Arc,
+};
 
 use egui::{
     epaint::RectShape,
@@ -17,7 +21,7 @@ use crate::{editor::SocketResponses, socket};
 
 use super::{
     IntoEgui, DEFAULT_TEXT_COLOR, ROW_HEIGHT, SOCKET_FIELD_SIZE, SOCKET_NAME_FIELD_GAP,
-    SOCKET_WIDTH,
+    SOCKET_NAME_GAP, SOCKET_WIDTH,
 };
 
 /* -------------------------------------------------------------------------- */
@@ -33,8 +37,6 @@ pub(super) struct PreparedBody<'field, SocketId> {
     layout: NodeLayout,
     /// The color of the background of the node.
     background_color: Color32,
-    /// The space between the socket's handle and the socket's name.
-    socket_text_gap: f32,
 
     /// The padding around the body.
     padding: Margin,
@@ -67,19 +69,33 @@ struct PreparedSocket<'field, SocketId> {
 }
 
 impl<S> PreparedSocket<'_, S> {
-    /// Compute the size the socket (text and field) will occupied.
+    /// Compute the size the socket will occupied.
     fn compute_size(&self) -> Vec2 {
+        let socket_size = Vec2::splat(SOCKET_WIDTH);
+        let socket_text_gap = vec2(SOCKET_NAME_GAP, 0.0);
         let text_size = self.text.size();
+        let text_field_gap = vec2(SOCKET_NAME_FIELD_GAP, 0.0);
         let field_size = if self.field.is_some() {
             SOCKET_FIELD_SIZE
         } else {
             Vec2::ZERO
         };
 
-        vec2(
-            text_size.x + SOCKET_NAME_FIELD_GAP + field_size.x,
-            f32::max(text_size.y, field_size.y),
-        )
+        let mut size: Vec2 = [
+            socket_size,
+            socket_text_gap,
+            text_size,
+            text_field_gap,
+            field_size,
+        ]
+        .into_iter()
+        .map(HLayoutSize::from)
+        .sum();
+
+        // FIXME: it work will the computed height is lower than `ROW_HEIGHT`.
+        size.y = ROW_HEIGHT;
+
+        size
     }
 }
 
@@ -96,7 +112,6 @@ where
         layout,
         background_color,
         padding,
-        socket_text_gap,
         column_gap,
     } = body;
 
@@ -105,53 +120,35 @@ where
 
     let sockets = collect_sockets(node, fonts);
 
-    let text_size = match layout {
-        NodeLayout::Single => {
-            let width = sockets
-                .iter()
-                .map(|s| s.compute_size().x)
-                .max_by(f32::total_cmp)
-                .unwrap_or(0.0);
-
-            #[allow(clippy::cast_precision_loss)]
-            let height = ROW_HEIGHT * sockets.len() as f32;
-
-            vec2(width, height)
-        }
+    let size: Vec2 = match layout {
+        NodeLayout::Single => sockets
+            .iter()
+            .map(PreparedSocket::compute_size)
+            .map(VLayoutSize::from)
+            .sum(),
         NodeLayout::Double => {
-            let mut left = Vec2::ZERO;
-            let mut right = Vec2::ZERO;
+            let mut left = VLayoutSize::from(Vec2::ZERO);
+            let mut right = VLayoutSize::from(Vec2::ZERO);
 
             for s in &sockets {
-                let size = match s.side {
+                let mut size = match s.side {
                     NodeSide::Left => &mut left,
                     NodeSide::Right => &mut right,
                 };
 
-                size.x = size.x.max(s.compute_size().x);
-                size.y += ROW_HEIGHT;
+                size += VLayoutSize::from(s.compute_size());
             }
 
-            let width = left.x + column_gap + right.x;
-            let height = f32::max(left.y, right.y);
+            let column_gap = vec2(0.0, *column_gap);
 
-            vec2(width, height)
+            [left.0, column_gap, right.0]
+                .into_iter()
+                .map(HLayoutSize::from)
+                .sum()
         }
     };
 
-    let size = {
-        let width = padding.left
-            + SOCKET_WIDTH
-            + socket_text_gap
-            + text_size.x
-            + socket_text_gap
-            + SOCKET_WIDTH
-            + padding.right;
-
-        let height = padding.top + text_size.y + padding.bottom;
-
-        vec2(width, height)
-    };
+    let size = size + padding.sum();
 
     PreparedBody {
         sockets,
@@ -159,7 +156,6 @@ where
 
         layout: *layout,
         background_color,
-        socket_text_gap: *socket_text_gap,
 
         padding,
     }
@@ -276,7 +272,6 @@ where
             size,
             layout,
             background_color,
-            socket_text_gap,
             padding,
         } = self;
 
@@ -290,10 +285,10 @@ where
 
             match layout {
                 NodeLayout::Single => {
-                    show_single_column_body(ui, socket_responses, sockets, socket_text_gap, rect);
+                    show_single_column_body(ui, socket_responses, sockets, rect);
                 }
                 NodeLayout::Double => {
-                    show_double_column_body(ui, socket_responses, sockets, socket_text_gap, rect);
+                    show_double_column_body(ui, socket_responses, sockets, rect);
                 }
             }
         }
@@ -305,7 +300,6 @@ fn show_single_column_body<SocketId>(
     ui: &mut Ui,
     socket_responses: &mut SocketResponses<SocketId>,
     sockets: Vec<PreparedSocket<'_, SocketId>>,
-    socket_text_gap: f32,
     rect: Rect,
 ) where
     SocketId: nodui_core::Id,
@@ -318,15 +312,15 @@ fn show_single_column_body<SocketId>(
         let (socket_x, text_x, field_x) = match socket.side {
             NodeSide::Left => (
                 0.0,
-                SOCKET_WIDTH + socket_text_gap,
-                SOCKET_WIDTH + socket_text_gap + socket.text.size().x + SOCKET_NAME_FIELD_GAP,
+                SOCKET_WIDTH + SOCKET_NAME_GAP,
+                SOCKET_WIDTH + SOCKET_NAME_GAP + socket.text.size().x + SOCKET_NAME_FIELD_GAP,
             ),
             NodeSide::Right => (
                 rect.width() - SOCKET_WIDTH,
-                rect.width() - (SOCKET_WIDTH + socket_text_gap),
+                rect.width() - (SOCKET_WIDTH + SOCKET_NAME_GAP),
                 rect.width()
                     - (SOCKET_WIDTH
-                        + socket_text_gap
+                        + SOCKET_NAME_GAP
                         + socket.text.size().x
                         + SOCKET_FIELD_SIZE.x
                         + SOCKET_NAME_FIELD_GAP),
@@ -355,7 +349,6 @@ fn show_double_column_body<SocketId>(
     ui: &mut Ui,
     socket_responses: &mut SocketResponses<SocketId>,
     sockets: Vec<PreparedSocket<'_, SocketId>>,
-    socket_text_gap: f32,
     rect: Rect,
 ) where
     SocketId: nodui_core::Id,
@@ -368,16 +361,16 @@ fn show_double_column_body<SocketId>(
             NodeSide::Left => (
                 &mut left,
                 0.0,
-                SOCKET_WIDTH + socket_text_gap,
-                SOCKET_WIDTH + socket_text_gap + socket.text.size().x + SOCKET_NAME_FIELD_GAP,
+                SOCKET_WIDTH + SOCKET_NAME_GAP,
+                SOCKET_WIDTH + SOCKET_NAME_GAP + socket.text.size().x + SOCKET_NAME_FIELD_GAP,
             ),
             NodeSide::Right => (
                 &mut right,
                 rect.width() - SOCKET_WIDTH,
-                rect.width() - (SOCKET_WIDTH + socket_text_gap),
+                rect.width() - (SOCKET_WIDTH + SOCKET_NAME_GAP),
                 rect.width()
                     - (SOCKET_WIDTH
-                        + socket_text_gap
+                        + SOCKET_NAME_GAP
                         + socket.text.size().x
                         + SOCKET_FIELD_SIZE.x
                         + SOCKET_NAME_FIELD_GAP),
@@ -460,6 +453,109 @@ fn show_socket<SocketId>(
             SocketField::U32(value) => ui.put(rect, DragValue::new(value)),
             SocketField::U64(value) => ui.put(rect, DragValue::new(value)),
         };
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+/// Represent a size that stacks in a vertical layout way.
+#[derive(Debug, Clone, Copy)]
+struct VLayoutSize(Vec2);
+
+impl From<Vec2> for VLayoutSize {
+    fn from(value: Vec2) -> Self {
+        Self(value)
+    }
+}
+
+impl From<VLayoutSize> for Vec2 {
+    #[inline]
+    fn from(value: VLayoutSize) -> Self {
+        value.0
+    }
+}
+
+impl Add for VLayoutSize {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        let x = self.0.x.max(rhs.0.x);
+        let y = self.0.y + rhs.0.y;
+        Self(vec2(x, y))
+    }
+}
+
+impl AddAssign for VLayoutSize {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = *self + rhs;
+    }
+}
+
+impl AddAssign<VLayoutSize> for &mut VLayoutSize {
+    #[inline]
+    fn add_assign(&mut self, rhs: VLayoutSize) {
+        **self = **self + rhs;
+    }
+}
+
+impl Sum<VLayoutSize> for Vec2 {
+    #[inline]
+    fn sum<I: Iterator<Item = VLayoutSize>>(iter: I) -> Self {
+        let mut x = 0.0_f32;
+        let mut y = 0.0_f32;
+        iter.for_each(|VLayoutSize(size)| {
+            x = x.max(size.x);
+            y += size.y;
+        });
+        vec2(x, y)
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+/// Represent a size that stacks in a horizontal layout way.
+#[derive(Debug, Clone, Copy)]
+struct HLayoutSize(Vec2);
+
+impl From<Vec2> for HLayoutSize {
+    fn from(value: Vec2) -> Self {
+        Self(value)
+    }
+}
+
+impl From<HLayoutSize> for Vec2 {
+    #[inline]
+    fn from(value: HLayoutSize) -> Self {
+        value.0
+    }
+}
+
+impl Add for HLayoutSize {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        let x = self.0.x + rhs.0.x;
+        let y = self.0.y.max(rhs.0.y);
+        Self(vec2(x, y))
+    }
+}
+
+impl AddAssign for HLayoutSize {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = *self + rhs;
+    }
+}
+
+impl Sum<HLayoutSize> for Vec2 {
+    #[inline]
+    fn sum<I: Iterator<Item = HLayoutSize>>(iter: I) -> Self {
+        let mut x = 0.0_f32;
+        let mut y = 0.0_f32;
+        iter.for_each(|HLayoutSize(size)| {
+            x += size.x;
+            y = y.max(size.y);
+        });
+        vec2(x, y)
     }
 }
 

@@ -108,9 +108,6 @@ pub struct NodeBody {
     /// The padding of the body.
     pub padding: Padding,
 
-    /// The space between a socket shape and its name text.
-    pub socket_text_gap: f32,
-
     /// The space between the two columns when `layout` is [`NodeLayout::Double`].
     pub column_gap: f32,
 }
@@ -123,7 +120,6 @@ impl Default for NodeBody {
             background_color: Color::from_rgba(0, 0, 0, 170),
             padding: Padding::same(5.0),
 
-            socket_text_gap: 5.0,
             column_gap: 5.0,
         }
     }
