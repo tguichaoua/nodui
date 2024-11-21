@@ -59,6 +59,62 @@ pub trait SocketSeq<'node, S> {
 
 /* -------------------------------------------------------------------------- */
 
+#[warn(clippy::missing_trait_methods)]
+impl<T> GraphAdapter for &mut T
+where
+    T: GraphAdapter,
+{
+    type NodeId = T::NodeId;
+    type SocketId = T::SocketId;
+
+    #[inline]
+    fn accept<'graph, V>(&'graph mut self, visitor: V)
+    where
+        V: GraphVisitor<'graph, Self::NodeId, Self::SocketId>,
+    {
+        <T as GraphAdapter>::accept(*self, visitor);
+    }
+}
+
+#[warn(clippy::missing_trait_methods)]
+impl<T> NodeAdapter for &mut T
+where
+    T: NodeAdapter,
+{
+    type NodeId = T::NodeId;
+    type SocketId = T::SocketId;
+
+    #[inline]
+    fn id(&self) -> Self::NodeId {
+        <T as NodeAdapter>::id(*self)
+    }
+
+    #[inline]
+    fn pos(&self) -> Pos {
+        <T as NodeAdapter>::pos(*self)
+    }
+
+    #[inline]
+    fn set_pos(&mut self, pos: Pos) {
+        <T as NodeAdapter>::set_pos(*self, pos);
+    }
+
+    #[inline]
+    fn ui(&self) -> NodeUI {
+        <T as NodeAdapter>::ui(*self)
+    }
+
+    #[inline]
+    fn accept<'node, V>(&'node mut self, visitor: V)
+    where
+        V: NodeVisitor<'node, Self::SocketId>,
+    {
+        <T as NodeAdapter>::accept(*self, visitor);
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
 #[derive(Debug, Clone, Copy)]
 pub struct SizeHint {
     min: usize,
