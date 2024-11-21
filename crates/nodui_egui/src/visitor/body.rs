@@ -403,7 +403,7 @@ fn show_socket<SocketId>(
         color,
         shape,
 
-        field, // TODO: use socket field
+        field,
     } = socket;
 
     {
