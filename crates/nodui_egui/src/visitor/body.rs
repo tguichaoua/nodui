@@ -153,11 +153,15 @@ fn prepare_socket<'field, SocketId>(
     socket: SocketData<'field, SocketId>,
     fonts: &Fonts,
 ) -> PreparedSocket<'field, SocketId> {
-    let SocketData { id, ui, field } = socket;
+    let SocketData {
+        id,
+        side,
+        ui,
+        field,
+    } = socket;
 
     let SocketUI {
         name: text,
-        side,
         is_connected,
         color,
         shape,

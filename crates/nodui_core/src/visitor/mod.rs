@@ -88,6 +88,8 @@ pub trait SocketSeq<'node, S> {
 
 pub struct SocketData<'field, SocketId> {
     pub id: SocketId,
+    /// The side of the node this socket should be placed.
+    pub side: NodeSide,
     pub ui: SocketUI,
     pub field: Option<SocketField<'field>>,
 }
@@ -97,12 +99,21 @@ impl<'field, Id> SocketData<'field, Id> {
     pub fn new(id: Id, side: NodeSide) -> Self {
         Self {
             id,
-            ui: SocketUI::new(side, false), // TODO: remove `is_connected` from ctor and make is false by default
+            side,
+            ui: SocketUI::default(),
             field: None,
         }
     }
 
     // TODO: inline `SocketUI` fields into `SocketData`?
+
+    /// Sets the [`SocketUI`] used to render the socket.
+    #[inline]
+    #[must_use]
+    pub fn with_ui(mut self, ui: SocketUI) -> Self {
+        self.ui = ui;
+        self
+    }
 
     /// Whether the socket is connected.
     #[inline]
