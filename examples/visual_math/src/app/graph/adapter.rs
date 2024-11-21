@@ -14,7 +14,7 @@ struct NodeAdapter<'a, Node> {
     /// The current position of this node.
     pos: &'a mut Pos,
     /// The graph node.
-    node: &'a Node,
+    node: Node,
     /// The connections of the graph.
     connections: &'a Connections,
     /// The currently selected node.
@@ -29,14 +29,18 @@ impl nodui::GraphAdapter for GraphApp {
     where
         V: GraphVisitor<'graph, Self::NodeId, Self::SocketId>,
     {
-        let connections = self.graph.connections();
+        let crate::graph::ViewMut {
+            nodes,
+            inputs,
+            connections,
+        } = self.graph.view_mut();
+
         let selected_node = self.selected_node;
 
         {
-            let op_nodes = self.graph.op_nodes();
-            let mut node_seq = visitor.nodes(SizeHint::of(op_nodes));
+            let mut node_seq = visitor.nodes(SizeHint::of(nodes));
 
-            for node in op_nodes {
+            for node in nodes.iter() {
                 let pos = self.positions.entry(node.id().into()).or_default();
 
                 node_seq.visit_node(NodeAdapter {
@@ -49,7 +53,6 @@ impl nodui::GraphAdapter for GraphApp {
         }
 
         {
-            let inputs = self.graph.inputs();
             let mut node_seq = visitor.nodes(SizeHint::of(inputs));
 
             for node in inputs {
@@ -87,7 +90,7 @@ impl nodui::GraphAdapter for GraphApp {
     }
 }
 
-impl nodui::NodeAdapter for NodeAdapter<'_, OpNode> {
+impl nodui::NodeAdapter for NodeAdapter<'_, &OpNode> {
     type NodeId = NodeId;
     type SocketId = SocketId;
 
@@ -150,7 +153,7 @@ impl nodui::NodeAdapter for NodeAdapter<'_, OpNode> {
     }
 }
 
-impl nodui::NodeAdapter for NodeAdapter<'_, Input> {
+impl nodui::NodeAdapter for NodeAdapter<'_, &mut Input> {
     type NodeId = NodeId;
     type SocketId = SocketId;
 
@@ -187,7 +190,8 @@ impl nodui::NodeAdapter for NodeAdapter<'_, Input> {
         socket_seq.visit_socket(
             SocketData::new(socket_id, NodeSide::Right)
                 .with_connected(self.connections.is_connected(socket_id))
-                .with_name(self.node.name()),
+                .with_name(self.node.name())
+                .with_field(self.node.value_mut()),
         );
     }
 }
