@@ -1,13 +1,11 @@
 //! Types and traits for interactions between the ui editor and the graph data.
 
-mod size_hint;
 mod socket_data;
 mod socket_field;
 mod visitor;
 
 use crate::ui::NodeUI;
 
-pub use size_hint::{SizeHint, SizeHintOf};
 pub use socket_data::SocketData;
 pub use socket_field::SocketField;
 pub use visitor::{GraphVisitor, NodeSeq, NodeVisitor, SocketSeq};

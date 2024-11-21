@@ -1,6 +1,7 @@
 //! Visitors to visit a graph.
 
-use super::{NodeAdapter, SizeHint, SocketData};
+use super::{NodeAdapter, SocketData};
+use crate::SizeHint;
 
 /// A visitor that can visit a [`GraphAdapter`](super::GraphAdapter).
 ///
