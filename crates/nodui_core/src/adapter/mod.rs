@@ -2,13 +2,17 @@
 
 //! Types and traits for interactions between the ui editor and the graph data.
 
+mod size_hint;
+mod socket_data;
 mod socket_field;
+mod visitor;
 
-use std::ops::Add;
+use crate::ui::NodeUI;
 
-use crate::ui::{Color, NodeSide, NodeUI, SocketShape, SocketUI, TextUi};
-
+pub use size_hint::SizeHint;
+pub use socket_data::SocketData;
 pub use socket_field::SocketField;
+pub use visitor::{GraphVisitor, NodeSeq, NodeVisitor, SocketSeq};
 
 /* -------------------------------------------------------------------------- */
 
@@ -107,97 +111,6 @@ pub trait NodeAdapter {
 
 /* -------------------------------------------------------------------------- */
 
-pub trait GraphVisitor<'graph, N, S> {
-    fn nodes(&mut self, size_hint: SizeHint) -> impl NodeSeq<'graph, N, S>;
-}
-
-pub trait NodeVisitor<'node, S> {
-    fn sockets(&mut self, size_hint: SizeHint) -> impl SocketSeq<'node, S>;
-}
-
-pub trait NodeSeq<'graph, N, S> {
-    fn visit_node(&mut self, node: impl NodeAdapter<NodeId = N, SocketId = S>);
-}
-
-pub trait SocketSeq<'node, S> {
-    // fn visit_socket(&mut self, id: S, ui: SocketUI, field: Option<&'node mut f32>);
-    fn visit_socket(&mut self, socket: SocketData<'node, S>);
-}
-
-/* -------------------------------------------------------------------------- */
-
-pub struct SocketData<'field, SocketId> {
-    pub id: SocketId,
-    /// The side of the node this socket should be placed.
-    pub side: NodeSide,
-    pub ui: SocketUI,
-    pub field: Option<SocketField<'field>>,
-}
-
-impl<'field, Id> SocketData<'field, Id> {
-    #[inline]
-    pub fn new(id: Id, side: NodeSide) -> Self {
-        Self {
-            id,
-            side,
-            ui: SocketUI::default(),
-            field: None,
-        }
-    }
-
-    // TODO: inline `SocketUI` fields into `SocketData`?
-
-    /// Sets the [`SocketUI`] used to render the socket.
-    #[inline]
-    #[must_use]
-    pub fn with_ui(mut self, ui: SocketUI) -> Self {
-        self.ui = ui;
-        self
-    }
-
-    /// Whether the socket is connected.
-    #[inline]
-    #[must_use]
-    pub fn with_connected(mut self, is_connected: bool) -> Self {
-        self.ui.is_connected = is_connected;
-        self
-    }
-
-    /// Sets the text next to the socket's handle.
-    #[inline]
-    #[must_use]
-    pub fn with_name(mut self, name: impl Into<TextUi>) -> Self {
-        self.ui = self.ui.with_name(name);
-        self
-    }
-
-    /// Sets the color of the socket's handle.
-    #[inline]
-    #[must_use]
-    pub fn with_color(mut self, color: impl Into<Color>) -> Self {
-        self.ui = self.ui.with_color(color);
-        self
-    }
-
-    /// Sets the shape of the socket's handle.
-    #[inline]
-    #[must_use]
-    pub fn with_shape(mut self, shape: SocketShape) -> Self {
-        self.ui = self.ui.with_shape(shape);
-        self
-    }
-
-    /// Sets the socket field.
-    #[inline]
-    #[must_use]
-    pub fn with_field(mut self, field: impl Into<SocketField<'field>>) -> Self {
-        self.field = Some(field.into());
-        self
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
 #[warn(clippy::missing_trait_methods)]
 impl<T> GraphAdapter for &mut T
 where
@@ -264,82 +177,6 @@ where
         V: NodeVisitor<'node, Self::SocketId>,
     {
         <T as NodeAdapter>::accept(*self, visitor);
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
-#[derive(Debug, Clone, Copy)]
-pub struct SizeHint {
-    min: usize,
-    max: Option<usize>,
-}
-
-impl SizeHint {
-    #[must_use]
-    #[inline]
-    pub fn min(&self) -> usize {
-        self.min
-    }
-    #[must_use]
-    #[inline]
-    pub fn max(&self) -> Option<usize> {
-        self.max
-    }
-
-    #[must_use]
-    #[inline]
-    pub fn of<T>(x: &[T]) -> Self {
-        Self::exact(x.len())
-    }
-
-    #[must_use]
-    #[inline]
-    pub fn of_iter<I: Iterator>(iter: &I) -> Self {
-        let (min, max) = iter.size_hint();
-        Self { min, max }
-    }
-
-    #[must_use]
-    #[inline]
-    pub fn exact(count: usize) -> Self {
-        Self {
-            min: count,
-            max: Some(count),
-        }
-    }
-
-    #[must_use]
-    #[inline]
-    pub fn at_least(count: usize) -> Self {
-        Self {
-            min: count,
-            max: None,
-        }
-    }
-
-    #[must_use]
-    #[inline]
-    pub fn at_most(count: usize) -> Self {
-        Self {
-            min: 0,
-            max: Some(count),
-        }
-    }
-}
-
-impl Add for SizeHint {
-    type Output = SizeHint;
-
-    #[inline]
-    fn add(self, rhs: Self) -> Self::Output {
-        SizeHint {
-            min: self.min.saturating_add(rhs.min),
-            max: match (self.max, rhs.max) {
-                (Some(x), Some(y)) => x.checked_add(y),
-                _ => None,
-            },
-        }
     }
 }
 
