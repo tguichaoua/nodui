@@ -7,5 +7,5 @@ pub mod ui;
 
 pub use crate::adapter::{
     ConnectionHint, GraphAdapter, GraphVisitor, Id, NodeAdapter, NodeSeq, NodeVisitor, Pos,
-    SizeHint, SocketData, SocketField, SocketSeq,
+    SizeHint, SizeHintOf, SocketData, SocketField, SocketSeq,
 };

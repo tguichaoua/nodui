@@ -33,19 +33,14 @@ impl SizeHint {
         self.max
     }
 
-    /// The size hint of an [slice](core::slice).
+    /// The size hint of a [slice](core::slice) or an [`Iterator`].
     #[must_use]
     #[inline]
-    pub fn of<T>(x: &[T]) -> Self {
-        Self::exact(x.len())
-    }
-
-    /// The size hint of an [`Iterator`].
-    #[must_use]
-    #[inline]
-    pub fn of_iter<I: Iterator>(iter: &I) -> Self {
-        let (min, max) = iter.size_hint();
-        Self { min, max }
+    pub fn of<T>(x: &T) -> Self
+    where
+        T: SizeHintOf + ?Sized,
+    {
+        SizeHintOf::size_hint(x)
     }
 
     /// A size hint that indicates an exact `length`.
@@ -90,6 +85,33 @@ impl Add for SizeHint {
                 (Some(x), Some(y)) => x.checked_add(y),
                 _ => None,
             },
+        }
+    }
+}
+
+/// Implementation for [`SizeHint::of`].
+pub trait SizeHintOf {
+    /// Returns the [`SizeHint`] for [`Self`]
+    fn size_hint(&self) -> SizeHint;
+}
+
+impl<T> SizeHintOf for [T] {
+    #[inline]
+    fn size_hint(&self) -> SizeHint {
+        SizeHint::exact(self.len())
+    }
+}
+
+impl<I> SizeHintOf for I
+where
+    I: Iterator,
+{
+    #[inline]
+    fn size_hint(&self) -> SizeHint {
+        let (lower, upper) = self.size_hint();
+        SizeHint {
+            min: lower,
+            max: upper,
         }
     }
 }
