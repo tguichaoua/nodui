@@ -3,8 +3,8 @@ use std::sync::Arc;
 use egui::{
     epaint::RectShape,
     text::{Fonts, LayoutJob},
-    vec2, Align, Color32, CursorIcon, DragValue, FontId, Galley, Margin, Pos2, Rect, Rounding,
-    Sense, Ui, Vec2,
+    vec2, Align, Checkbox, Color32, CursorIcon, DragValue, FontId, Galley, Margin, Pos2, Rect,
+    Rounding, Sense, Ui, Vec2,
 };
 use nodui_core::{
     ui::{NodeBody, NodeLayout, NodeSide, SocketShape, SocketUI},
@@ -416,10 +416,20 @@ fn show_socket<SocketId>(
         let rect = Rect::from_min_size(field_pos, SOCKET_FIELD_SIZE);
 
         let _response = match field {
-            SocketField::Bool(_) => todo!(),
+            SocketField::Bool(value) => ui.put(rect, Checkbox::without_text(value)),
+
             SocketField::F32(value) => ui.put(rect, DragValue::new(value)),
-            SocketField::F64(_) => todo!(),
-            SocketField::I32(_) => todo!(),
+            SocketField::F64(value) => ui.put(rect, DragValue::new(value)),
+
+            SocketField::I32(value) => ui.put(rect, DragValue::new(value)),
+            SocketField::I8(value) => ui.put(rect, DragValue::new(value)),
+            SocketField::I16(value) => ui.put(rect, DragValue::new(value)),
+            SocketField::I64(value) => ui.put(rect, DragValue::new(value)),
+
+            SocketField::U8(value) => ui.put(rect, DragValue::new(value)),
+            SocketField::U16(value) => ui.put(rect, DragValue::new(value)),
+            SocketField::U32(value) => ui.put(rect, DragValue::new(value)),
+            SocketField::U64(value) => ui.put(rect, DragValue::new(value)),
         };
     }
 }
