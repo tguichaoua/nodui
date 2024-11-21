@@ -66,6 +66,23 @@ struct PreparedSocket<'field, SocketId> {
     field: Option<SocketField<'field>>,
 }
 
+impl<S> PreparedSocket<'_, S> {
+    /// Compute the size the socket (text and field) will occupied.
+    fn compute_size(&self) -> Vec2 {
+        let text_size = self.text.size();
+        let field_size = if self.field.is_some() {
+            SOCKET_FIELD_SIZE
+        } else {
+            Vec2::ZERO
+        };
+
+        vec2(
+            text_size.x + SOCKET_NAME_FIELD_GAP + field_size.x,
+            f32::max(text_size.y, field_size.y),
+        )
+    }
+}
+
 /// Prepare the node body for its rendering.
 pub(super) fn prepare<'node, Node>(
     fonts: &Fonts,
@@ -92,7 +109,7 @@ where
         NodeLayout::Single => {
             let width = sockets
                 .iter()
-                .map(|s| s.text.rect.width())
+                .map(|s| s.compute_size().x)
                 .max_by(f32::total_cmp)
                 .unwrap_or(0.0);
 
@@ -111,7 +128,7 @@ where
                     NodeSide::Right => &mut right,
                 };
 
-                size.x = size.x.max(s.text.rect.width());
+                size.x = size.x.max(s.compute_size().x);
                 size.y += ROW_HEIGHT;
             }
 
