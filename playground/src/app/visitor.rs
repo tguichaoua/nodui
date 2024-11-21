@@ -1,7 +1,6 @@
 use nodui::{
     ui::{Color, NodeSide, NodeUI, TitleHeader},
-    visitor::{self, NodeSeq, SizeHint, SocketData, SocketSeq},
-    ConnectionHint,
+    ConnectionHint, GraphVisitor, NodeSeq, NodeVisitor, SizeHint, SocketData, SocketSeq,
 };
 
 use crate::graph::{self, Connections, DummyNode, NodeId, SocketId, SocketIndex};
@@ -13,13 +12,13 @@ struct NodeAdapter<'a> {
     connections: &'a Connections,
 }
 
-impl visitor::GraphAdapter for GraphAdapter<'_> {
+impl nodui::GraphAdapter for GraphAdapter<'_> {
     type NodeId = NodeId;
     type SocketId = SocketId;
 
     fn accept<'graph, V>(&'graph mut self, mut visitor: V)
     where
-        V: visitor::GraphVisitor<'graph, Self::NodeId, Self::SocketId>,
+        V: GraphVisitor<'graph, Self::NodeId, Self::SocketId>,
     {
         let graph::ViewMut { nodes, connections } = self.graph.view_mut();
 
@@ -50,7 +49,7 @@ impl visitor::GraphAdapter for GraphAdapter<'_> {
     }
 }
 
-impl<'graph> visitor::NodeAdapter for NodeAdapter<'graph> {
+impl<'graph> nodui::NodeAdapter for NodeAdapter<'graph> {
     type NodeId = NodeId;
     type SocketId = SocketId;
 
@@ -75,7 +74,7 @@ impl<'graph> visitor::NodeAdapter for NodeAdapter<'graph> {
 
     fn accept<'node, V>(&'node mut self, mut visitor: V)
     where
-        V: visitor::NodeVisitor<'node, Self::SocketId>,
+        V: NodeVisitor<'node, Self::SocketId>,
     {
         let node_id = self.node.id();
         let sockets = self.node.sockets_mut();

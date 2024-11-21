@@ -8,7 +8,7 @@ use egui::{
 };
 use nodui_core::{
     ui::{NodeBody, NodeLayout, NodeSide, SocketShape, SocketUI},
-    visitor::{self, SocketData, SocketField},
+    NodeAdapter, SizeHint, SocketData, SocketField, SocketSeq,
 };
 
 use crate::{editor::SocketResponses, socket};
@@ -70,7 +70,7 @@ pub(super) fn prepare<'node, Node>(
     node: &'node mut Node,
 ) -> PreparedBody<'node, Node::SocketId>
 where
-    Node: visitor::NodeAdapter,
+    Node: NodeAdapter,
 {
     let NodeBody {
         layout,
@@ -199,7 +199,7 @@ fn collect_sockets<'node, Node>(
     fonts: &Fonts,
 ) -> Vec<PreparedSocket<'node, Node::SocketId>>
 where
-    Node: visitor::NodeAdapter,
+    Node: NodeAdapter,
 {
     let mut sockets = Vec::new();
 
@@ -216,15 +216,15 @@ struct NodeVisitor<'a, 'graph, S> {
     sockets: &'a mut Vec<PreparedSocket<'graph, S>>,
 }
 
-impl<'graph, S> visitor::NodeVisitor<'graph, S> for NodeVisitor<'_, 'graph, S> {
-    fn sockets(&mut self, size_hint: visitor::SizeHint) -> impl visitor::SocketSeq<'graph, S> {
+impl<'graph, S> nodui_core::NodeVisitor<'graph, S> for NodeVisitor<'_, 'graph, S> {
+    fn sockets(&mut self, size_hint: SizeHint) -> impl SocketSeq<'graph, S> {
         self.sockets.reserve(size_hint.min());
 
         self
     }
 }
 
-impl<'node, S> visitor::SocketSeq<'node, S> for &mut NodeVisitor<'_, 'node, S> {
+impl<'node, S> SocketSeq<'node, S> for &mut NodeVisitor<'_, 'node, S> {
     #[inline]
     fn visit_socket(&mut self, socket: SocketData<'node, S>) {
         // self.sockets.push(prepare_socket(id, ui, self.fonts, field));

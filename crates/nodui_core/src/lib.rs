@@ -2,8 +2,10 @@
 //!
 //! [nodui]: https://crates.io/crates/nodui
 
-pub mod adapter;
+mod adapter;
 pub mod ui;
-pub mod visitor;
 
-pub use crate::adapter::{ConnectionHint, Id, Pos};
+pub use crate::adapter::{
+    ConnectionHint, GraphAdapter, GraphVisitor, Id, NodeAdapter, NodeSeq, NodeVisitor, Pos,
+    SizeHint, SocketData, SocketField, SocketSeq,
+};

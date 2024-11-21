@@ -4,7 +4,7 @@ mod body;
 mod header;
 
 use egui::{epaint::RectShape, vec2, Color32, LayerId, Rect, Response, Rounding, Sense, Ui, Vec2};
-use nodui_core::{ui::NodeUI, visitor};
+use nodui_core::{ui::NodeUI, GraphAdapter, NodeAdapter, NodeSeq, SizeHint};
 
 use crate::{
     conversion::IntoEgui,
@@ -47,7 +47,7 @@ pub(crate) fn visit_graph<G>(
     socket_responses: &mut SocketResponses<G::SocketId>,
     collect_node_response: &mut impl Collect<(G::NodeId, Response)>,
 ) where
-    G: visitor::GraphAdapter,
+    G: GraphAdapter,
 {
     graph.accept(GraphVisitor {
         ui,
@@ -70,13 +70,13 @@ struct GraphVisitor<'a, N, S, C> {
     collect_node_response: &'a mut C,
 }
 
-impl<'graph, N, S, C> visitor::GraphVisitor<'graph, N, S> for GraphVisitor<'_, N, S, C>
+impl<'graph, N, S, C> nodui_core::GraphVisitor<'graph, N, S> for GraphVisitor<'_, N, S, C>
 where
     N: nodui_core::Id,
     S: nodui_core::Id,
     C: Collect<(N, Response)>,
 {
-    fn nodes(&mut self, size_hint: visitor::SizeHint) -> impl visitor::NodeSeq<'graph, N, S> {
+    fn nodes(&mut self, size_hint: SizeHint) -> impl NodeSeq<'graph, N, S> {
         self.collect_node_response.reserve(size_hint.min());
 
         GraphVisitor {
@@ -90,13 +90,13 @@ where
     }
 }
 
-impl<'graph, N, S, C> visitor::NodeSeq<'graph, N, S> for GraphVisitor<'_, N, S, C>
+impl<'graph, N, S, C> NodeSeq<'graph, N, S> for GraphVisitor<'_, N, S, C>
 where
     N: nodui_core::Id,
     S: nodui_core::Id,
     C: Collect<(N, Response)>,
 {
-    fn visit_node(&mut self, mut node: impl visitor::NodeAdapter<NodeId = N, SocketId = S>) {
+    fn visit_node(&mut self, mut node: impl NodeAdapter<NodeId = N, SocketId = S>) {
         let Self {
             ui,
             state,

@@ -2,8 +2,7 @@
 
 use nodui::{
     ui::{Color, NodeSide, NodeUI},
-    visitor::{self, NodeSeq, SizeHint, SocketData, SocketSeq},
-    ConnectionHint, Pos,
+    ConnectionHint, GraphVisitor, NodeSeq, NodeVisitor, Pos, SizeHint, SocketData, SocketSeq,
 };
 
 use crate::graph::{BinaryOp, Connections, Input, NodeId, Op, OpNode, SocketId, UnaryOp};
@@ -22,13 +21,13 @@ struct NodeAdapter<'a, Node> {
     selected_node: Option<NodeId>,
 }
 
-impl visitor::GraphAdapter for GraphApp {
+impl nodui::GraphAdapter for GraphApp {
     type NodeId = NodeId;
     type SocketId = SocketId;
 
     fn accept<'graph, V>(&'graph mut self, mut visitor: V)
     where
-        V: visitor::GraphVisitor<'graph, Self::NodeId, Self::SocketId>,
+        V: GraphVisitor<'graph, Self::NodeId, Self::SocketId>,
     {
         let connections = self.graph.connections();
         let selected_node = self.selected_node;
@@ -88,7 +87,7 @@ impl visitor::GraphAdapter for GraphApp {
     }
 }
 
-impl visitor::NodeAdapter for NodeAdapter<'_, OpNode> {
+impl nodui::NodeAdapter for NodeAdapter<'_, OpNode> {
     type NodeId = NodeId;
     type SocketId = SocketId;
 
@@ -117,7 +116,7 @@ impl visitor::NodeAdapter for NodeAdapter<'_, OpNode> {
 
     fn accept<'node, V>(&'node mut self, mut visitor: V)
     where
-        V: visitor::NodeVisitor<'node, Self::SocketId>,
+        V: NodeVisitor<'node, Self::SocketId>,
     {
         let input_sockets = self.node.input_socket_ids();
 
@@ -152,7 +151,7 @@ impl visitor::NodeAdapter for NodeAdapter<'_, OpNode> {
     }
 }
 
-impl visitor::NodeAdapter for NodeAdapter<'_, Input> {
+impl nodui::NodeAdapter for NodeAdapter<'_, Input> {
     type NodeId = NodeId;
     type SocketId = SocketId;
 
@@ -181,7 +180,7 @@ impl visitor::NodeAdapter for NodeAdapter<'_, Input> {
 
     fn accept<'node, V>(&'node mut self, mut visitor: V)
     where
-        V: visitor::NodeVisitor<'node, Self::SocketId>,
+        V: NodeVisitor<'node, Self::SocketId>,
     {
         let mut socket_seq = visitor.sockets(SizeHint::exact(1));
 

@@ -11,9 +11,8 @@ use egui::{
     pos2, vec2, Color32, CursorIcon, LayerId, NumExt, Rect, Response, Rounding, Sense, Shape,
     Stroke, Ui, UiBuilder, Vec2,
 };
-use nodui_core::adapter::{ConnectionHint, Id as NoduiId, Pos};
 use nodui_core::ui::NodeSide;
-use nodui_core::visitor::GraphAdapter;
+use nodui_core::{ConnectionHint, GraphAdapter, Id as NoduiId, Pos};
 
 use crate::connection::{ConnectionRenderer, LineConnectionRenderer};
 use crate::context_menu::{
