@@ -27,7 +27,7 @@ const NODE_ROUNDING: Rounding = Rounding::same(5.0);
 const DEFAULT_TEXT_COLOR: Color32 = Color32::WHITE;
 
 /// The space reserved for the socket's field.
-const SOCKET_FIELD_SIZE: Vec2 = vec2(50.0, ROW_HEIGHT);
+const SOCKET_FIELD_SIZE: Vec2 = vec2(40.0, ROW_HEIGHT);
 
 /// Space between socket's name its socket shape.
 const SOCKET_NAME_GAP: f32 = 5.0;
