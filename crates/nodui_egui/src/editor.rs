@@ -8,8 +8,8 @@ use std::hash::Hash;
 
 use egui::epaint::RectShape;
 use egui::{
-    pos2, vec2, Color32, CursorIcon, NumExt, Rect, Response, Rounding, Sense, Shape, Stroke, Ui,
-    UiBuilder, Vec2,
+    pos2, vec2, Color32, CursorIcon, LayerId, NumExt, Rect, Response, Rounding, Sense, Shape,
+    Stroke, Ui, UiBuilder, Vec2,
 };
 use indexmap::IndexSet;
 use nodui_core::adapter::{ConnectionHint, GraphAdapter, Id as NoduiId, NodeAdapter, Pos};
@@ -748,11 +748,13 @@ fn handle_socket_responses<G>(
                 };
 
                 if let Some(pointer_pos) = socket.response.interact_pointer_pos() {
-                    ui.painter().add(connection_renderer.socket_to_pointer(
-                        socket,
-                        pointer_pos,
-                        hint,
-                    ));
+                    ui.with_layer_id(LayerId::new(egui::Order::Foreground, ui.id()), |ui| {
+                        ui.painter().add(connection_renderer.socket_to_pointer(
+                            socket,
+                            pointer_pos,
+                            hint,
+                        ));
+                    });
                 }
             }
         } else {
