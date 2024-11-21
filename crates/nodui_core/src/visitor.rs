@@ -1,5 +1,7 @@
 #![allow(missing_docs, clippy::missing_docs_in_private_items)] // TODO: docs
 
+use std::ops::Add;
+
 use crate::{
     ui::{NodeUI, SocketUI},
     Id, Pos,
@@ -112,6 +114,21 @@ impl SizeHint {
         Self {
             min: 0,
             max: Some(count),
+        }
+    }
+}
+
+impl Add for SizeHint {
+    type Output = SizeHint;
+
+    #[inline]
+    fn add(self, rhs: Self) -> Self::Output {
+        SizeHint {
+            min: self.min.saturating_add(rhs.min),
+            max: match (self.max, rhs.max) {
+                (Some(x), Some(y)) => x.checked_add(y),
+                _ => None,
+            },
         }
     }
 }
