@@ -21,8 +21,8 @@ pub trait GraphVisitor<'graph, NodeId, SocketId> {
     /// This method is equivalent to
     /// ```
     /// # use nodui_core::{GraphVisitor, NodeAdapter, NodeSeq, SizeHint};
-    /// # fn accept<N, S>(
-    /// #   mut visitor: impl GraphVisitor<'_, N, S>,
+    /// # fn accept<'a, N, S>(
+    /// #   mut visitor: impl GraphVisitor<'a, N, S>,
     /// #   nodes: impl Iterator<Item: NodeAdapter<NodeId = N, SocketId = S>>
     /// # ) {
     /// let mut node_seq = visitor.nodes(SizeHint::of(&nodes));
