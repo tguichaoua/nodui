@@ -3,7 +3,7 @@
 use std::ops::Add;
 
 /// The bounds on the length of a collection.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SizeHint {
     /// The lower limit.
     pub min: usize,
