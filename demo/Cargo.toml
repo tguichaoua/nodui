@@ -1,0 +1,43 @@
+[package]
+name = "nodui_demo"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories.workspace = true
+rust-version.workspace = true
+
+publish = false
+
+[dependencies]
+egui.workspace = true
+eframe = { workspace = true, features = ["persistence"] }
+log = "0.4"
+
+visual_math = { version = "0.0.0", path = "../examples/visual_math" }
+serde = { version = "1", features = ["derive"] }
+strum = { version = "0.26.3", features = ["derive"] }
+
+[lints]
+workspace = true
+
+
+# native:
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+env_logger = "0.11"
+
+# web:
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4"
+web-sys = "0.3.70"           # to access the DOM (to hide the loading text)
+
+getrandom = { version = "*", features = ["js"] }
+
+[profile.release]
+opt-level = 2 # fast and small wasm
+
+# Optimize all dependencies even in debug builds:
+[profile.dev.package."*"]
+opt-level = 2

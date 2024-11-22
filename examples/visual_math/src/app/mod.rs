@@ -10,6 +10,7 @@ use crate::graph::{BinaryOp, Op, SocketId, UnaryOp};
 use self::graph::GraphApp;
 
 /// The visual math app.
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct App {
     /// The math graph.
     graph: GraphApp,
@@ -18,9 +19,9 @@ pub struct App {
     current_graph_pos: Pos,
 }
 
-impl App {
-    /// Creates the [`App`].
-    pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+impl Default for App {
+    #[inline]
+    fn default() -> Self {
         Self {
             graph: {
                 // Build a graph with some nodes.
@@ -58,9 +59,19 @@ impl App {
     }
 }
 
+impl App {
+    /// Creates the [`App`].
+    #[must_use]
+    #[inline]
+    pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
+        Self::default()
+    }
+}
+
 /* -------------------------------------------------------------------------- */
 
 impl eframe::App for App {
+    #[inline]
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         SidePanel::left("LEFT PANEL")
             .resizable(true)

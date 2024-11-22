@@ -3,7 +3,9 @@
 /* -------------------------------------------------------------------------- */
 
 /// The unique identifier for a node of the graph.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
+)]
 pub enum NodeId {
     /// An operation node identifier.
     Op(OpNodeId),
@@ -12,7 +14,9 @@ pub enum NodeId {
 }
 
 /// The unique identifier for an operation node.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
+)]
 pub struct OpNodeId(uuid::Uuid);
 
 impl OpNodeId {
@@ -31,7 +35,9 @@ impl OpNodeId {
 }
 
 /// The unique identifier for an input node.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
+)]
 pub struct InputId(uuid::Uuid);
 
 impl InputId {
@@ -65,7 +71,9 @@ pub enum SocketId {
 }
 
 /// The unique identifier for an output socket.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
+)]
 pub struct OutputSocketId {
     /// The node id this socket belong to.
     ///
@@ -74,7 +82,9 @@ pub struct OutputSocketId {
 }
 
 /// The unique identifier for an input socket.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
+)]
 pub struct InputSocketId {
     /// The node id this socket belong to.
     pub(super) node_id: OpNodeId,
@@ -83,7 +93,9 @@ pub struct InputSocketId {
 }
 
 /// An index to differentiate socket of a node.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
+)]
 pub(super) enum SocketIndex {
     #[allow(clippy::missing_docs_in_private_items)]
     A,

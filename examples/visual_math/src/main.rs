@@ -1,12 +1,5 @@
 //! This example project for `nodui` is a simple math expression visual editor.
 
-#![allow(unreachable_pub)]
-
-mod app;
-mod graph;
-
-use app::App;
-
 fn main() -> eframe::Result<()> {
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
@@ -17,6 +10,6 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Visual Math",
         native_options,
-        Box::new(|cc| Ok(Box::new(App::new(cc)))),
+        Box::new(|cc| Ok(Box::new(visual_math::App::new(cc)))),
     )
 }

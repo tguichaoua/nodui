@@ -8,6 +8,7 @@ use super::node::{BinaryOp, UnaryOp};
 use super::{Graph, NodeId, Op};
 
 /// A math expression that can be built from a graph.
+#[derive(serde::Serialize, serde::Deserialize)]
 pub enum Expr {
     /// The value is connected to anything.
     Unconnected,
