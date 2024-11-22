@@ -1,6 +1,8 @@
 //! Types to provided size hint.
 
-use std::ops::Add;
+use std::ops::{Add, AddAssign};
+
+/* -------------------------------------------------------------------------- */
 
 /// The bounds on the length of a collection.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -57,6 +59,8 @@ impl SizeHint {
     }
 }
 
+/* -------------------------------------------------------------------------- */
+
 impl Add for SizeHint {
     type Output = SizeHint;
 
@@ -71,6 +75,15 @@ impl Add for SizeHint {
         }
     }
 }
+
+impl AddAssign for SizeHint {
+    #[inline]
+    fn add_assign(&mut self, rhs: Self) {
+        *self = *self + rhs;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
 
 /// Implementation for [`SizeHint::of`].
 pub trait SizeHintOf {
@@ -98,3 +111,5 @@ where
         }
     }
 }
+
+/* -------------------------------------------------------------------------- */
