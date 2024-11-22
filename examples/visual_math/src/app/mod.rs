@@ -20,6 +20,8 @@ pub struct App {
 
 impl App {
     /// Creates the [`App`].
+    #[must_use]
+    #[inline]
     pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
         Self {
             graph: {
@@ -61,6 +63,7 @@ impl App {
 /* -------------------------------------------------------------------------- */
 
 impl eframe::App for App {
+    #[inline]
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         SidePanel::left("LEFT PANEL")
             .resizable(true)
