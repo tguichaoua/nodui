@@ -2,7 +2,7 @@
 //!
 //! [nodui]: https://crates.io/crates/nodui
 
-mod adapter;
+pub mod adapter;
 mod size_hint;
 pub mod ui;
 
