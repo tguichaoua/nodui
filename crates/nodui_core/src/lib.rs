@@ -10,4 +10,4 @@ pub use crate::adapter::{
     ConnectionHint, GraphAdapter, GraphVisitor, Id, NodeAdapter, NodeSeq, NodeVisitor, Pos,
     SocketData, SocketField, SocketSeq,
 };
-pub use crate::size_hint::{SizeHint, SizeHintOf};
+pub use crate::size_hint::SizeHint;

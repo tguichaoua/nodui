@@ -18,14 +18,28 @@ pub struct SizeHint {
 }
 
 impl SizeHint {
-    /// The size hint of a [slice](core::slice) or an [`Iterator`].
+    /// The size hint of a [slice](core::slice).
     #[must_use]
     #[inline]
-    pub fn of<T>(x: &T) -> Self
+    pub fn of<Slice, T>(slice: &Slice) -> Self
     where
-        T: SizeHintOf + ?Sized,
+        Slice: ?Sized + AsRef<[T]>,
     {
-        SizeHintOf::size_hint(x)
+        SizeHint::exact(slice.as_ref().len())
+    }
+
+    /// The size hint of an [`Iterator`].
+    #[must_use]
+    #[inline]
+    pub fn of_iter<I>(x: &I) -> Self
+    where
+        I: ?Sized + Iterator,
+    {
+        let (lower, upper) = x.size_hint();
+        SizeHint {
+            min: lower,
+            max: upper,
+        }
     }
 
     /// A size hint that indicates an exact `length`.
@@ -80,35 +94,6 @@ impl AddAssign for SizeHint {
     #[inline]
     fn add_assign(&mut self, rhs: Self) {
         *self = *self + rhs;
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
-/// Implementation for [`SizeHint::of`].
-pub trait SizeHintOf {
-    /// Returns the [`SizeHint`] for [`Self`]
-    fn size_hint(&self) -> SizeHint;
-}
-
-impl<T> SizeHintOf for [T] {
-    #[inline]
-    fn size_hint(&self) -> SizeHint {
-        SizeHint::exact(self.len())
-    }
-}
-
-impl<I> SizeHintOf for I
-where
-    I: Iterator,
-{
-    #[inline]
-    fn size_hint(&self) -> SizeHint {
-        let (lower, upper) = self.size_hint();
-        SizeHint {
-            min: lower,
-            max: upper,
-        }
     }
 }
 

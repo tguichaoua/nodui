@@ -38,7 +38,7 @@ pub trait GraphVisitor<'graph, NodeId, SocketId> {
         I::Item: NodeAdapter<NodeId = NodeId, SocketId = SocketId>,
     {
         let iter = nodes.into_iter();
-        let size_hint = SizeHint::of(&iter);
+        let size_hint = SizeHint::of_iter(&iter);
         let mut seq = self.nodes(size_hint);
         for node in iter {
             seq.visit_node(node);
@@ -88,7 +88,7 @@ pub trait NodeVisitor<'node, SocketId> {
         I: IntoIterator<Item = SocketData<'node, SocketId>>,
     {
         let iter = sockets.into_iter();
-        let size_hint = SizeHint::of(&iter);
+        let size_hint = SizeHint::of_iter(&iter);
         let mut seq = self.sockets(size_hint);
         for socket in iter {
             seq.visit_socket(socket);

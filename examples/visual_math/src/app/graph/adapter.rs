@@ -123,7 +123,8 @@ impl nodui::NodeAdapter for NodeAdapter<'_, &OpNode> {
     {
         let input_sockets = self.node.input_socket_ids();
 
-        let mut socket_seq = visitor.sockets(SizeHint::of(&input_sockets) + SizeHint::exact(1));
+        let mut socket_seq =
+            visitor.sockets(SizeHint::of_iter(&input_sockets) + SizeHint::exact(1));
 
         for socket in input_sockets {
             socket_seq.visit_socket(
