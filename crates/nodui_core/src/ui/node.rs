@@ -6,6 +6,7 @@ use super::{Color, Padding, Stroke, TextUi};
 
 /// Defines how a node should be rendered.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct NodeUI {
     /// The header of the node.
     pub header: NodeHeader,
@@ -58,6 +59,7 @@ impl NodeUI {
 
 /// Defines how the node header should be rendered.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum NodeHeader {
     /// No header.
     #[default]
@@ -69,6 +71,7 @@ pub enum NodeHeader {
 
 /// A simple header for a node with just a title.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct TitleHeader {
     /// The text of the title.
     pub title: TextUi,
@@ -98,6 +101,7 @@ impl TitleHeader {
 
 /// Defines how the node body should be rendered.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct NodeBody {
     /// The layout for the sockets.
     pub layout: NodeLayout,
@@ -129,6 +133,7 @@ impl Default for NodeBody {
 
 /// The layout for the body part of a node.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum NodeLayout {
     /// Render the sockets into a single column.
     Single,

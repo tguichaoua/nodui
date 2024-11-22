@@ -6,6 +6,7 @@ use super::{Color, TextUi};
 
 /// Defines how a socket should be rendered.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct SocketUI {
     /// The text next to the socket's handle.
     pub name: TextUi,
@@ -67,6 +68,7 @@ impl SocketUI {
 
 /// The shape of a socket's handle.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum SocketShape {
     /// Circle shape.
     #[default]
