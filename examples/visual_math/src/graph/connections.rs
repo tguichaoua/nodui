@@ -8,7 +8,7 @@ use super::{
 };
 
 /// Connection between sockets of the graph.
-#[derive(Default)]
+#[derive(Default, serde::Serialize, serde::Deserialize)]
 pub struct Connections {
     /// The connections between the [`InputSocketId`] and the [`OutputSocketId`].
     connections: HashMap<InputSocketId, OutputSocketId>,

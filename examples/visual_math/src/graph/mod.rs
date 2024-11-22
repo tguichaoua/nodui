@@ -17,7 +17,7 @@ pub use self::node::{BinaryOp, Op, OpNode, UnaryOp};
 use self::id::SocketIndex;
 
 /// A math expression graph.
-#[derive(Default)]
+#[derive(Default, serde::Serialize, serde::Deserialize)]
 pub struct Graph {
     /// The operation nodes.
     nodes: Vec<OpNode>,

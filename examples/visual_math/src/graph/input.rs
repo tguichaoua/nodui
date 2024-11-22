@@ -3,6 +3,7 @@
 use super::{id::InputId, OutputSocketId};
 
 /// An input entry of the math graph.
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Input {
     /// The unique identifier of this input.
     id: InputId,

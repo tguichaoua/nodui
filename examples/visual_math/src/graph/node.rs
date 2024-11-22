@@ -8,6 +8,7 @@ use super::{
 /* -------------------------------------------------------------------------- */
 
 /// An operation node.
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct OpNode {
     /// The unique identifier of this node.
     id: OpNodeId,
@@ -58,7 +59,7 @@ impl OpNode {
 /* -------------------------------------------------------------------------- */
 
 /// A math operation.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
 pub enum Op {
     /// A unary operation.
     Unary(UnaryOp),
@@ -67,14 +68,14 @@ pub enum Op {
 }
 
 /// A unary math operation.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
 pub enum UnaryOp {
     /// The negative operation.
     Neg,
 }
 
 /// A binary math operation.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
 pub enum BinaryOp {
     /// The addition operation.
     Add,

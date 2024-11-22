@@ -14,6 +14,7 @@ use crate::graph::{
 /* -------------------------------------------------------------------------- */
 
 /// The adapter for the math graph that will render into the visual editor.
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct GraphApp {
     /// The math graph.
     graph: Graph,
@@ -32,6 +33,7 @@ pub struct GraphApp {
 /// An expression from the graph.
 ///
 /// We use it to not having to recompute it at every frame.
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Expr {
     /// The math expression.
     #[allow(clippy::struct_field_names)]
