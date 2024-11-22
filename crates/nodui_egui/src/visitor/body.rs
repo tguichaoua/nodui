@@ -242,6 +242,16 @@ impl<'node, S> nodui_core::NodeVisitor<'node, S> for NodeVisitor<'_, 'node, S> {
             sockets: self.sockets,
         }
     }
+
+    fn sockets_iterator<I>(&mut self, sockets: I)
+    where
+        I: IntoIterator<Item = SocketData<'node, S>>,
+    {
+        let sockets = sockets
+            .into_iter()
+            .map(|socket| prepare_socket(socket, self.fonts));
+        self.sockets.extend(sockets);
+    }
 }
 
 impl<'node, S> SocketSeq<'node, S> for NodeVisitor<'_, 'node, S> {
