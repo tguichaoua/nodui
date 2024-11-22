@@ -36,6 +36,20 @@ impl Color {
         let Self([r, g, b, a]) = self;
         (r, g, b, a)
     }
+
+    /// Gets a readonly reference of the color as an sRGBA array.
+    #[inline]
+    #[must_use]
+    pub fn as_array(&self) -> &[u8; 4] {
+        &self.0
+    }
+
+    /// Gets a mutable reference of the color as an sRGBA array.
+    #[inline]
+    #[must_use]
+    pub fn as_array_mut(&mut self) -> &mut [u8; 4] {
+        &mut self.0
+    }
 }
 
 #[allow(missing_docs)]
