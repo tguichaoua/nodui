@@ -48,7 +48,7 @@ impl<'field, SocketId> SocketData<'field, SocketId> {
     #[inline]
     #[must_use]
     pub fn with_name(mut self, name: impl Into<TextUi>) -> Self {
-        self.ui = self.ui.with_name(name);
+        self.ui.name = name.into();
         self
     }
 
@@ -56,7 +56,7 @@ impl<'field, SocketId> SocketData<'field, SocketId> {
     #[inline]
     #[must_use]
     pub fn with_color(mut self, color: impl Into<Color>) -> Self {
-        self.ui = self.ui.with_color(color);
+        self.ui.color = color.into();
         self
     }
 
@@ -64,7 +64,7 @@ impl<'field, SocketId> SocketData<'field, SocketId> {
     #[inline]
     #[must_use]
     pub fn with_shape(mut self, shape: SocketShape) -> Self {
-        self.ui = self.ui.with_shape(shape);
+        self.ui.shape = shape;
         self
     }
 
