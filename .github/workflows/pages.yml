@@ -33,7 +33,8 @@ jobs:
         # will obviously return error 404 not found.
         run: ./trunk build --release --public-url $public_url
         env:
-          public_url: 'https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}'
+          # public_url: 'https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}'
+          public_url: 'https://tguichaoua.com/${{ github.event.repository.name }}'
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
