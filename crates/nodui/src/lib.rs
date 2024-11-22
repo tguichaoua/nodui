@@ -12,10 +12,7 @@
 //! # impl nodui::GraphAdapter for MyGraph {
 //! #    type NodeId = ();
 //! #    type SocketId = ();
-//! #    fn nodes(&self) -> impl Iterator<Item: nodui::NodeAdapter<NodeId = Self::NodeId, SocketId = Self::SocketId>> {
-//! #        core::iter::empty::<Foo>()
-//! #    }
-//! #    fn set_node_pos(&mut self, node_id: Self::NodeId, pos: nodui::Pos) { }
+//! #    fn accept<'graph, V>(&'graph mut self, mut visitor: V) where V: nodui::GraphVisitor<'graph, Self::NodeId, Self::SocketId> { }
 //! #    fn connection_hint(&self, a: Self::SocketId, b: Self::SocketId) -> nodui::ConnectionHint { unreachable!() }
 //! #    fn connect(&mut self, a: Self::SocketId, b: Self::SocketId) { }
 //! #    fn connections(&self) -> impl Iterator<Item = (Self::SocketId, Self::SocketId)> { std::iter::empty() }
@@ -23,16 +20,10 @@
 //! # impl nodui::NodeAdapter for Foo {
 //! #    type NodeId = ();
 //! #    type SocketId = ();
-//! #    fn sockets(&self) -> impl Iterator<Item: nodui::SocketAdapter<SocketId = Self::SocketId>> {
-//! #        core::iter::empty::<Foo>()
-//! #    }
+//! #    fn accept<'node, V>(&'node mut self, mut visitor: V) where V: nodui::NodeVisitor<'node, Self::SocketId> { }
 //! #    fn id(&self) -> Self::NodeId { unreachable!() }
 //! #    fn pos(&self) -> nodui::Pos { unreachable!() }
-//! # }
-//! # impl nodui::SocketAdapter for Foo {
-//! #   type SocketId = ();
-//! #   fn id(&self) -> Self::SocketId { unreachable!() }
-//! #   fn ui(&self) -> nodui::ui::SocketUI { unreachable!() }
+//! #    fn set_pos(&mut self, _: nodui::Pos) { }
 //! # }
 //! struct App {
 //!     // `MyGraph` implements the `GraphAdapter` trait and hold the state for the visual editor.
