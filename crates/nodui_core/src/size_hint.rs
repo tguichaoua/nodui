@@ -6,33 +6,16 @@ use std::ops::Add;
 #[derive(Debug, Clone, Copy)]
 pub struct SizeHint {
     /// The lower limit.
-    min: usize,
+    pub min: usize,
 
     /// The upper limit.
     ///
     /// A [`None`] here means that either there is no known upper bound,
     /// or the upper bound is larger than [`usize`].
-    max: Option<usize>,
+    pub max: Option<usize>,
 }
 
 impl SizeHint {
-    /// The lower limit.
-    #[must_use]
-    #[inline]
-    pub fn min(&self) -> usize {
-        self.min
-    }
-
-    /// The upper limit.
-    ///
-    /// A [`None`] here means that either there is no known upper bound,
-    /// or the upper bound is larger than [`usize`].
-    #[must_use]
-    #[inline]
-    pub fn max(&self) -> Option<usize> {
-        self.max
-    }
-
     /// The size hint of a [slice](core::slice) or an [`Iterator`].
     #[must_use]
     #[inline]

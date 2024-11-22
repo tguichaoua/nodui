@@ -235,7 +235,7 @@ struct NodeVisitor<'a, 'node, S> {
 
 impl<'node, S> nodui_core::NodeVisitor<'node, S> for NodeVisitor<'_, 'node, S> {
     fn sockets(&mut self, size_hint: SizeHint) -> impl SocketSeq<'node, S> {
-        self.sockets.reserve(size_hint.min());
+        self.sockets.reserve(size_hint.min);
 
         NodeVisitor {
             fonts: self.fonts,

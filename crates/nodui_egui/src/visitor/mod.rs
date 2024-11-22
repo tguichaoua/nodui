@@ -60,7 +60,7 @@ where
     C: Collect<(N, Response)>,
 {
     fn nodes(&mut self, size_hint: SizeHint) -> impl NodeSeq<'graph, N, S> {
-        self.collect_node_response.reserve(size_hint.min());
+        self.collect_node_response.reserve(size_hint.min);
 
         GraphVisitor {
             ui: self.ui,
