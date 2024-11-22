@@ -290,7 +290,7 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
     /// Show the graph editor.
     #[allow(clippy::too_many_lines)] // TODO: split this method for readability
     #[inline]
-    pub fn show(self, ui: &mut Ui) -> GraphOutput<<G as GraphAdapter>::NodeId> {
+    pub fn show(self, ui: &mut Ui) -> GraphOutput<G::NodeId> {
         let Self {
             mut graph,
             id,
@@ -355,11 +355,7 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
 
         /* ---- */
 
-        let mut state =
-            GraphMemory::<<G as GraphAdapter>::NodeId, <G as GraphAdapter>::SocketId>::load(
-                ui.ctx(),
-                id,
-            );
+        let mut state = GraphMemory::<G::NodeId, G::SocketId>::load(ui.ctx(), id);
 
         /* ---- */
 
