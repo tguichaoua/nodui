@@ -16,10 +16,10 @@ pub struct SocketData<'field, SocketId> {
     pub field: Option<SocketField<'field>>,
 }
 
-impl<'field, Id> SocketData<'field, Id> {
+impl<'field, SocketId> SocketData<'field, SocketId> {
     /// Creates a [`SocketData`] with the specified `id` and `side`.
     #[inline]
-    pub fn new(id: Id, side: NodeSide) -> Self {
+    pub fn new(id: SocketId, side: NodeSide) -> Self {
         Self {
             id,
             side,
