@@ -1,7 +1,7 @@
 //! Renderer for the connections between sockets.
 
 use egui::{Color32, Pos2, Shape, Stroke};
-use nodui_core::adapter::ConnectionHint;
+use nodui_core::ConnectionHint;
 
 use crate::socket::RenderedSocket;
 

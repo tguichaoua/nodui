@@ -6,9 +6,10 @@ pub mod connection;
 pub mod context_menu;
 mod conversion;
 mod editor;
-mod node;
+mod misc;
 mod socket;
 mod viewport;
+mod visitor;
 
 pub use connection::CustomConnectionRenderer;
 pub use editor::{GraphEditor, GraphOutput};

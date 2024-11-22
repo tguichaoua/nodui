@@ -27,15 +27,19 @@ impl App {
 
                 let mut graph = GraphApp::new();
 
-                let x = graph.add_input(Pos::new(-10, 5), "x", 3.0);
-                let y = graph.add_input(Pos::new(-10, 0), "y", 2.0);
-                let z = graph.add_input(Pos::new(-10, -5), "z", 2.0);
+                let x = graph.add_input(Pos::new(-20, 5), "x", 3.0);
+                let y = graph.add_input(Pos::new(-20, 0), "y", 2.0);
+                let z = graph.add_input(Pos::new(-20, -5), "z", 2.0);
 
-                let x_plus_y =
-                    graph.add_binary_op_node_and_connect_input(Pos::new(0, 5), BinaryOp::Add, x, y);
+                let x_plus_y = graph.add_binary_op_node_and_connect_input(
+                    Pos::new(-5, 5),
+                    BinaryOp::Add,
+                    x,
+                    y,
+                );
 
                 let neg_z =
-                    graph.add_unary_op_node_and_connect_input(Pos::new(0, -5), UnaryOp::Neg, z);
+                    graph.add_unary_op_node_and_connect_input(Pos::new(-5, -5), UnaryOp::Neg, z);
 
                 let x_plus_y_mul_neg_z = graph.add_binary_op_node_and_connect_input(
                     Pos::new(10, 5),

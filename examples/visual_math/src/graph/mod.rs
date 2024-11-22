@@ -27,10 +27,28 @@ pub struct Graph {
     connections: Connections,
 }
 
+pub struct ViewMut<'a> {
+    /// The operation nodes.
+    pub nodes: &'a mut [OpNode],
+    /// The inputs.
+    pub inputs: &'a mut [Input],
+    /// The connections.
+    pub connections: &'a mut Connections,
+}
+
 impl Graph {
     /// Creates an empty [`Graph`].
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Gets a mutable view of this graph.
+    pub fn view_mut(&mut self) -> ViewMut<'_> {
+        ViewMut {
+            nodes: &mut self.nodes,
+            inputs: &mut self.inputs,
+            connections: &mut self.connections,
+        }
     }
 
     /// A reference to the connections of this graph.
@@ -69,11 +87,6 @@ impl Graph {
 }
 
 impl Graph {
-    /// The operation nodes.
-    pub fn op_nodes(&self) -> &[OpNode] {
-        &self.nodes
-    }
-
     /// Get an operation node from its identifier.
     pub fn get_op_node(&self, id: OpNodeId) -> Option<&OpNode> {
         self.nodes.iter().find(|n| n.id() == id)
@@ -122,11 +135,6 @@ impl Graph {
 }
 
 impl Graph {
-    /// The inputs of the graph.
-    pub fn inputs(&self) -> &[Input] {
-        &self.inputs
-    }
-
     /// A mutable access to the inputs.
     pub fn inputs_mut(&mut self) -> &mut [Input] {
         &mut self.inputs

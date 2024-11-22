@@ -4,7 +4,7 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 use egui::Vec2;
 
-use nodui_core::adapter::Pos;
+use nodui_core::Pos;
 
 /// The information about the viewport of the visual editor.
 pub(crate) struct Viewport {

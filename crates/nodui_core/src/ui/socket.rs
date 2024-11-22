@@ -9,8 +9,6 @@ use super::{Color, TextUi};
 pub struct SocketUI {
     /// The text next to the socket's handle.
     pub name: TextUi,
-    /// The side of the node this socket should be placed.
-    pub side: NodeSide,
     /// Whether or not this socket is connected to at least one other socket.
     pub is_connected: bool,
     /// The color of socket's handle.
@@ -19,25 +17,32 @@ pub struct SocketUI {
     pub shape: SocketShape,
 }
 
-impl SocketUI {
-    /// Creates a [`SocketUI`].
+impl Default for SocketUI {
     #[inline]
-    #[must_use]
-    pub fn new(side: NodeSide, is_connected: bool) -> Self {
+    fn default() -> Self {
         Self {
             name: TextUi::default(),
-            side,
-            is_connected,
+            is_connected: false,
             color: Color::WHITE,
             shape: SocketShape::default(),
         }
     }
+}
 
+impl SocketUI {
     /// Sets the text next to the socket's handle.
     #[inline]
     #[must_use]
     pub fn with_name(mut self, name: impl Into<TextUi>) -> Self {
         self.name = name.into();
+        self
+    }
+
+    /// Whether the socket is connected.
+    #[inline]
+    #[must_use]
+    pub fn with_connected(mut self, is_connected: bool) -> Self {
+        self.is_connected = is_connected;
         self
     }
 

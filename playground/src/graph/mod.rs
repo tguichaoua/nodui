@@ -86,6 +86,11 @@ pub struct DummyGraph {
     connections: Connections,
 }
 
+pub struct ViewMut<'a> {
+    pub nodes: &'a mut [DummyNode],
+    pub connections: &'a mut Connections,
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct DummyNode {
     id: NodeId,
@@ -97,14 +102,23 @@ pub struct DummyNode {
 pub struct DummySocket {
     pub index: SocketIndex,
     pub name: String,
+
+    pub field: Option<f32>,
 }
 
 /* -------------------------------------------------------------------------- */
 
 impl DummyGraph {
-    pub fn nodes(&self) -> &[DummyNode] {
-        &self.nodes
+    pub fn view_mut(&mut self) -> ViewMut {
+        ViewMut {
+            nodes: &mut self.nodes,
+            connections: &mut self.connections,
+        }
     }
+
+    // pub fn nodes(&self) -> &[DummyNode] {
+    //     &self.nodes
+    // }
 
     pub fn connections(&self) -> &Connections {
         &self.connections
@@ -120,22 +134,37 @@ impl DummyGraph {
         input_sockets: impl IntoIterator<Item: Into<String>>,
         output_sockets: impl IntoIterator<Item: Into<String>>,
     ) -> NodeId {
+        self.add_node_with_field(
+            pos,
+            input_sockets.into_iter().map(|name| (name, None)),
+            output_sockets.into_iter().map(|name| (name, None)),
+        )
+    }
+
+    pub fn add_node_with_field(
+        &mut self,
+        pos: Pos,
+        input_sockets: impl IntoIterator<Item = (impl Into<String>, Option<f32>)>,
+        output_sockets: impl IntoIterator<Item = (impl Into<String>, Option<f32>)>,
+    ) -> NodeId {
         let id = NodeId::new();
 
         let input_sockets = input_sockets
             .into_iter()
             .enumerate()
-            .map(|(i, name)| DummySocket {
+            .map(|(i, (name, field))| DummySocket {
                 index: SocketIndex::Input(i.try_into().unwrap()),
                 name: name.into(),
+                field,
             });
 
         let output_sockets = output_sockets
             .into_iter()
             .enumerate()
-            .map(|(i, name)| DummySocket {
+            .map(|(i, (name, field))| DummySocket {
                 index: SocketIndex::Output(i.try_into().unwrap()),
                 name: name.into(),
+                field,
             });
 
         let sockets = input_sockets.chain(output_sockets).collect();
@@ -155,9 +184,9 @@ impl DummyGraph {
         self.nodes.iter().find(|n| id == n.id)
     }
 
-    pub fn get_node_mut(&mut self, id: NodeId) -> Option<&mut DummyNode> {
-        self.nodes.iter_mut().find(|n| id == n.id)
-    }
+    // pub fn get_node_mut(&mut self, id: NodeId) -> Option<&mut DummyNode> {
+    //     self.nodes.iter_mut().find(|n| id == n.id)
+    // }
 
     // pub fn get_socket(&self, id: SocketId) -> Option<&DummySocket> {
     //     let node_id = id.node_id();
@@ -170,9 +199,13 @@ impl DummyGraph {
 }
 
 impl DummyNode {
-    pub fn sockets(&self) -> &[DummySocket] {
-        &self.sockets
+    pub fn sockets_mut(&mut self) -> &mut [DummySocket] {
+        &mut self.sockets
     }
+
+    // pub fn sockets(&self) -> &[DummySocket] {
+    //     &self.sockets
+    // }
 
     pub fn id(&self) -> NodeId {
         self.id
@@ -194,7 +227,11 @@ pub fn make_dummy() -> DummyGraph {
 
     graph.add_node(Pos::new(-5, -2), ["In"], ["Out", "Charles", "David"]);
 
-    graph.add_node(Pos::new(5, 3), ["In", "Charles", "David"], ["Out"]);
+    graph.add_node_with_field(
+        Pos::new(5, 3),
+        [("In", None), ("Charles", None), ("David", None)],
+        [("Out", Some(0.0))],
+    );
 
     graph
 }

@@ -1,7 +1,7 @@
 //! Contextual information for context menu of the graph editor.
 
 use egui::Ui;
-use nodui_core::adapter::{GraphAdapter, Pos};
+use nodui_core::{GraphAdapter, Pos};
 
 /* -------------------------------------------------------------------------- */
 

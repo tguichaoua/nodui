@@ -5,21 +5,21 @@ use std::hash::Hash;
 
 use egui::epaint::RectShape;
 use egui::{
-    pos2, vec2, Color32, CursorIcon, NumExt, Rect, Response, Rounding, Sense, Shape, Stroke, Ui,
-    UiBuilder, Vec2,
+    pos2, vec2, Color32, CursorIcon, LayerId, NumExt, Rect, Response, Rounding, Sense, Shape,
+    Stroke, Ui, UiBuilder, Vec2,
 };
-use indexmap::IndexSet;
-use nodui_core::adapter::{ConnectionHint, GraphAdapter, Id as NoduiId, NodeAdapter, Pos};
 use nodui_core::ui::NodeSide;
+use nodui_core::{ConnectionHint, GraphAdapter, Id as NoduiId, Pos};
 
 use crate::connection::{ConnectionRenderer, LineConnectionRenderer};
 use crate::context_menu::{
     ContextMenuContent, MenuContext, NodeContextMenuContent, NodeMenuContext,
     SocketContextMenuContent, SocketMenuContext,
 };
-use crate::node;
+use crate::misc::collect::NoCollect;
 use crate::socket::RenderedSocket;
 use crate::viewport::{CanvasPos, Grid, Viewport};
+use crate::visitor::GraphVisitor;
 
 /* -------------------------------------------------------------------------- */
 
@@ -222,9 +222,6 @@ struct GraphMemory<NodeId, SocketId> {
 
     /// The last know position of the pointer in graph coordinates.
     last_known_pointer_pos: Pos,
-
-    /// The order in which render the node from back to top.
-    node_order: IndexSet<NodeId>,
 }
 
 impl<N, S> Default for GraphMemory<N, S> {
@@ -235,7 +232,6 @@ impl<N, S> Default for GraphMemory<N, S> {
             dragged_node: None,
             dragged_socket: None,
             last_known_pointer_pos: Pos::default(),
-            node_order: IndexSet::new(),
         }
     }
 }
@@ -252,38 +248,6 @@ where
     /// Store the editor state.
     fn store(self, ctx: &egui::Context, id: egui::Id) {
         ctx.data_mut(|data| data.insert_temp(id, self));
-    }
-}
-
-impl<N: NoduiId, S> GraphMemory<N, S> {
-    /// Move the specified node to the top of the nodes.
-    fn set_node_on_top(&mut self, node_id: N) {
-        self.node_order.shift_remove(&node_id);
-        self.node_order.insert(node_id);
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
-/// A painter to render the shapes of a node.
-pub(crate) struct NodePainter(Vec<Shape>);
-
-impl NodePainter {
-    /// Creates a [`NodePainter`].
-    fn new() -> Self {
-        Self(Vec::new())
-    }
-
-    /// Adds a shape to this painter.
-    pub(crate) fn add(&mut self, shape: impl Into<Shape>) {
-        self.0.push(shape.into());
-    }
-}
-
-impl From<NodePainter> for Shape {
-    #[allow(clippy::missing_inline_in_public_items)] // `NodePainter` is private so it's needless.
-    fn from(NodePainter(shapes): NodePainter) -> Self {
-        Shape::Vec(shapes)
     }
 }
 
@@ -478,81 +442,25 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
 
         let connections_shape_idx = ui.painter().add(Shape::Noop);
 
-        // Reserve space to draw nodes
-        let node_shape_indices: HashMap<_, _> = state
-            .node_order
-            .iter()
-            .cloned()
-            .map(|node_id| {
-                let shape_id = ui.painter().add(Shape::Noop);
-                (node_id, shape_id)
-            })
-            .collect();
-
-        // Paints the nodes and collect the nodes and sockets responses.
-        let mut socket_responses: SocketResponses<G::SocketId> = SocketResponses::new();
-
         let mut last_interacted_node_id = None;
 
-        let node_responses = graph
-            .nodes()
-            .map(|node| {
-                let node_id = node.id();
+        let mut socket_responses = SocketResponses::new();
 
-                // If this is a new node, insert it on top, does nothing otherwise.
-                state.node_order.insert(node_id.clone());
+        // PERF: if the user don't use a node context menu, we didn't need to collect node's responses
+        // so we avoid to allocate using `NoCollect`.
+        if let Some(context_menu) = node_context_menu.as_mut() {
+            let mut node_responses = Vec::new();
 
-                let pos = {
-                    let delta_pos = match state.dragged_node.clone() {
-                        Some((id, delta_pos)) if id == node_id => delta_pos,
-                        _ => Vec2::ZERO,
-                    };
+            graph.accept(GraphVisitor {
+                ui: &mut ui,
+                dragged_node: &mut state.dragged_node,
+                viewport: &viewport,
+                last_interacted_node_id: &mut last_interacted_node_id,
+                socket_responses: &mut socket_responses,
+                collect_node_response: &mut node_responses,
+            });
 
-                    viewport.grid.graph_to_canvas(node.pos()) + delta_pos
-                };
-
-                let mut node_painter = NodePainter::new();
-
-                let node_response = node::show_node(
-                    &mut ui,
-                    node_id.clone(),
-                    node.ui(),
-                    &mut socket_responses,
-                    node.sockets(),
-                    viewport.canvas_to_viewport(pos),
-                    &mut node_painter,
-                );
-
-                if let Some(shape_id) = node_shape_indices.get(&node_id).copied() {
-                    ui.painter().set(shape_id, node_painter);
-                } else {
-                    ui.painter().add(node_painter);
-                }
-
-                // node_responses.push((node_id, node_response));
-                (node_id, node_response, pos)
-            })
-            .collect::<Vec<_>>();
-
-        for (id, response, pos) in node_responses {
-            if response.drag_stopped() {
-                state.dragged_node = None;
-                let new_pos = pos + response.drag_delta();
-                graph.set_node_pos(id.clone(), viewport.grid.canvas_to_graph_nearest(new_pos));
-            } else if response.drag_started() {
-                state.dragged_node = Some((id.clone(), response.drag_delta()));
-            } else if response.dragged() {
-                if let Some(dragged_node) = state.dragged_node.as_mut() {
-                    dragged_node.1 += response.drag_delta();
-                }
-            }
-
-            if response.clicked || response.fake_primary_click || response.dragged() {
-                last_interacted_node_id = Some(id.clone());
-                state.set_node_on_top(id.clone());
-            }
-
-            if let Some(context_menu) = node_context_menu.as_mut() {
+            for (id, response) in node_responses {
                 response.context_menu(|ui| {
                     context_menu(
                         ui,
@@ -563,6 +471,17 @@ impl<'a, G: GraphAdapter> GraphEditor<'a, G> {
                     );
                 });
             }
+        } else {
+            let mut node_responses = NoCollect::default();
+
+            graph.accept(GraphVisitor {
+                ui: &mut ui,
+                dragged_node: &mut state.dragged_node,
+                viewport: &viewport,
+                last_interacted_node_id: &mut last_interacted_node_id,
+                socket_responses: &mut socket_responses,
+                collect_node_response: &mut node_responses,
+            });
         }
 
         /* ---------------------------------------------- */
@@ -740,11 +659,13 @@ fn handle_socket_responses<G>(
                 };
 
                 if let Some(pointer_pos) = socket.response.interact_pointer_pos() {
-                    ui.painter().add(connection_renderer.socket_to_pointer(
-                        socket,
-                        pointer_pos,
-                        hint,
-                    ));
+                    ui.with_layer_id(LayerId::new(egui::Order::Foreground, ui.id()), |ui| {
+                        ui.painter().add(connection_renderer.socket_to_pointer(
+                            socket,
+                            pointer_pos,
+                            hint,
+                        ));
+                    });
                 }
             }
         } else {
