@@ -25,7 +25,7 @@ pub trait GraphVisitor<'graph, NodeId, SocketId> {
     /// #   mut visitor: impl GraphVisitor<'a, N, S>,
     /// #   nodes: impl Iterator<Item: NodeAdapter<NodeId = N, SocketId = S>>
     /// # ) {
-    /// let mut node_seq = visitor.nodes(SizeHint::of(&nodes));
+    /// let mut node_seq = visitor.nodes(SizeHint::of_iter(&nodes));
     /// for node in nodes {
     ///    node_seq.visit_node(node);
     /// }
@@ -76,7 +76,7 @@ pub trait NodeVisitor<'node, SocketId> {
     /// #   mut visitor: impl NodeVisitor<'a, S>,
     /// #   sockets: impl Iterator<Item = SocketData<'a, S>>
     /// # ) {
-    /// let mut socket_seq = visitor.sockets(SizeHint::of(&sockets));
+    /// let mut socket_seq = visitor.sockets(SizeHint::of_iter(&sockets));
     /// for socket in sockets {
     ///    socket_seq.visit_socket(socket);
     /// }
