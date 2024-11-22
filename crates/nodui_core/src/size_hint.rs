@@ -5,6 +5,24 @@ use std::ops::{Add, AddAssign};
 /* -------------------------------------------------------------------------- */
 
 /// The bounds on the length of a collection.
+///
+/// # Addition
+///
+/// The addition of two collections' [`SizeHint`] is equivalent to the [`SizeHint`]
+/// of an chained iterator created from those two collections.
+///
+/// ```
+/// # use nodui_core::SizeHint;
+/// let a = [0, 1, 2];
+/// let b = [3, 4];
+///
+/// let sh_a = SizeHint::of(&a);
+/// let sh_b = SizeHint::of(&b);
+///
+/// let chained = a.iter().chain(b.iter());
+///
+/// assert_eq!(SizeHint::of_iter(&chained), sh_a + sh_b);
+/// ```
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SizeHint {
     /// The lower limit.
