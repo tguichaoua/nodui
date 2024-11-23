@@ -1,7 +1,8 @@
 mod adapter;
+mod widget;
 
 use adapter::GraphAdapter;
-use egui::DragValue;
+use egui::Modifiers;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -42,6 +43,12 @@ impl eframe::App for App {
         egui::CentralPanel::default().show(ctx, |ui| {
             self.show_graph(ui);
         });
+
+        ctx.input_mut(|input| {
+            if input.consume_key(Modifiers::NONE, egui::Key::Delete) {
+                self.graph.delete_selected_node();
+            }
+        });
     }
 }
 
@@ -55,17 +62,14 @@ impl App {
                 ui.color_edit_button_srgba(&mut self.editor_bg_color);
                 ui.end_row();
 
-                ui.label("Grid Color");
-                ui.color_edit_button_srgba(&mut self.editor_grid_stroke.color);
-                ui.end_row();
-
-                ui.label("Grid Width");
-                ui.add(DragValue::new(&mut self.editor_grid_stroke.width));
+                ui.label("Grid");
+                widget::stroke(ui, &mut self.editor_grid_stroke);
                 ui.end_row();
             });
 
         ui.separator();
 
+        let mut socket_to_remove = None;
         let mut selected_node = self.graph.selected_node();
 
         egui::Grid::new(ui.id().with("node inspector grid"))
@@ -79,86 +83,78 @@ impl App {
 
                 ui.label("Title");
                 if let Some(node) = selected_node.as_mut() {
-                    ui.text_edit_singleline(&mut node.header.title.text);
+                    ui.text_edit_singleline(&mut node.style.header.title.text);
                 }
                 ui.end_row();
 
                 ui.label("Header Color");
                 if let Some(node) = selected_node.as_mut() {
-                    ui.color_edit_button_srgba_unmultiplied(node.header.background.as_array_mut());
+                    ui.color_edit_button_srgba_unmultiplied(
+                        node.style.header.background.as_array_mut(),
+                    );
                 }
                 ui.end_row();
 
                 ui.label("Layout");
                 if let Some(node) = selected_node.as_mut() {
-                    ui.horizontal(|ui| {
-                        if ui
-                            .selectable_label(
-                                node.body.layout == nodui::ui::NodeLayout::Single,
-                                "Single",
-                            )
-                            .clicked()
-                        {
-                            node.body.layout = nodui::ui::NodeLayout::Single;
-                        }
-                        if ui
-                            .selectable_label(
-                                node.body.layout == nodui::ui::NodeLayout::Double,
-                                "Double",
-                            )
-                            .clicked()
-                        {
-                            node.body.layout = nodui::ui::NodeLayout::Double;
-                        }
-                    });
+                    widget::node_layout_options(ui, &mut node.style.body.layout);
+                }
+                ui.end_row();
+
+                ui.label("Outline");
+                if let Some(node) = selected_node.as_mut() {
+                    widget::nodui_stroke(ui, &mut node.style.outline);
                 }
                 ui.end_row();
             });
 
-        ui.label("Sockets");
+        ui.separator();
+
+        if ui.button("➕").clicked() {
+            if let Some(node) = selected_node.as_mut() {
+                node.add_socket();
+            }
+        }
 
         egui::Grid::new(ui.id().with("socket node inspector grid"))
             .num_columns(6)
             .show(ui, |ui| {
+                ui.label(""); // TODO: it is possible to skip a column?
                 ui.label("Id");
                 ui.label("Name");
-                ui.label("Name Color");
                 ui.label("Color");
-                ui.label("Left");
-                ui.label("Right");
+                ui.label("Side");
+                ui.label("Shape");
                 ui.end_row();
 
                 if let Some(node) = selected_node {
                     for socket in node.sockets_mut() {
+                        if ui.button("🗙").clicked() {
+                            socket_to_remove = Some(socket.id());
+                        }
+
                         ui.add(egui::Label::new(socket.id().to_string()).truncate());
-                        ui.text_edit_singleline(&mut socket.name.text);
-                        ui.color_edit_button_srgba_unmultiplied(
-                            socket
-                                .name
-                                .color
-                                .get_or_insert(nodui::ui::Color::WHITE)
-                                .as_array_mut(),
+
+                        widget::text_ui(ui, &mut socket.style.name);
+
+                        ui.color_edit_button_srgba_unmultiplied(socket.style.color.as_array_mut());
+
+                        ui.add(widget::NodeSideButton::new(&mut socket.style.side));
+
+                        widget::socket_shape_combo_box(
+                            ui.id().with(socket.id()),
+                            ui,
+                            &mut socket.style.shape,
                         );
-
-                        ui.color_edit_button_srgba_unmultiplied(socket.color.as_array_mut());
-
-                        if ui
-                            .selectable_label(socket.side == nodui::ui::NodeSide::Left, "Left")
-                            .clicked()
-                        {
-                            socket.side = nodui::ui::NodeSide::Left;
-                        }
-                        if ui
-                            .selectable_label(socket.side == nodui::ui::NodeSide::Right, "Right")
-                            .clicked()
-                        {
-                            socket.side = nodui::ui::NodeSide::Right;
-                        }
 
                         ui.end_row();
                     }
                 }
             });
+
+        if let Some(socket_id) = socket_to_remove {
+            self.graph.remove_socket(socket_id);
+        }
     }
 
     fn show_graph(&mut self, ui: &mut egui::Ui) {
@@ -166,41 +162,47 @@ impl App {
             .background_color(self.editor_bg_color)
             .grid_stroke(self.editor_grid_stroke)
             .context_menu(|ui, context| {
-                if ui.button("new node").clicked() {
-                    context.graph.add_node(context.pos);
+                if ui.button("New node").clicked() {
+                    context.graph.new_node(context.pos);
                     ui.close_menu();
                 }
+
+                ui.add_enabled_ui(context.graph.clipboard.is_some(), |ui| {
+                    if ui.button("Paste node").clicked() {
+                        context.graph.paste_node(context.pos);
+                        ui.close_menu();
+                    }
+                });
             })
-            // .socket_context_menu(|ui, context| {
-            //     if ui.button("Disconnect").clicked() {
-            //         context
-            //             .graph
-            //             .graph
-            //             .connections_mut()
-            //             .disconnect(context.socket_id);
-            //         ui.close_menu();
-            //     }
-            // })
             .node_context_menu(|ui, context| {
-                if ui.button("add socket").clicked() {
+                if ui.button("Add socket").clicked() {
                     if let Some(node) = context.graph.get_node_mut(context.node_id) {
                         node.add_socket();
                     }
-
                     ui.close_menu();
                 }
 
-                // if ui.button("Select").clicked() {
-                //     context.graph.set_selected_node(context.node_id);
-                //     ui.close_menu();
-                // }
+                if ui.button("Copy").clicked() {
+                    context.graph.copy_node(context.node_id);
+                    ui.close_menu();
+                }
 
-                // ui.separator();
+                ui.add_enabled_ui(context.graph.clipboard.is_some(), |ui| {
+                    if ui.button("Paste style").clicked() {
+                        context.graph.paste_node_settings_to(context.node_id);
+                        ui.close_menu();
+                    }
 
-                // if ui.button("Remove").clicked() {
-                //     context.graph.remove_node(context.node_id);
-                //     ui.close_menu();
-                // }
+                    if ui.button("Paste sockets").clicked() {
+                        context.graph.paste_sockets_to(context.node_id);
+                        ui.close_menu();
+                    }
+                });
+
+                if ui.button("Remove").clicked() {
+                    context.graph.remove_node(context.node_id);
+                    ui.close_menu();
+                }
             });
 
         let response = graph.show(ui);

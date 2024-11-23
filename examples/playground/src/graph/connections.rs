@@ -37,10 +37,14 @@ impl Connections {
     //     todo!();
     // }
 
-    // /// Remove the connection from this socket.
-    // pub fn disconnect(&mut self, socket: SocketId) {
-    //     todo!();
-    // }
+    /// Remove the connection from this socket.
+    pub fn disconnect(&mut self, socket: SocketId) {
+        self.connections = self
+            .connections
+            .drain()
+            .filter(|pair| !pair.contains(socket))
+            .collect();
+    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -55,5 +59,9 @@ impl Pair {
         } else {
             Pair(b, a)
         }
+    }
+
+    fn contains(&self, id: SocketId) -> bool {
+        self.0 == id || self.1 == id
     }
 }

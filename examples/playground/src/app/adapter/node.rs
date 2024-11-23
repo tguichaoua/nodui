@@ -24,11 +24,7 @@ impl nodui::NodeAdapter for NodeAdapter<'_> {
     }
 
     fn ui(&self) -> nodui::ui::NodeUI {
-        nodui::ui::NodeUI {
-            body: self.node.body.clone(),
-            header: self.node.header.clone().into(),
-            outline: self.node.outline,
-        }
+        self.node.style.clone().into_node_ui()
     }
 
     fn accept<'node, V>(&'node mut self, mut visitor: V)
@@ -45,12 +41,12 @@ impl nodui::NodeAdapter for NodeAdapter<'_> {
 
             socket_seq.visit_socket(SocketData {
                 id,
-                side: socket.side,
+                side: socket.style.side,
                 ui: nodui::ui::SocketUI {
-                    name: socket.name.clone(),
+                    name: socket.style.name.clone(),
                     is_connected,
-                    color: socket.color,
-                    shape: socket.shape,
+                    color: socket.style.color,
+                    shape: socket.style.shape,
                 },
                 field: None,
             });
