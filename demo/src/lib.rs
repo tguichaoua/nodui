@@ -8,6 +8,7 @@ pub struct App {
 struct State {
     selected_anchor: Anchor,
 
+    playground: playground::App,
     visual_math: visual_math::App,
 }
 
@@ -24,6 +25,7 @@ struct State {
 )]
 enum Anchor {
     #[default]
+    Playground,
     VisualMath,
 }
 
@@ -83,11 +85,18 @@ impl eframe::App for App {
 impl App {
     fn apps_iter_mut(&mut self) -> impl Iterator<Item = (&str, Anchor, &mut dyn eframe::App)> {
         #[allow(trivial_casts)]
-        let vec = vec![(
-            "Visual Math",
-            Anchor::VisualMath,
-            &mut self.state.visual_math as &mut dyn eframe::App,
-        )];
+        let vec = vec![
+            (
+                "Playground",
+                Anchor::Playground,
+                &mut self.state.playground as &mut dyn eframe::App,
+            ),
+            (
+                "Visual Math",
+                Anchor::VisualMath,
+                &mut self.state.visual_math as &mut dyn eframe::App,
+            ),
+        ];
 
         vec.into_iter()
     }

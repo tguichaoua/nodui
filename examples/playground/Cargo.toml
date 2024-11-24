@@ -1,0 +1,18 @@
+[package]
+name = "playground"
+version = "0.0.0"
+edition = "2021"
+
+publish = false
+
+[dependencies]
+nodui = { workspace = true, features = ["serde"] }
+
+eframe.workspace = true
+egui = { workspace = true, features = ["serde"] }
+uuid = { version = "1.8.0", features = ["v4", "serde"] }
+serde = { version = "1", features = ["derive"] }
+
+
+[lints]
+workspace = true
