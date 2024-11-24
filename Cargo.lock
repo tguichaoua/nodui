@@ -1063,6 +1063,7 @@ dependencies = [
  "env_logger",
  "getrandom",
  "log",
+ "playground",
  "serde",
  "strum",
  "visual_math",

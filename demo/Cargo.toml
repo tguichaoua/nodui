@@ -16,9 +16,12 @@ egui.workspace = true
 eframe = { workspace = true, features = ["persistence"] }
 log = "0.4"
 
-visual_math = { version = "0.0.0", path = "../examples/visual_math" }
 serde = { version = "1", features = ["derive"] }
 strum = { version = "0.26.3", features = ["derive"] }
+
+playground = { version = "0.0.0", path = "../examples/playground" }
+visual_math = { version = "0.0.0", path = "../examples/visual_math" }
+
 
 [lints]
 workspace = true
