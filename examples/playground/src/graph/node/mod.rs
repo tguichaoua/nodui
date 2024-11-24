@@ -1,7 +1,11 @@
+mod header;
+
 use nodui::ui::NodeUI;
 use serde::{Deserialize, Serialize};
 
 use super::{socket::SocketStyle, NodeId, Socket};
+
+pub(crate) use header::{HeaderMode, NodeHeaderStyle};
 
 #[derive(Serialize, Deserialize)]
 pub struct Node {
@@ -12,9 +16,9 @@ pub struct Node {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct NodeStyle {
+pub(crate) struct NodeStyle {
     pub body: nodui::ui::NodeBody,
-    pub header: nodui::ui::TitleHeader,
+    pub header: NodeHeaderStyle,
     pub outline: nodui::ui::Stroke,
 }
 
@@ -22,10 +26,7 @@ impl Default for NodeStyle {
     fn default() -> Self {
         NodeStyle {
             body: nodui::ui::NodeBody::default(),
-            header: nodui::ui::TitleHeader::new(
-                ("New Node", nodui::ui::Color::BLACK),
-                egui::Color32::KHAKI.to_tuple(),
-            ),
+            header: NodeHeaderStyle::default(),
             outline: nodui::ui::Stroke {
                 color: nodui::ui::Color::WHITE,
                 width: 1.0,
@@ -69,13 +70,14 @@ impl Node {
     }
 }
 
-impl NodeStyle {
-    pub fn into_node_ui(self) -> NodeUI {
-        let Self {
+impl From<NodeStyle> for NodeUI {
+    #[inline]
+    fn from(value: NodeStyle) -> Self {
+        let NodeStyle {
             body,
             header,
             outline,
-        } = self;
+        } = value;
 
         NodeUI {
             header: header.into(),

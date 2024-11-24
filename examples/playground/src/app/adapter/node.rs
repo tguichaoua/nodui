@@ -24,7 +24,7 @@ impl nodui::NodeAdapter for NodeAdapter<'_> {
     }
 
     fn ui(&self) -> nodui::ui::NodeUI {
-        self.node.style.clone().into_node_ui()
+        self.node.style.clone().into()
     }
 
     fn accept<'node, V>(&'node mut self, mut visitor: V)

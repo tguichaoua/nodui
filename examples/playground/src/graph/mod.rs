@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 pub use connections::Connections;
 pub use id::{NodeId, SocketId};
-pub use node::{Node, NodeStyle};
+pub(crate) use node::{HeaderMode, Node, NodeHeaderStyle, NodeStyle};
 pub use socket::{Socket, SocketStyle};
 
 #[derive(Default, Serialize, Deserialize)]
@@ -40,10 +40,10 @@ impl Graph {
     pub fn add_node(
         &mut self,
         pos: nodui::Pos,
-        settings: NodeStyle,
+        style: NodeStyle,
         sockets: impl IntoIterator<Item = SocketStyle>,
     ) -> &mut Node {
-        self.nodes.push(Node::new(pos, settings, sockets));
+        self.nodes.push(Node::new(pos, style, sockets));
         #[allow(clippy::unwrap_used)]
         self.nodes.last_mut().unwrap()
     }
@@ -65,12 +65,36 @@ impl Graph {
         }
     }
 
-    pub fn remove_socket(&mut self, socket_id: SocketId) {
+    fn find_socket_mut(&mut self, socket_id: SocketId) -> Option<(&mut Node, usize)> {
         for node in &mut self.nodes {
             if let Some(index) = node.sockets.iter().position(|s| s.id() == socket_id) {
-                node.sockets.remove(index);
-                self.connections.disconnect(socket_id);
-                return;
+                return Some((node, index));
+            }
+        }
+
+        None
+    }
+
+    pub fn remove_socket(&mut self, socket_id: SocketId) {
+        if let Some((node, index)) = self.find_socket_mut(socket_id) {
+            node.sockets.remove(index);
+        }
+        self.connections.disconnect(socket_id);
+    }
+
+    pub fn move_socket_up(&mut self, socket_id: SocketId) {
+        if let Some((node, index)) = self.find_socket_mut(socket_id) {
+            if let Some(prev_index) = index.checked_sub(1) {
+                node.sockets_mut().swap(prev_index, index);
+            }
+        }
+    }
+
+    pub fn move_socket_down(&mut self, socket_id: SocketId) {
+        if let Some((node, index)) = self.find_socket_mut(socket_id) {
+            let next_index = index + 1;
+            if next_index < node.sockets().len() {
+                node.sockets_mut().swap(index, next_index);
             }
         }
     }
