@@ -206,7 +206,7 @@ impl App {
                     if ui.link("create one").clicked() {
                         self.graph.new_node(self.editor_pos);
                     }
-                    ui.label(" to edit it");
+                    ui.label(" to edit it.");
 
                     ui.add_space(ui.available_width());
                 });
