@@ -114,8 +114,14 @@ impl App {
             self.graph.rebuild_and_get_expr()
         };
 
-        if let Some(expr) = expr {
-            ui.label(format!("{} = {}", expr.formula, expr.value));
+        match expr {
+            graph::ExprResult::None => {}
+            graph::ExprResult::Expr(expr) => {
+                ui.label(format!("{} = {}", expr.formula, expr.value));
+            }
+            graph::ExprResult::LoopError => {
+                ui.colored_label(egui::Color32::RED, "The expr contains a loop!");
+            }
         }
     }
 

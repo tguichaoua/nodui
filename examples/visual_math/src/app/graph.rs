@@ -13,6 +13,17 @@ use crate::graph::{
 
 /* -------------------------------------------------------------------------- */
 
+/// The result of the computation of the expression from the selected node of the graph.
+#[derive(serde::Serialize, serde::Deserialize)]
+pub enum ExprResult {
+    /// There is no expression computed, yet.
+    None,
+    /// The computed expression.
+    Expr(Expr),
+    /// The computation of the expression fails due to a loop in the expression.
+    LoopError,
+}
+
 /// The adapter for the math graph that will render into the visual editor.
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct GraphApp {
@@ -27,7 +38,7 @@ pub struct GraphApp {
     /// Whether or not we need to rebuild the expr.
     may_need_to_rebuild_expr: bool,
     /// The last built expression.
-    expr: Option<Expr>,
+    expr: ExprResult,
 }
 
 /// An expression from the graph.
@@ -53,7 +64,7 @@ impl GraphApp {
             selected_node: None,
 
             may_need_to_rebuild_expr: false,
-            expr: None,
+            expr: ExprResult::None,
         }
     }
 
@@ -66,23 +77,23 @@ impl GraphApp {
     /// Get the expression of the currently selected node, if any.
     ///
     /// Rebuild the expression if dirty.
-    pub fn rebuild_and_get_expr(&mut self) -> Option<&Expr> {
+    pub fn rebuild_and_get_expr(&mut self) -> &ExprResult {
         self.rebuild_expr();
 
-        self.expr.as_ref()
+        &self.expr
     }
 
     /// Get the expression of the currently selected node, if any.
     ///
     /// Rebuild the expression if dirty, and force the recomputation of the value.
-    pub fn rebuild_recompute_and_get_expr(&mut self) -> Option<&Expr> {
+    pub fn rebuild_recompute_and_get_expr(&mut self) -> &ExprResult {
         if !self.rebuild_expr() {
-            if let Some(Expr { expr, value, .. }) = self.expr.as_mut() {
+            if let ExprResult::Expr(Expr { expr, value, .. }) = &mut self.expr {
                 *value = compute_value(expr, &self.graph);
             }
         }
 
-        self.expr.as_ref()
+        &self.expr
     }
 
     /// Rebuild the expression if dirty.
@@ -93,31 +104,37 @@ impl GraphApp {
             if let Some(selected_socket_id) = self.selected_node {
                 let expr = self.graph.build_expr_from(selected_socket_id);
 
-                if let Ok(expr) = expr {
-                    let formula = expr
-                        .display(|input_id, f| {
-                            if let Some(input) = self.graph.get_input(input_id) {
-                                f.write_str(input.name())
-                            } else {
-                                f.write_str("?")
-                            }
-                        })
-                        .to_string();
+                match expr {
+                    Ok(expr) => {
+                        let formula = expr
+                            .display(|input_id, f| {
+                                if let Some(input) = self.graph.get_input(input_id) {
+                                    f.write_str(input.name())
+                                } else {
+                                    f.write_str("?")
+                                }
+                            })
+                            .to_string();
 
-                    let value = compute_value(&expr, &self.graph);
+                        let value = compute_value(&expr, &self.graph);
 
-                    self.expr = Some(Expr {
-                        expr,
-                        formula,
-                        value,
-                    });
-                    self.may_need_to_rebuild_expr = false;
+                        self.expr = ExprResult::Expr(Expr {
+                            expr,
+                            formula,
+                            value,
+                        });
+                        self.may_need_to_rebuild_expr = false;
 
-                    return true;
+                        return true;
+                    }
+                    Err(crate::graph::BuildExprError::NodeNotFound) => {
+                        self.selected_node = None;
+                        self.expr = ExprResult::None;
+                    }
+                    Err(crate::graph::BuildExprError::Loop) => {
+                        self.expr = ExprResult::LoopError;
+                    }
                 }
-
-                self.selected_node = None;
-                self.expr = None;
             }
         }
 

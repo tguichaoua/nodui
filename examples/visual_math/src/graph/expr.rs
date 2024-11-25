@@ -1,5 +1,6 @@
 //! Math expression.
 
+use std::collections::HashSet;
 use std::fmt::{Debug, Display};
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
@@ -27,17 +28,20 @@ pub enum Expr {
 }
 
 /// An error that can occurs when the building of an [`Expr`] fails.
-pub struct BuildExprError(());
-
-impl Debug for BuildExprError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("BuildExprError")
-    }
+#[derive(Debug)]
+pub enum BuildExprError {
+    /// The provided node id has not been found in the graph.
+    NodeNotFound,
+    /// The graph contains a loop.
+    Loop,
 }
 
 impl Display for BuildExprError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("The provided socket didn't not exists in the graph")
+        match self {
+            BuildExprError::NodeNotFound => f.write_str("node not found"),
+            BuildExprError::Loop => f.write_str("the expression contains a loop"),
+        }
     }
 }
 
@@ -46,11 +50,17 @@ impl std::error::Error for BuildExprError {}
 impl Graph {
     /// Build the [`Expr`] from the specified node.
     pub fn build_expr_from(&self, node_id: NodeId) -> Result<Expr, BuildExprError> {
-        self.build_expr_from_inner(Some(node_id))
+        let mut tracelog = HashSet::new();
+
+        self.build_expr_from_inner(&mut tracelog, Some(node_id))
     }
 
     /// Build the [`Expr`] from the specified node.
-    fn build_expr_from_inner(&self, node_id: Option<NodeId>) -> Result<Expr, BuildExprError> {
+    fn build_expr_from_inner(
+        &self,
+        resolution_stack: &mut HashSet<OpNodeId>,
+        node_id: Option<NodeId>,
+    ) -> Result<Expr, BuildExprError> {
         let Some(node_id) = node_id else {
             return Ok(Expr::Unconnected);
         };
@@ -58,20 +68,38 @@ impl Graph {
         match node_id {
             NodeId::Op(node_id) => {
                 let Some(node) = self.get_op_node(node_id) else {
-                    return Err(BuildExprError(()));
+                    return Err(BuildExprError::NodeNotFound);
                 };
 
-                match node.op() {
-                    Op::Unary(UnaryOp::Neg) => self.build_expr_unary(node.id(), Expr::Neg),
-                    Op::Binary(BinaryOp::Add) => self.build_expr_binary(node.id(), Expr::Add),
-                    Op::Binary(BinaryOp::Sub) => self.build_expr_binary(node.id(), Expr::Sub),
-                    Op::Binary(BinaryOp::Mul) => self.build_expr_binary(node.id(), Expr::Mul),
-                    Op::Binary(BinaryOp::Div) => self.build_expr_binary(node.id(), Expr::Div),
+                if !resolution_stack.insert(node_id) {
+                    return Err(BuildExprError::Loop);
                 }
+
+                let expr = match node.op() {
+                    Op::Unary(UnaryOp::Neg) => {
+                        self.build_expr_unary(resolution_stack, node.id(), Expr::Neg)
+                    }
+                    Op::Binary(BinaryOp::Add) => {
+                        self.build_expr_binary(resolution_stack, node.id(), Expr::Add)
+                    }
+                    Op::Binary(BinaryOp::Sub) => {
+                        self.build_expr_binary(resolution_stack, node.id(), Expr::Sub)
+                    }
+                    Op::Binary(BinaryOp::Mul) => {
+                        self.build_expr_binary(resolution_stack, node.id(), Expr::Mul)
+                    }
+                    Op::Binary(BinaryOp::Div) => {
+                        self.build_expr_binary(resolution_stack, node.id(), Expr::Div)
+                    }
+                };
+
+                resolution_stack.remove(&node_id);
+
+                expr
             }
             NodeId::Input(node_id) => {
                 let Some(node) = self.get_input(node_id) else {
-                    return Err(BuildExprError(()));
+                    return Err(BuildExprError::NodeNotFound);
                 };
 
                 Ok(Expr::Input(node.id()))
@@ -82,11 +110,13 @@ impl Graph {
     /// Build an unary operation expression.
     fn build_expr_unary(
         &self,
+        resolution_stack: &mut HashSet<OpNodeId>,
         node_id: OpNodeId,
         expr: impl FnOnce(Box<Expr>) -> Expr,
     ) -> Result<Expr, BuildExprError> {
         Ok(expr(Box::new(
             self.build_expr_from_inner(
+                resolution_stack,
                 self.connections
                     .get(node_id.input_socket_id(SocketIndex::A))
                     .map(|socket_id| socket_id.node_id),
@@ -97,12 +127,14 @@ impl Graph {
     /// Build an binary operation expression.
     fn build_expr_binary(
         &self,
+        resolution_stack: &mut HashSet<OpNodeId>,
         node_id: OpNodeId,
         expr: impl FnOnce(Box<Expr>, Box<Expr>) -> Expr,
     ) -> Result<Expr, BuildExprError> {
         Ok(expr(
             Box::new(
                 self.build_expr_from_inner(
+                    resolution_stack,
                     self.connections
                         .get(node_id.input_socket_id(SocketIndex::A))
                         .map(|socket_id| socket_id.node_id),
@@ -110,6 +142,7 @@ impl Graph {
             ),
             Box::new(
                 self.build_expr_from_inner(
+                    resolution_stack,
                     self.connections
                         .get(node_id.input_socket_id(SocketIndex::B))
                         .map(|socket_id| socket_id.node_id),

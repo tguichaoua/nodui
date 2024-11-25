@@ -7,7 +7,7 @@ mod input;
 mod node;
 
 pub use self::connections::Connections;
-pub use self::expr::Expr;
+pub use self::expr::{BuildExprError, Expr};
 pub use self::id::{
     InputId, InputSocketId, IntoOutputSocketId, NodeId, OpNodeId, OutputSocketId, SocketId,
 };
