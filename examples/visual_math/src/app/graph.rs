@@ -1,14 +1,12 @@
 //! Graph adapter for a math graph.
 
-mod adapter;
-
 use std::collections::HashMap;
 
 use nodui::{Pos, Socket};
 
 use crate::graph::{
-    BinaryOp, Graph, Input, InputId, InputSocketId, IntoOutputSocketId, NodeId, Op, OpNodeId,
-    OutputSocketId, SocketId, UnaryOp,
+    BinaryOp, Connections, Graph, Input, InputId, InputSocketId, IntoOutputSocketId, NodeId, Op,
+    OpNodeId, OutputSocketId, SocketId, UnaryOp,
 };
 
 /* -------------------------------------------------------------------------- */
@@ -162,6 +160,16 @@ impl GraphApp {
         let id = self.graph.add_input(name, value);
         self.positions.insert(id.into(), pos);
         id
+    }
+
+    /// Get a readonly access to the [`Connections`].
+    pub fn connections(&self) -> &Connections {
+        self.graph.connections()
+    }
+
+    /// Connects two sockets.
+    pub fn connect(&mut self, a: SocketId, b: SocketId) {
+        self.graph.connections_mut().connect(a, b);
     }
 }
 

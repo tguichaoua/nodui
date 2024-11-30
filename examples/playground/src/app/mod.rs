@@ -1,7 +1,7 @@
 mod adapter;
 mod widget;
 
-use adapter::GraphAdapter;
+use adapter::GraphApp;
 use nodui::Pos;
 use serde::{Deserialize, Serialize};
 
@@ -9,7 +9,7 @@ use crate::graph::{NodeId, SocketId};
 
 #[derive(Serialize, Deserialize)]
 pub struct App {
-    graph: GraphAdapter,
+    graph: GraphApp,
 
     editor_bg_color: egui::Color32,
     editor_grid_stroke: egui::Stroke,
@@ -24,7 +24,7 @@ impl Default for App {
     #[inline]
     fn default() -> Self {
         Self {
-            graph: GraphAdapter::default(),
+            graph: GraphApp::default(),
             editor_bg_color: egui::Color32::BLACK,
             editor_grid_stroke: egui::Stroke::new(0.5, egui::Color32::DARK_GRAY),
             editor_pos: Pos::default(),
@@ -221,77 +221,10 @@ impl App {
             SocketAction::MoveDown(socket_id) => self.graph.move_socket_down(socket_id),
         }
     }
-
-    fn show_graph(&mut self, ui: &mut egui::Ui) {
-        let graph = nodui::GraphEditor::new(&mut self.graph, "graph")
-            .background_color(self.editor_bg_color)
-            .grid_stroke(self.editor_grid_stroke)
-            .context_menu(|ui, context| {
-                if ui.button("New node").clicked() {
-                    context.graph.new_node(context.pos);
-                    ui.close_menu();
-                }
-
-                ui.add_enabled_ui(context.graph.clipboard.is_some(), |ui| {
-                    if ui.button("Paste node").clicked() {
-                        context.graph.paste_node(context.pos);
-                        ui.close_menu();
-                    }
-                });
-            })
-            .node_context_menu(|ui, context| {
-                if ui.button("Add socket").clicked() {
-                    if let Some(node) = context.graph.get_node_mut(context.node_id) {
-                        node.add_socket();
-                    }
-                    ui.close_menu();
-                }
-
-                if ui.button("Copy").clicked() {
-                    context.graph.copy_node(context.node_id);
-                    ui.close_menu();
-                }
-
-                ui.add_enabled_ui(context.graph.clipboard.is_some(), |ui| {
-                    if ui.button("Paste style").clicked() {
-                        context.graph.paste_node_settings_to(context.node_id);
-                        ui.close_menu();
-                    }
-
-                    if ui.button("Paste sockets").clicked() {
-                        context.graph.paste_sockets_to(context.node_id);
-                        ui.close_menu();
-                    }
-                });
-
-                if ui.button("Remove").clicked() {
-                    context.graph.remove_node(context.node_id);
-                    ui.close_menu();
-                }
-            })
-            .socket_context_menu(|ui, context| {
-                if ui.button("Disconnect").clicked() {
-                    context
-                        .graph
-                        .connections_mut()
-                        .disconnect(context.socket_id);
-                    ui.close_menu();
-                }
-            });
-
-        let response = graph.show(ui);
-
-        self.editor_pos = response.position;
-        self.cursor_pos = response.pointer_latest_pos();
-
-        if let Some(selected_node_id) = response.last_interacted_node_id {
-            self.graph.selected_node = Some(selected_node_id);
-        }
-    }
 }
 
 impl App {
-    #![expect(clippy::too_many_lines)]
+    #[expect(clippy::too_many_lines)]
     fn show_graph2(&mut self, ui: &mut egui::Ui) {
         let graph = nodui::GraphEditor2::new("graph")
             .show_viewport(ui)

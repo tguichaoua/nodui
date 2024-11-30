@@ -3,9 +3,9 @@
 mod graph;
 
 use egui::{CentralPanel, DragValue, Grid, SidePanel, Ui};
-use nodui::{GraphAdapter, Pos};
+use nodui::Pos;
 
-use crate::graph::{BinaryOp, Op, SocketId, UnaryOp};
+use crate::graph::{BinaryOp, Op, UnaryOp};
 
 use self::graph::GraphApp;
 
@@ -127,56 +127,6 @@ impl App {
     }
 
     /// Render the visual graph editor.
-    fn graph_editor(&mut self, ui: &mut Ui) {
-        let graph = nodui::GraphEditor::new(&mut self.graph, "graph")
-            /* ---------------------------------------------------------------------------------- */
-            /* The main context menu, when the user right click on the background of the editor.  */
-            /* ---------------------------------------------------------------------------------- */
-            .context_menu(|ui, context| {
-                new_node_menu(ui, |op| {
-                    context.graph.add_op_node(context.pos, op);
-                });
-            })
-            /* ---------------------------------------------------------------------------------- */
-            /* The socket context menu, when the user right click on a socket.                    */
-            /* ---------------------------------------------------------------------------------- */
-            .socket_context_menu(|ui, context| match context.socket_id {
-                SocketId::Output(output_socket_id) => {
-                    if ui.button("Disconnect all").clicked() {
-                        context.graph.disconnect_all(output_socket_id);
-                        ui.close_menu();
-                    }
-                }
-                SocketId::Input(input_socket_id) => {
-                    if ui.button("Disconnect").clicked() {
-                        context.graph.disconnect(input_socket_id);
-                        ui.close_menu();
-                    }
-                }
-            })
-            /* ---------------------------------------------------------------------------------- */
-            /* The node context menu, when the user right click on a node.                        */
-            /* ---------------------------------------------------------------------------------- */
-            .node_context_menu(|ui, context| {
-                if ui.button("Select").clicked() {
-                    context.graph.set_selected_node(context.node_id);
-                    ui.close_menu();
-                }
-
-                ui.separator();
-
-                if ui.button("Remove").clicked() {
-                    context.graph.remove_node(context.node_id);
-                    ui.close_menu();
-                }
-            });
-
-        let response = graph.show(ui);
-
-        self.current_graph_pos = response.position;
-    }
-
-    /// Render the visual graph editor.
     fn graph_editor2(&mut self, ui: &mut Ui) {
         let graph = nodui::GraphEditor2::new("graph")
             .show_viewport(ui)
@@ -199,8 +149,8 @@ impl App {
                     }
                 });
 
-                for (a, b) in self.graph.connections() {
-                    ui.connect_line(&a, &b, (3.0, egui::Color32::WHITE));
+                for (a, b) in self.graph.connections().iter() {
+                    ui.connect_line(&a.into(), &b.into(), (3.0, egui::Color32::WHITE));
                 }
             })
             .finish();
