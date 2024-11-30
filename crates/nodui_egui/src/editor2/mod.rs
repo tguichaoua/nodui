@@ -8,6 +8,7 @@ mod socket;
 pub mod stages;
 
 use egui::{Id, Response, Vec2};
+use nodui_core::Pos;
 
 use crate::viewport::{CanvasPos, Grid, Viewport};
 
@@ -27,6 +28,7 @@ pub struct GraphResponse<S> {
     pub response: Response,
     pub sockets: Vec<RenderedSocket<S>>,
     pub connection: Option<(S, S)>,
+    pub position: Pos,
 }
 
 impl<S> GraphEditor<stages::End<S>>
@@ -48,6 +50,8 @@ where
                 },
         } = self;
 
+        let position = viewport.grid.canvas_to_graph(state.viewport_position);
+
         state.store(ui.ctx(), id);
 
         GraphResponse {
@@ -55,6 +59,7 @@ where
             response,
             sockets,
             connection,
+            position,
         }
     }
 }

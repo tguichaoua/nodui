@@ -27,7 +27,7 @@ impl<S> Socket<S> {
             id,
             side,
             text: String::default(),
-            text_color: Color32::BLACK,
+            text_color: Color32::WHITE,
             filled: false,
             shape: SocketShape::default(),
             color: Color32::WHITE,

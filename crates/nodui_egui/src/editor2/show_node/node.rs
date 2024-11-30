@@ -179,6 +179,11 @@ impl<S> NodeUi<S> {
     pub fn socket(&mut self, socket: Socket<S>) {
         self.sockets.push(socket);
     }
+
+    #[inline]
+    pub fn outline(&mut self, outline: impl Into<egui::Stroke>) {
+        self.outline = outline.into();
+    }
 }
 
 /* -------------------------------------------------------------------------- */

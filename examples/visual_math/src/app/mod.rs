@@ -3,7 +3,7 @@
 mod graph;
 
 use egui::{CentralPanel, DragValue, Grid, SidePanel, Ui};
-use nodui::Pos;
+use nodui::{GraphAdapter, Pos};
 
 use crate::graph::{BinaryOp, Op, SocketId, UnaryOp};
 
@@ -80,7 +80,8 @@ impl eframe::App for App {
             });
 
         CentralPanel::default().show(ctx, |ui| {
-            self.graph_editor(ui);
+            // self.graph_editor(ui);
+            self.graph_editor2(ui);
         });
     }
 }
@@ -173,6 +174,50 @@ impl App {
         let response = graph.show(ui);
 
         self.current_graph_pos = response.position;
+    }
+
+    /// Render the visual graph editor.
+    fn graph_editor2(&mut self, ui: &mut Ui) {
+        let graph = nodui::GraphEditor2::new("graph")
+            .show_viewport(ui)
+            .show_nodes(|ui| {
+                self.graph.show_nodes(ui);
+            })
+            .show_connections(|ui| {
+                ui.in_progress_connection_line_with_feedback(|source, target| {
+                    if let Some(target) = target {
+                        let color = if crate::graph::Connections::can_connect(source.id, target.id)
+                        {
+                            egui::Color32::GREEN
+                        } else {
+                            egui::Color32::RED
+                        };
+
+                        egui::Stroke::new(5.0, color)
+                    } else {
+                        egui::Stroke::new(3.0, egui::Color32::WHITE)
+                    }
+                });
+
+                for (a, b) in self.graph.connections() {
+                    ui.connect_line(&a, &b, (3.0, egui::Color32::WHITE));
+                }
+            })
+            .finish();
+
+        graph.response.context_menu(|ui| {
+            let pos = graph.viewport.viewport_to_graph(ui.min_rect().left_top());
+
+            new_node_menu(ui, |op| {
+                self.graph.add_op_node(pos, op);
+            });
+        });
+
+        if let Some((a, b)) = graph.connection {
+            self.graph.connect(a, b);
+        }
+
+        self.current_graph_pos = graph.position;
     }
 }
 

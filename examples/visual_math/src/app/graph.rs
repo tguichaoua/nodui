@@ -4,11 +4,11 @@ mod adapter;
 
 use std::collections::HashMap;
 
-use nodui::Pos;
+use nodui::{Pos, Socket};
 
 use crate::graph::{
     BinaryOp, Graph, Input, InputId, InputSocketId, IntoOutputSocketId, NodeId, Op, OpNodeId,
-    OutputSocketId, UnaryOp,
+    OutputSocketId, SocketId, UnaryOp,
 };
 
 /* -------------------------------------------------------------------------- */
@@ -224,6 +224,137 @@ impl GraphApp {
     pub fn disconnect_all(&mut self, socket: OutputSocketId) {
         self.graph.connections_mut().disconnect_all(socket);
         self.may_need_to_rebuild_expr = true;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+impl GraphApp {
+    #[allow(clippy::missing_docs_in_private_items)] // TODO: docs
+    #[allow(clippy::too_many_lines)]
+    pub fn show_nodes(&mut self, ui: &mut nodui::GraphUi<SocketId>) {
+        enum Command {
+            None,
+            Remove(NodeId),
+            Select(NodeId),
+            Disconnect(SocketId),
+        }
+
+        let crate::graph::ViewMut {
+            nodes,
+            inputs,
+            connections,
+        } = self.graph.view_mut();
+
+        let mut command = Command::None;
+
+        let mut handle_node_response =
+            |node_id: NodeId, node_response: nodui::NodeResponse<'_, (), SocketId>| {
+                for socket in node_response.sockets {
+                    socket.response.context_menu(|ui| {
+                        if ui.button("Disconnect").clicked() {
+                            command = Command::Disconnect(socket.id);
+                            ui.close_menu();
+                        }
+                    });
+                }
+
+                node_response.response.context_menu(|ui| {
+                    if ui.button("Select").clicked() {
+                        command = Command::Select(node_id);
+
+                        ui.close_menu();
+                    }
+
+                    ui.separator();
+
+                    if ui.button("Remove").clicked() {
+                        command = Command::Remove(node_id);
+                        ui.close_menu();
+                    }
+                });
+            };
+
+        {
+            for node in nodes.iter() {
+                let pos = self.positions.entry(node.id().into()).or_default();
+
+                let node_response = ui.node(node.id(), pos, |ui| {
+                    if self.selected_node == Some(NodeId::from(node.id())) {
+                        ui.outline((2.0, egui::Color32::RED));
+                    } else {
+                        ui.outline((1.0, egui::Color32::WHITE));
+                    }
+
+                    let input_sockets = node.input_socket_ids();
+
+                    for socket in input_sockets {
+                        ui.socket(
+                            Socket::new(socket.into(), nodui::ui::NodeSide::Left)
+                                .filled(connections.is_connected(socket.into()))
+                                .text(socket.name()),
+                        );
+                    }
+
+                    {
+                        let output_id = node.output_socket().into();
+
+                        let output_name = match node.op() {
+                            Op::Unary(UnaryOp::Neg) => "-A",
+                            Op::Binary(BinaryOp::Add) => "A+B",
+                            Op::Binary(BinaryOp::Sub) => "A-B",
+                            Op::Binary(BinaryOp::Mul) => "A*B",
+                            Op::Binary(BinaryOp::Div) => "A/B",
+                        };
+
+                        ui.socket(
+                            Socket::new(output_id, nodui::ui::NodeSide::Right)
+                                .filled(connections.is_connected(output_id))
+                                .text(output_name),
+                        );
+                    }
+                });
+
+                handle_node_response(node.id().into(), node_response);
+            }
+        }
+
+        {
+            for node in inputs {
+                let pos = self.positions.entry(node.id().into()).or_default();
+
+                let node_response = ui.node(node.id(), pos, |ui| {
+                    if self.selected_node == Some(NodeId::from(node.id())) {
+                        ui.outline((2.0, egui::Color32::RED));
+                    } else {
+                        ui.outline((1.0, egui::Color32::WHITE));
+                    }
+
+                    let socket_id = node.output_socket_id().into();
+                    ui.socket(
+                        Socket::new(socket_id, nodui::ui::NodeSide::Right)
+                            .filled(connections.is_connected(socket_id))
+                            .text(node.name()),
+                    );
+                });
+
+                handle_node_response(node.id().into(), node_response);
+            }
+        }
+
+        match command {
+            Command::None => {}
+            Command::Remove(node_id) => {
+                self.remove_node(node_id);
+            }
+            Command::Select(node_id) => {
+                self.set_selected_node(node_id);
+            }
+            Command::Disconnect(socket_id) => match socket_id {
+                SocketId::Output(output_socket_id) => self.disconnect_all(output_socket_id),
+                SocketId::Input(input_socket_id) => self.disconnect(input_socket_id),
+            },
+        }
     }
 }
 
