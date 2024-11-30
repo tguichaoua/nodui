@@ -7,7 +7,7 @@ use egui::Vec2;
 use nodui_core::Pos;
 
 /// The information about the viewport of the visual editor.
-pub(crate) struct Viewport {
+pub struct Viewport {
     /// The offset of the viewport.
     pub(crate) position: Vec2,
     /// The grid of the visual editor.
@@ -36,8 +36,10 @@ impl Viewport {
         pos + self.position
     }
 
+    #[must_use]
+    #[inline]
     /// Converts a UI position into a graph position.
-    pub(crate) fn viewport_to_graph(&self, pos: egui::Pos2) -> Pos {
+    pub fn viewport_to_graph(&self, pos: egui::Pos2) -> Pos {
         self.grid.canvas_to_graph(self.viewport_to_canvas(pos))
     }
 }
