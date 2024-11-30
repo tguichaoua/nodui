@@ -1,6 +1,8 @@
 use egui::{epaint::PathStroke, Shape};
 
-use super::{socket::ConnectionInProgress, stages, GraphEditor, RenderedSocket};
+use crate::ConnectionInProgress;
+
+use super::{stages, GraphEditor, RenderedSocket};
 
 /* -------------------------------------------------------------------------- */
 
@@ -24,11 +26,9 @@ impl<S> GraphEditor<stages::Connections<S>> {
         } = self;
 
         let (connection, in_progress) = match socket_interaction {
-            crate::editor2::socket::SocketInteraction::None => (None, None),
-            crate::editor2::socket::SocketInteraction::Connect(a, b) => (Some((a, b)), None),
-            crate::editor2::socket::SocketInteraction::InProgress(in_progress) => {
-                (None, Some(in_progress))
-            }
+            crate::socket::SocketInteraction::None => (None, None),
+            crate::socket::SocketInteraction::Connect(a, b) => (Some((a, b)), None),
+            crate::socket::SocketInteraction::InProgress(in_progress) => (None, Some(in_progress)),
         };
 
         let layer_id = egui::LayerId::new(egui::Order::Background, id);

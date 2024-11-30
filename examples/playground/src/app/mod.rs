@@ -226,7 +226,7 @@ impl App {
 impl App {
     #[expect(clippy::too_many_lines)]
     fn show_graph2(&mut self, ui: &mut egui::Ui) {
-        let graph = nodui::GraphEditor2::new("graph")
+        let graph = nodui::GraphEditor::new("graph")
             .show_viewport(ui)
             .show_nodes(|ui| {
                 let mut node_command = NodeCommand::None;

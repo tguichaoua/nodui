@@ -128,7 +128,7 @@ impl App {
 
     /// Render the visual graph editor.
     fn graph_editor2(&mut self, ui: &mut Ui) {
-        let graph = nodui::GraphEditor2::new("graph")
+        let graph = nodui::GraphEditor::new("graph")
             .show_viewport(ui)
             .show_nodes(|ui| {
                 self.graph.show_nodes(ui);

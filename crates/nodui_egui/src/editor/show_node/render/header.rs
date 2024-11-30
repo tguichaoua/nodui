@@ -5,7 +5,7 @@ use egui::{
     vec2, Color32, Pos2, Rect, Rounding, Vec2,
 };
 
-use crate::editor2::header::{Header, TitleHeader};
+use super::super::header::{Header, TitleHeader};
 
 /* -------------------------------------------------------------------------- */
 
@@ -90,7 +90,7 @@ pub(crate) fn prepare(header: Header, fonts: &egui::text::Fonts) -> PreparedHead
 
 impl PreparedHeader {
     /// Render the header.
-    pub(in crate::editor2) fn show(
+    pub(in crate::editor) fn show(
         self,
         ui: &egui::Ui,
         pos: Pos2,

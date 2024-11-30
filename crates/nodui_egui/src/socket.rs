@@ -7,37 +7,192 @@ use nodui_core::ui::{NodeSide, SocketShape};
 
 /* -------------------------------------------------------------------------- */
 
-/// Data about a socket after being rendered.
-pub struct RenderedSocket {
-    /// The [`Response`] to interact with the socket.
-    pub(crate) response: Response,
-    /// The color of the socket.
-    pub(crate) color: Color32,
-    /// The side on which the socket is rendered.
-    pub(crate) side: NodeSide,
+/// A socket to be rendered.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Socket<S> {
+    /// The id of the socket.
+    pub id: S,
+    /// On which side of the node the socket is rendered.
+    pub side: NodeSide,
+    /// The text of the socket.
+    pub text: String,
+    /// The color of the text.
+    pub text_color: Color32,
+    /// Whether or not the shape should be filled.
+    pub filled: bool,
+    /// The shape of the socket.
+    pub shape: SocketShape,
+    /// The color of the shape of the socket.
+    pub color: Color32,
 }
 
-impl RenderedSocket {
-    /// The color of the socket.
+impl<S> Socket<S> {
+    /// Creates a [`Socket`] with the default settings.
     #[inline]
-    #[must_use]
-    pub fn color(&self) -> Color32 {
-        self.color
+    pub fn new(id: S, side: NodeSide) -> Self {
+        Self {
+            id,
+            side,
+            text: String::default(),
+            text_color: Color32::WHITE,
+            filled: false,
+            shape: SocketShape::default(),
+            color: Color32::WHITE,
+        }
     }
 
-    /// The side on which the socket is rendered.
-    #[inline]
+    /// The text of the socket.
+
     #[must_use]
-    pub fn side(&self) -> NodeSide {
-        self.side
+    #[inline]
+    pub fn text(mut self, text: impl Into<String>) -> Self {
+        self.text = text.into();
+        self
     }
 
+    /// The color of the text.
+    #[must_use]
+    #[inline]
+    pub fn text_color(mut self, color: impl Into<Color32>) -> Self {
+        self.text_color = color.into();
+        self
+    }
+
+    /// Whether or not the shape should be filled.
+    #[must_use]
+    #[inline]
+    pub fn filled(mut self, filled: bool) -> Self {
+        self.filled = filled;
+        self
+    }
+
+    /// The shape of the socket.
+    #[must_use]
+    #[inline]
+    pub fn shape(mut self, shape: SocketShape) -> Self {
+        self.shape = shape;
+        self
+    }
+
+    /// The color of the shape of the socket.
+    #[must_use]
+    #[inline]
+    pub fn color(mut self, color: impl Into<Color32>) -> Self {
+        self.color = color.into();
+        self
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+/// A socket after it has been rendered.
+#[derive(Debug, Clone)]
+pub struct RenderedSocket<S> {
+    /// The id of the socket.
+    pub id: S,
+    /// The [`Response`] of the socket widget.
+    pub response: Response,
+    /// On which side of the node the socket is rendered.
+    pub side: NodeSide,
+    /// The color of the shape of the socket.
+    pub color: Color32,
+}
+
+impl<S> RenderedSocket<S> {
     /// The UI position in which the socket is rendered.
     #[inline]
     #[must_use]
     pub fn pos(&self) -> Pos2 {
         self.response.rect.center()
     }
+}
+
+/* -------------------------------------------------------------------------- */
+
+/// An interaction the user may have with the sockets.
+pub(crate) enum SocketInteraction<S> {
+    /// No interaction.
+    None,
+    /// The user try to connect two socket.
+    Connect(S, S),
+    /// The user is dragging a socket.
+    InProgress(ConnectionInProgress<S>),
+}
+
+/// An in progress connection between two sockets.
+pub struct ConnectionInProgress<S> {
+    /// The socket from which this connection has begin.
+    pub source: RenderedSocket<S>,
+    /// The socket that is currently under the pointer, if any.
+    pub target: Option<RenderedSocket<S>>,
+    /// The current position of the pointer.
+    pub pointer_pos: Pos2,
+}
+
+/// Handle the socket responses.
+///
+/// E.g. when the user drag-n-drop a socket to create a connection.
+pub(crate) fn handle_socket_responses<S>(
+    dragged_socket_id: &mut Option<S>,
+    rendered_sockets: &[RenderedSocket<S>],
+) -> SocketInteraction<S>
+where
+    S: Clone + PartialEq,
+{
+    let mut interaction = SocketInteraction::None;
+
+    if let Some(socket_id) = dragged_socket_id.as_ref() {
+        // There is a socket being dragged.
+
+        let dragged_socket = rendered_sockets.iter().find(|s| &s.id == socket_id);
+
+        if let Some(socket) = dragged_socket {
+            // Check the response of the dragged socket.
+
+            if socket.response.drag_stopped() {
+                // The drag has stopped.
+
+                let hovered = rendered_sockets.iter().find(|s| s.response.hovered());
+
+                if let Some(hovered_socket) = hovered {
+                    // Another socket contains the pointer, the user want to connect the sockets.
+
+                    interaction =
+                        SocketInteraction::Connect(socket_id.clone(), hovered_socket.id.clone());
+                } else {
+                    // The pointer is not on any socket.
+                    // Do nothing.
+                }
+
+                // In all cases, reset the state.
+                *dragged_socket_id = None;
+            } else {
+                // The dragging is still happening.
+
+                // Draw the on-going connection.
+
+                let hovered = rendered_sockets
+                    .iter()
+                    .find(|s| s.response.contains_pointer());
+
+                if let Some(pointer_pos) = socket.response.interact_pointer_pos() {
+                    interaction = SocketInteraction::InProgress(ConnectionInProgress {
+                        source: socket.clone(),
+                        target: hovered.cloned(),
+                        pointer_pos,
+                    });
+                }
+            }
+        } else {
+            // The currently dragged socket has been removed.
+            *dragged_socket_id = None;
+        }
+    } else if let Some(socket) = rendered_sockets.iter().find(|s| s.response.drag_started()) {
+        // A socket is being dragged.
+        *dragged_socket_id = Some(socket.id.clone());
+    }
+
+    interaction
 }
 
 /* -------------------------------------------------------------------------- */

@@ -2,15 +2,13 @@
 //!
 //! [nodui]: https://crates.io/crates/nodui
 
-mod editor2;
+mod editor;
 mod misc;
 mod socket;
 mod viewport;
 
-pub use socket::RenderedSocket;
-pub use viewport::Viewport;
-
-pub use editor2::{
-    stages, ConnectionInProgress, ConnectionsUi, GraphEditor as GraphEditor2, GraphResponse,
-    GraphUi, NodeResponse, NodeUi, RenderedSocket as RenderedSocket2, Socket,
+pub use editor::{
+    stages, ConnectionsUi, GraphEditor, GraphResponse, GraphUi, NodeResponse, NodeUi,
 };
+pub use socket::{ConnectionInProgress, RenderedSocket, Socket};
+pub use viewport::Viewport;

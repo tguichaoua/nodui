@@ -1,16 +1,15 @@
 use egui::{epaint::RectShape, vec2, Pos2, Rect, Response, Rounding, Vec2};
 
 use crate::{
-    editor2::{
-        header::{Header, TitleHeader},
-        socket::RenderedSocket,
-    },
     misc::{collector::Collector, layout},
-    Socket,
+    RenderedSocket, Socket,
 };
 
-use super::render::{self, body::PreparedBody, header::PreparedHeader};
-use super::GraphUi;
+use super::{
+    header::Header,
+    render::{self, body::PreparedBody, header::PreparedHeader},
+};
+use super::{header::TitleHeader, GraphUi};
 
 /* -------------------------------------------------------------------------- */
 

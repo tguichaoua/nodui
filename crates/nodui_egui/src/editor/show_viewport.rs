@@ -6,6 +6,8 @@ use crate::viewport::Viewport;
 
 use super::{stages, EditorState, GraphEditor};
 
+/* -------------------------------------------------------------------------- */
+
 impl GraphEditor<stages::Viewport> {
     /// Shows the viewport of the editor.
     #[inline]
@@ -152,3 +154,5 @@ impl GraphEditor<stages::Viewport> {
         }
     }
 }
+
+/* -------------------------------------------------------------------------- */

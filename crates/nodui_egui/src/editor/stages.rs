@@ -18,7 +18,7 @@ pub struct Connections<S> {
     pub(super) viewport: super::Viewport,
     pub(super) response: egui::Response,
     pub(super) sockets: Vec<super::RenderedSocket<S>>,
-    pub(super) socket_interaction: crate::editor2::socket::SocketInteraction<S>,
+    pub(super) socket_interaction: crate::socket::SocketInteraction<S>,
 }
 
 pub struct End<S> {

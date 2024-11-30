@@ -1,8 +1,8 @@
 use egui::{epaint::RectShape, vec2, Color32, Margin, Pos2, Rect, Rounding, Vec2};
 
 use crate::{
-    editor2::socket::RenderedSocket,
     misc::{collector::Collector, layout},
+    RenderedSocket,
 };
 
 use super::{socket::PreparedSocket, ROW_HEIGHT, SOCKET_NAME_GAP, SOCKET_WIDTH};
