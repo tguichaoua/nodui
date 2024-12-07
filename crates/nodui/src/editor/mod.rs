@@ -23,6 +23,29 @@ use state::EditorState;
 /* -------------------------------------------------------------------------- */
 
 /// A node based graph editor.
+///
+/// The following methods must be called in order:
+///
+/// - [`new`][Self::new]: Creates the graph editor.
+/// - [`show_viewport`][Self::show_viewport]: Render the viewport of the editor.
+/// - [`show_nodes`][Self::show_nodes]: Render the nodes.
+/// - [`show_connections`][Self::show_connections]: Render the connection between the sockets.
+/// - [`finish`][Self::finish]: Returns the [`GraphResponse`].
+///
+/// ```
+/// fn show_graph_editor(ui: &mut egui::Ui) {
+///     let response: nodui::GraphResponse = nodui::GraphEditor::new("a unique id")
+///         .show_viewport(ui)
+///         .show_nodes(|ui| {
+///             /* This is where you add the nodes */
+///         })
+///         .show_connections(|ui| {
+///             /* This is where you add the connections between sockets */
+///         })
+///         .finish();
+/// }
+/// ```
+///
 pub struct GraphEditor<Stage> {
     /// The id used to store data from one frame to the other.
     id: Id,
