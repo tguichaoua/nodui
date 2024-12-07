@@ -1,7 +1,7 @@
-mod adapter;
+mod graph;
 mod widget;
 
-use adapter::GraphApp;
+use graph::GraphApp;
 use nodui::Pos;
 use serde::{Deserialize, Serialize};
 
@@ -53,7 +53,7 @@ impl eframe::App for App {
 
         egui::CentralPanel::default().show(ctx, |ui| {
             // self.show_graph(ui);
-            self.show_graph2(ui);
+            self.show_graph(ui);
         });
 
         ctx.input_mut(|input| {
@@ -124,7 +124,7 @@ impl App {
                     ui.end_row();
 
                     ui.label("Background");
-                    ui.add(widget::nodui_color(&mut node.style.body.background_color));
+                    ui.color_edit_button_srgba(&mut node.style.body.background_color);
                     ui.end_row();
 
                     ui.label("Layout");
@@ -132,11 +132,11 @@ impl App {
                     ui.end_row();
 
                     ui.label("Padding");
-                    ui.add(widget::nodui_padding(&mut node.style.body.padding));
+                    ui.add(&mut node.style.body.padding);
                     ui.end_row();
 
                     ui.label("Outline");
-                    ui.add(widget::nodui_stroke(&mut node.style.outline));
+                    ui.add(&mut node.style.outline);
                     ui.end_row();
                 });
 
@@ -184,9 +184,12 @@ impl App {
 
                         ui.add(egui::Label::new(socket.id().to_string()).truncate());
 
-                        widget::text_ui(ui, &mut socket.style.name);
+                        ui.horizontal(|ui| {
+                            ui.text_edit_singleline(&mut socket.style.name);
+                            ui.color_edit_button_srgba(&mut socket.style.name_color);
+                        });
 
-                        ui.color_edit_button_srgba_unmultiplied(socket.style.color.as_array_mut());
+                        ui.color_edit_button_srgba(&mut socket.style.color);
 
                         ui.add(widget::node_side(&mut socket.style.side));
 
@@ -225,7 +228,7 @@ impl App {
 
 impl App {
     #[expect(clippy::too_many_lines)]
-    fn show_graph2(&mut self, ui: &mut egui::Ui) {
+    fn show_graph(&mut self, ui: &mut egui::Ui) {
         let graph = nodui::GraphEditor::new("graph")
             .show_viewport(ui)
             .show_nodes(|ui| {
@@ -239,26 +242,11 @@ impl App {
                         match node.style.header.mode {
                             crate::graph::HeaderMode::None => {}
                             crate::graph::HeaderMode::Title => {
-                                let text = &node.style.header.title.text;
-
-                                let text_color = {
-                                    let (r, g, b, a) = node
-                                        .style
-                                        .header
-                                        .title
-                                        .color
-                                        .unwrap_or(nodui::ui::Color::WHITE)
-                                        .rgba();
-
-                                    egui::Color32::from_rgba_unmultiplied(r, g, b, a)
-                                };
-
-                                let background = {
-                                    let (r, g, b, a) = node.style.header.background.rgba();
-                                    egui::Color32::from_rgba_unmultiplied(r, g, b, a)
-                                };
-
-                                ui.header_title(text, text_color, background);
+                                ui.header_title(
+                                    &node.style.header.title,
+                                    node.style.header.title_color,
+                                    node.style.header.background,
+                                );
                             }
                         }
 
@@ -268,30 +256,17 @@ impl App {
                             let crate::graph::SocketStyle {
                                 side,
                                 ref name,
+                                name_color,
                                 shape,
                                 color,
                             } = socket.style;
-
-                            let text = &name.text;
-
-                            let text_color = {
-                                let (r, g, b, a) =
-                                    name.color.unwrap_or(nodui::ui::Color::WHITE).rgba();
-
-                                egui::Color32::from_rgba_unmultiplied(r, g, b, a)
-                            };
-
-                            let color = {
-                                let (r, g, b, a) = color.rgba();
-                                egui::Color32::from_rgba_unmultiplied(r, g, b, a)
-                            };
 
                             let is_connected = connections.is_connected(socket.id());
 
                             ui.socket(
                                 nodui::Socket::new(socket.id(), side)
-                                    .text(text)
-                                    .text_color(text_color)
+                                    .text(name)
+                                    .text_color(name_color)
                                     .filled(is_connected)
                                     .shape(shape)
                                     .color(color),

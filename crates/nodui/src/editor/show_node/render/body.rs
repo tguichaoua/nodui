@@ -4,7 +4,7 @@ use egui::{epaint::RectShape, vec2, Color32, Margin, Pos2, Rect, Rounding, Vec2}
 
 use crate::{
     misc::{collector::Collector, layout},
-    RenderedSocket,
+    NodeLayout, NodeSide, RenderedSocket,
 };
 
 use super::{socket::PreparedSocket, ROW_HEIGHT, SOCKET_NAME_GAP, SOCKET_WIDTH};
@@ -18,7 +18,7 @@ pub(crate) struct PreparedBody<S> {
     /// The size required to render the body.
     size: Vec2,
     /// The layout to use to render the sockets.
-    layout: nodui_core::ui::NodeLayout,
+    layout: NodeLayout,
     /// The color of the background of the node.
     background_color: Color32,
 
@@ -36,26 +36,23 @@ impl<S> PreparedBody<S> {
 /* -------------------------------------------------------------------------- */
 
 /// Prepare the node body for its rendering.
-pub(crate) fn prepare<S>(
-    layout: nodui_core::ui::NodeLayout,
-    sockets: Vec<PreparedSocket<S>>,
-) -> PreparedBody<S> {
+pub(crate) fn prepare<S>(layout: NodeLayout, sockets: Vec<PreparedSocket<S>>) -> PreparedBody<S> {
     let background_color = Color32::from_rgba_unmultiplied(0, 0, 0, 170);
     let padding = Margin::same(5.0);
     let column_gap = 5.0;
 
     let size: Vec2 = match layout {
-        nodui_core::ui::NodeLayout::Single => {
+        NodeLayout::Single => {
             layout::stack_vertically(sockets.iter().map(PreparedSocket::compute_size))
         }
-        nodui_core::ui::NodeLayout::Double => {
+        NodeLayout::Double => {
             let mut left = Vec2::ZERO;
             let mut right = Vec2::ZERO;
 
             for s in &sockets {
                 let size = match s.side {
-                    nodui_core::ui::NodeSide::Left => &mut left,
-                    nodui_core::ui::NodeSide::Right => &mut right,
+                    NodeSide::Left => &mut left,
+                    NodeSide::Right => &mut right,
                 };
 
                 *size = layout::stack_vertically([*size, s.compute_size()]);
@@ -112,10 +109,10 @@ where
             let rect = rect - padding;
 
             match layout {
-                nodui_core::ui::NodeLayout::Single => {
+                NodeLayout::Single => {
                     show_single_column_body(ui, rendered_sockets, sockets, rect);
                 }
-                nodui_core::ui::NodeLayout::Double => {
+                NodeLayout::Double => {
                     show_double_column_body(ui, rendered_sockets, sockets, rect);
                 }
             }
@@ -138,8 +135,8 @@ fn show_single_column_body<S>(
         // TODO: may be refactored
         // TODO: DRY this part and the other from `show_double_column_body`
         let (socket_x, text_x) = match socket.side {
-            nodui_core::ui::NodeSide::Left => (0.0, SOCKET_WIDTH + SOCKET_NAME_GAP),
-            nodui_core::ui::NodeSide::Right => (
+            NodeSide::Left => (0.0, SOCKET_WIDTH + SOCKET_NAME_GAP),
+            NodeSide::Right => (
                 rect.width() - SOCKET_WIDTH,
                 rect.width() - (SOCKET_WIDTH + SOCKET_NAME_GAP),
             ),
@@ -168,8 +165,8 @@ fn show_double_column_body<S>(
 
     for socket in sockets {
         let (pos, socket_x, text_x) = match socket.side {
-            nodui_core::ui::NodeSide::Left => (&mut left, 0.0, SOCKET_WIDTH + SOCKET_NAME_GAP),
-            nodui_core::ui::NodeSide::Right => (
+            NodeSide::Left => (&mut left, 0.0, SOCKET_WIDTH + SOCKET_NAME_GAP),
+            NodeSide::Right => (
                 &mut right,
                 rect.width() - SOCKET_WIDTH,
                 rect.width() - (SOCKET_WIDTH + SOCKET_NAME_GAP),

@@ -1,8 +1,6 @@
 //! Graph editor's response.
 
-use nodui_core::Pos;
-
-use crate::{RenderedSocket, Viewport};
+use crate::{Pos, RenderedSocket, Viewport};
 
 use super::{stages, GraphEditor};
 

@@ -16,8 +16,6 @@ rust-version = "1.79"
 
 [workspace.dependencies]
 nodui = { version = "0.1.0", path = "crates/nodui", default-features = false }
-nodui_core = { version = "0.1.0", path = "crates/nodui_core", default-features = false }
-nodui_egui = { version = "0.1.0", path = "crates/nodui_egui", default-features = false }
 
 egui = { version = "0.29", default-features = false }
 eframe = { version = "0.29", default-features = false, features = [

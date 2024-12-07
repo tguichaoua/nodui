@@ -19,14 +19,14 @@ workspace = true
 
 
 [features]
-serde = ["nodui_core/serde"]
+serde = ["dep:serde"]
 
 
 [dependencies]
-nodui_core.workspace = true
-nodui_egui.workspace = true
+egui.workspace = true
+
+serde = { version = "1", optional = true }
 
 
 [dev-dependencies]
 eframe.workspace = true
-egui.workspace = true

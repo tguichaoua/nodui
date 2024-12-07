@@ -3,8 +3,6 @@
 use egui::epaint::{CircleShape, PathShape, RectShape};
 use egui::{vec2, Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Vec2};
 
-use nodui_core::ui::{NodeSide, SocketShape};
-
 /* -------------------------------------------------------------------------- */
 
 /// A socket to be rendered.
@@ -192,6 +190,33 @@ where
     }
 
     interaction
+}
+
+/* -------------------------------------------------------------------------- */
+
+/// The shape of a socket's handle.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+pub enum SocketShape {
+    /// Circle shape.
+    #[default]
+    Circle,
+    /// Square shape.
+    Square,
+    /// Triangle shape.
+    Triangle,
+}
+
+/* -------------------------------------------------------------------------- */
+
+/// The node side where a socket is rendered.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+pub enum NodeSide {
+    /// The socket is rendered on the left side of the node.
+    Left,
+    /// The socket is rendered on the right side of the node.
+    Right,
 }
 
 /* -------------------------------------------------------------------------- */

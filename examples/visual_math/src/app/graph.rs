@@ -298,7 +298,7 @@ impl GraphApp {
 
                     for socket in input_sockets {
                         ui.socket(
-                            Socket::new(socket.into(), nodui::ui::NodeSide::Left)
+                            Socket::new(socket.into(), nodui::NodeSide::Left)
                                 .filled(connections.is_connected(socket.into()))
                                 .text(socket.name()),
                         );
@@ -316,7 +316,7 @@ impl GraphApp {
                         };
 
                         ui.socket(
-                            Socket::new(output_id, nodui::ui::NodeSide::Right)
+                            Socket::new(output_id, nodui::NodeSide::Right)
                                 .filled(connections.is_connected(output_id))
                                 .text(output_name),
                         );
@@ -340,7 +340,7 @@ impl GraphApp {
 
                     let socket_id = node.output_socket_id().into();
                     ui.socket(
-                        Socket::new(socket_id, nodui::ui::NodeSide::Right)
+                        Socket::new(socket_id, nodui::NodeSide::Right)
                             .filled(connections.is_connected(socket_id))
                             .text(node.name()),
                     );

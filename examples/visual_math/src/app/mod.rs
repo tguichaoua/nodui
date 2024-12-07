@@ -81,7 +81,7 @@ impl eframe::App for App {
 
         CentralPanel::default().show(ctx, |ui| {
             // self.graph_editor(ui);
-            self.graph_editor2(ui);
+            self.graph_editor(ui);
         });
     }
 }
@@ -127,7 +127,7 @@ impl App {
     }
 
     /// Render the visual graph editor.
-    fn graph_editor2(&mut self, ui: &mut Ui) {
+    fn graph_editor(&mut self, ui: &mut Ui) {
         let graph = nodui::GraphEditor::new("graph")
             .show_viewport(ui)
             .show_nodes(|ui| {

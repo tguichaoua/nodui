@@ -4,7 +4,7 @@ use egui::{epaint::RectShape, vec2, Pos2, Rect, Response, Rounding, Vec2};
 
 use crate::{
     misc::{collector::Collector, layout},
-    RenderedSocket, Socket,
+    Pos, RenderedSocket, Socket,
 };
 
 use super::{
@@ -27,7 +27,7 @@ pub struct NodeUi<S> {
     /// The header of the node.
     header: Header,
     /// The layout of the sockets.
-    layout: nodui_core::ui::NodeLayout,
+    layout: NodeLayout,
     /// The sockets.
     sockets: Vec<Socket<S>>,
     /// The outline.
@@ -52,7 +52,7 @@ impl<S> GraphUi<S> {
     pub fn node<'a, R>(
         &mut self,
         id_salt: impl core::hash::Hash,
-        pos: &mut nodui_core::Pos,
+        pos: &mut Pos,
         build_fn: impl FnOnce(&mut NodeUi<S>) -> R + 'a,
     ) -> NodeResponse<'_, R, S>
     where
@@ -128,7 +128,7 @@ impl<S> NodeUi<S> {
     fn new() -> NodeUi<S> {
         NodeUi {
             header: Header::None,
-            layout: nodui_core::ui::NodeLayout::Double,
+            layout: NodeLayout::Double,
             sockets: Vec::new(),
             outline: egui::Stroke::new(0.5, egui::Color32::WHITE),
         }
@@ -180,20 +180,20 @@ impl<S> NodeUi<S> {
 
     /// Sets the layout for the sockets.
     #[inline]
-    pub fn layout(&mut self, layout: nodui_core::ui::NodeLayout) {
+    pub fn layout(&mut self, layout: NodeLayout) {
         self.layout = layout;
     }
 
     /// Use two columns for the sockets.
     #[inline]
     pub fn double_column_layout(&mut self) {
-        self.layout = nodui_core::ui::NodeLayout::Double;
+        self.layout = NodeLayout::Double;
     }
 
     /// Use a single column for the socket.
     #[inline]
     pub fn single_column_layout(&mut self) {
-        self.layout = nodui_core::ui::NodeLayout::Single;
+        self.layout = NodeLayout::Single;
     }
 
     /// Add a socket to the node.
@@ -260,6 +260,20 @@ impl<S> PreparedNode<S> {
             outline,
         ));
     }
+}
+
+/* -------------------------------------------------------------------------- */
+
+/// The layout for the body part of a node.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+pub enum NodeLayout {
+    /// Render the sockets into a single column.
+    Single,
+
+    /// Render the sockets into two column based of their [`NodeSide`](super::NodeSide).
+    #[default]
+    Double,
 }
 
 /* -------------------------------------------------------------------------- */

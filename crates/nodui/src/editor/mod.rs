@@ -16,7 +16,7 @@ use crate::{
 
 pub use response::GraphResponse;
 pub use show_connection::ConnectionsUi;
-pub use show_node::{GraphUi, NodeResponse, NodeUi};
+pub use show_node::{GraphUi, NodeLayout, NodeResponse, NodeUi};
 
 use state::EditorState;
 

@@ -3,8 +3,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Serialize, Deserialize)]
 pub(crate) struct NodeHeaderStyle {
     pub mode: HeaderMode,
-    pub title: nodui::ui::TextUi,
-    pub background: nodui::ui::Color,
+    pub title: String,
+    pub title_color: egui::Color32,
+    pub background: egui::Color32,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -17,26 +18,27 @@ impl Default for NodeHeaderStyle {
     fn default() -> Self {
         Self {
             mode: HeaderMode::Title,
-            title: nodui::ui::TextUi::new("New Node").with_color(nodui::ui::Color::BLACK),
-            background: egui::Color32::KHAKI.to_tuple().into(),
+            title: String::from("New Node"),
+            title_color: egui::Color32::BLACK,
+            background: egui::Color32::KHAKI,
         }
     }
 }
 
-impl From<NodeHeaderStyle> for nodui::ui::NodeHeader {
-    #[inline]
-    fn from(value: NodeHeaderStyle) -> Self {
-        let NodeHeaderStyle {
-            mode,
-            title,
-            background,
-        } = value;
+// impl From<NodeHeaderStyle> for nodui::NodeHeader {
+//     #[inline]
+//     fn from(value: NodeHeaderStyle) -> Self {
+//         let NodeHeaderStyle {
+//             mode,
+//             title,
+//             background,
+//         } = value;
 
-        match mode {
-            HeaderMode::None => nodui::ui::NodeHeader::None,
-            HeaderMode::Title => {
-                nodui::ui::NodeHeader::Title(nodui::ui::TitleHeader { title, background })
-            }
-        }
-    }
-}
+//         match mode {
+//             HeaderMode::None => nodui::NodeHeader::None,
+//             HeaderMode::Title => {
+//                 nodui::NodeHeader::Title(nodui::TitleHeader { title, background })
+//             }
+//         }
+//     }
+// }

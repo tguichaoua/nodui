@@ -10,19 +10,21 @@ pub struct Socket {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct SocketStyle {
-    pub side: nodui::ui::NodeSide,
-    pub name: nodui::ui::TextUi,
-    pub color: nodui::ui::Color,
-    pub shape: nodui::ui::SocketShape,
+    pub side: nodui::NodeSide,
+    pub name: String,
+    pub name_color: egui::Color32,
+    pub color: egui::Color32,
+    pub shape: nodui::SocketShape,
 }
 
 impl Default for SocketStyle {
     fn default() -> Self {
         Self {
-            side: nodui::ui::NodeSide::Left,
-            name: nodui::ui::TextUi::new("socket"),
-            color: nodui::ui::Color::WHITE,
-            shape: nodui::ui::SocketShape::default(),
+            side: nodui::NodeSide::Left,
+            name: String::from("socket"),
+            name_color: egui::Color32::WHITE,
+            color: egui::Color32::WHITE,
+            shape: nodui::SocketShape::default(),
         }
     }
 }

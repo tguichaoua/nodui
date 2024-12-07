@@ -2,8 +2,6 @@
 //!
 //! [`GraphEditor`] is a egui widget which create a visual graph editor.
 //!
-//! The visual editor and the graph data interact via the [adapter traits](nodui_core::adapter).
-//!
 //! [egui]: https://docs.rs/egui/
 //!
 //! ```
@@ -40,6 +38,13 @@
 //!     }
 //! }
 //! ```
+mod editor;
+mod misc;
+mod socket;
+mod viewport;
 
-pub use nodui_core::*;
-pub use nodui_egui::*;
+pub use editor::{
+    stages, ConnectionsUi, GraphEditor, GraphResponse, GraphUi, NodeLayout, NodeResponse, NodeUi,
+};
+pub use socket::{ConnectionInProgress, NodeSide, RenderedSocket, Socket, SocketShape};
+pub use viewport::{Pos, Viewport};
