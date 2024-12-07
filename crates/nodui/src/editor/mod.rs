@@ -31,7 +31,7 @@ pub struct GraphEditor<Stage> {
 }
 
 impl GraphEditor<stages::Viewport> {
-    /// Creates a new [`GraphEditor_`].
+    /// Creates a new [`GraphEditor`].
     #[inline]
     pub fn new(id_salt: impl core::hash::Hash) -> Self {
         Self {

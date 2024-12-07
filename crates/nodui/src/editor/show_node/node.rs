@@ -271,7 +271,7 @@ pub enum NodeLayout {
     /// Render the sockets into a single column.
     Single,
 
-    /// Render the sockets into two column based of their [`NodeSide`](super::NodeSide).
+    /// Render the sockets into two column based of their [`NodeSide`](crate::NodeSide).
     #[default]
     Double,
 }

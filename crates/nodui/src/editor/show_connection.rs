@@ -102,7 +102,7 @@ where
 
     /// Render the in-progress connection with a straight line.
     ///
-    /// See [`in_progress_connection`].
+    /// See [`Self::in_progress_connection`].
     #[inline]
     pub fn in_progress_connection_line(&mut self, stroke: impl Into<egui::Stroke>) {
         self.in_progress_connection(|painter, connection| {
@@ -122,7 +122,7 @@ where
     /// Render the in-progress connection with a straight line with a stroke based on
     /// the source socket and the socket currently being hovered.
     ///
-    /// See [`in_progress_connection`].
+    /// See [`Self::in_progress_connection`].
     ///
     /// # Example
     ///
@@ -209,7 +209,7 @@ where
 
     /// Render the connection between two sockets with a straight line.
     ///
-    /// See [`connect_with`].
+    /// See [`Self::connect_with`].
     #[inline]
     pub fn connect_line(&mut self, a: &S, b: &S, stroke: impl Into<PathStroke>) {
         self.connect_with(a, b, |painter, a, b| {
