@@ -130,7 +130,7 @@ where
     /// the signal the user the pointer is hovering a socket.
     ///
     /// ```
-    /// # fn foo(graph: nodui_egui::GraphEditor<nodui_egui::editor::stages::Connections>) {
+    /// # fn foo<S: PartialEq>(graph: nodui::GraphEditor<nodui::stages::Connections::<S>>) {
     /// graph.show_connections(|ui| {
     ///     ui.in_progress_connection_line_with_feedback(|_, target| {
     ///         if target.is_some() {
@@ -178,9 +178,9 @@ where
     /// color of the socket being at the right of its node.
     ///
     /// ```
-    /// # fn foo(ui: &mut nodui_egui::ConnectionsUi<()>, a: &(), b: &()) {
+    /// # fn foo(ui: &mut nodui::ConnectionsUi<()>, a: &(), b: &()) {
     /// ui.connect_with(a, b, |painter, a, b| {
-    ///     let stroke = if a.side == nodui_core::ui::NodeSide::Right {
+    ///     let stroke = if a.side == nodui::NodeSide::Right {
     ///         egui::Stroke::new(3.0, a.color)
     ///     } else {
     ///         egui::Stroke::new(3.0, b.color)

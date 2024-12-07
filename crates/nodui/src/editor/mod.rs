@@ -33,8 +33,10 @@ use state::EditorState;
 /// - [`finish`][Self::finish]: Returns the [`GraphResponse`].
 ///
 /// ```
+/// # #[derive(Clone, PartialEq)]
+/// # struct SocketId;
 /// fn show_graph_editor(ui: &mut egui::Ui) {
-///     let response: nodui::GraphResponse = nodui::GraphEditor::new("a unique id")
+///     let response: nodui::GraphResponse::<SocketId> = nodui::GraphEditor::new("a unique id")
 ///         .show_viewport(ui)
 ///         .show_nodes(|ui| {
 ///             /* This is where you add the nodes */
