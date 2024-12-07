@@ -1,3 +1,5 @@
+//! Node rendering.
+
 pub(super) mod body;
 pub(super) mod header;
 pub(super) mod socket;

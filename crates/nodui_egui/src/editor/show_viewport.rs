@@ -1,3 +1,5 @@
+//! The rendering of the viewport.
+
 use egui::{
     epaint::RectShape, pos2, vec2, Color32, NumExt, Rect, Rounding, Shape, Stroke, UiBuilder,
 };

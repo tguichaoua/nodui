@@ -34,14 +34,14 @@ impl TextUi {
     }
 }
 
-impl<'a> From<&'a str> for TextUi {
+impl From<&str> for TextUi {
     #[inline]
     fn from(text: &str) -> Self {
         Self::new(text)
     }
 }
 
-impl<'a> From<&'a String> for TextUi {
+impl From<&String> for TextUi {
     #[inline]
     fn from(text: &String) -> Self {
         Self::new(text)
@@ -55,7 +55,7 @@ impl From<String> for TextUi {
     }
 }
 
-impl<'a, C> From<(&'a str, C)> for TextUi
+impl<C> From<(&str, C)> for TextUi
 where
     C: Into<Color>,
 {
@@ -65,7 +65,7 @@ where
     }
 }
 
-impl<'a, C> From<(&'a String, C)> for TextUi
+impl<C> From<(&String, C)> for TextUi
 where
     C: Into<Color>,
 {

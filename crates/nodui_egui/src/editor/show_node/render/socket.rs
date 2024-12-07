@@ -1,3 +1,5 @@
+//! Rendering of node's sockets.
+
 use std::sync::Arc;
 
 use egui::{vec2, Vec2};
@@ -44,6 +46,7 @@ impl<S> PreparedSocket<S> {
 
 /* -------------------------------------------------------------------------- */
 
+/// Do computations to render a socket.
 pub(crate) fn prepare<S>(socket: Socket<S>, fonts: &egui::text::Fonts) -> PreparedSocket<S> {
     let Socket {
         id,

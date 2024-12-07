@@ -1,3 +1,5 @@
+//! State of the editor saved between frames.
+
 use super::{CanvasPos, Grid};
 
 /// The state of the editor saved from on frame to another.

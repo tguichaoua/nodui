@@ -42,7 +42,6 @@ impl<S> Socket<S> {
     }
 
     /// The text of the socket.
-
     #[must_use]
     #[inline]
     pub fn text(mut self, text: impl Into<String>) -> Self {

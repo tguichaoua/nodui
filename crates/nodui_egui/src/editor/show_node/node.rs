@@ -1,3 +1,5 @@
+//! Node rendering.
+
 use egui::{epaint::RectShape, vec2, Pos2, Rect, Response, Rounding, Vec2};
 
 use crate::{
@@ -18,20 +20,34 @@ const NODE_ROUNDING: Rounding = Rounding::same(5.0);
 
 /* -------------------------------------------------------------------------- */
 
+/// This is what you use to render a node.
+///
+/// See [`GraphUi::node`].
 pub struct NodeUi<S> {
+    /// The header of the node.
     header: Header,
+    /// The layout of the sockets.
     layout: nodui_core::ui::NodeLayout,
+    /// The sockets.
     sockets: Vec<Socket<S>>,
+    /// The outline.
     outline: egui::Stroke,
 }
 
+/// What [`GraphUi::node`] returns.
 pub struct NodeResponse<'a, R, S> {
+    /// The result of the callback.
     pub inner: R,
+    /// The [`Response`] of the node.
     pub response: Response,
+    /// The rendered socket of the node.
     pub sockets: &'a [RenderedSocket<S>],
 }
 
 impl<S> GraphUi<S> {
+    /// Render a node.
+    ///
+    /// `id_salt` must be a unique id for the node.
     #[inline]
     pub fn node<'a, R>(
         &mut self,
@@ -108,6 +124,7 @@ impl<S> GraphUi<S> {
 /* -------------------------------------------------------------------------- */
 
 impl<S> NodeUi<S> {
+    /// Creates a new [`NodeUi<S>`].
     fn new() -> NodeUi<S> {
         NodeUi {
             header: Header::None,
@@ -117,6 +134,7 @@ impl<S> NodeUi<S> {
         }
     }
 
+    /// Do the computations required to render the node.
     fn prepare(self, fonts: &egui::text::Fonts) -> PreparedNode<S> {
         let Self {
             header,
@@ -141,6 +159,7 @@ impl<S> NodeUi<S> {
 }
 
 impl<S> NodeUi<S> {
+    /// Adds a header to the node with a simple title.
     #[inline]
     pub fn header_title(
         &mut self,
@@ -159,26 +178,31 @@ impl<S> NodeUi<S> {
         });
     }
 
+    /// Sets the layout for the sockets.
     #[inline]
     pub fn layout(&mut self, layout: nodui_core::ui::NodeLayout) {
         self.layout = layout;
     }
 
+    /// Use two columns for the sockets.
     #[inline]
     pub fn double_column_layout(&mut self) {
         self.layout = nodui_core::ui::NodeLayout::Double;
     }
 
+    /// Use a single column for the socket.
     #[inline]
     pub fn single_column_layout(&mut self) {
         self.layout = nodui_core::ui::NodeLayout::Single;
     }
 
+    /// Add a socket to the node.
     #[inline]
     pub fn socket(&mut self, socket: Socket<S>) {
         self.sockets.push(socket);
     }
 
+    /// Sets the outline of the node.
     #[inline]
     pub fn outline(&mut self, outline: impl Into<egui::Stroke>) {
         self.outline = outline.into();
@@ -187,17 +211,23 @@ impl<S> NodeUi<S> {
 
 /* -------------------------------------------------------------------------- */
 
+/// Computed data to render the node.
 pub(super) struct PreparedNode<S> {
+    /// Computed  data to render the header.
     header: PreparedHeader,
+    /// Computed data to render the body.
     body: PreparedBody<S>,
+    /// The outline of the node.
     outline: egui::Stroke,
 }
 
 impl<S> PreparedNode<S> {
+    /// The space occupied by the node.
     pub(super) fn size(&self) -> Vec2 {
         layout::stack_vertically([self.header.size(), self.body.size()])
     }
 
+    /// Render the node to the [`egui::Ui`].
     pub(super) fn show(
         self,
         ui: &mut egui::Ui,

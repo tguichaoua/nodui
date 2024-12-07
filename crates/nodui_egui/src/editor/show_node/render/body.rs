@@ -1,3 +1,5 @@
+//! Rendering of node's body.
+
 use egui::{epaint::RectShape, vec2, Color32, Margin, Pos2, Rect, Rounding, Vec2};
 
 use crate::{
@@ -25,6 +27,7 @@ pub(crate) struct PreparedBody<S> {
 }
 
 impl<S> PreparedBody<S> {
+    /// The space occupied by the body.
     pub(crate) fn size(&self) -> Vec2 {
         self.size
     }

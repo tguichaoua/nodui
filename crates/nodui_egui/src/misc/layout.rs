@@ -1,6 +1,9 @@
+//! Utilities for layout.
+
 use egui::{vec2, Vec2};
 
-pub fn stack_horizontally(sizes: impl IntoIterator<Item = Vec2>) -> Vec2 {
+/// Stacks the sizes horizontally.
+pub(crate) fn stack_horizontally(sizes: impl IntoIterator<Item = Vec2>) -> Vec2 {
     let mut x = 0.0_f32;
     let mut y = 0.0_f32;
 
@@ -12,7 +15,8 @@ pub fn stack_horizontally(sizes: impl IntoIterator<Item = Vec2>) -> Vec2 {
     vec2(x, y)
 }
 
-pub fn stack_vertically(sizes: impl IntoIterator<Item = Vec2>) -> Vec2 {
+/// Stacks the sizes vertically.
+pub(crate) fn stack_vertically(sizes: impl IntoIterator<Item = Vec2>) -> Vec2 {
     let mut x = 0.0_f32;
     let mut y = 0.0_f32;
 

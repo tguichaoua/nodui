@@ -1,3 +1,5 @@
+//! The graph editor.
+
 mod response;
 mod show_connection;
 mod show_node;
@@ -20,8 +22,11 @@ use state::EditorState;
 
 /* -------------------------------------------------------------------------- */
 
+/// A node based graph editor.
 pub struct GraphEditor<Stage> {
+    /// The id used to store data from one frame to the other.
     id: Id,
+    /// The current stage of the editor.
     stage: Stage,
 }
 

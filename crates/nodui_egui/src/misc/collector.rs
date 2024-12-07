@@ -1,20 +1,26 @@
+//! A push-only vec.
+
 /// A push-only vec.
 pub(crate) struct Collector<T>(Vec<T>);
 
 impl<T> Collector<T> {
-    pub fn new() -> Self {
+    /// Creates a [`Collector`].
+    pub(crate) fn new() -> Self {
         Self(Vec::new())
     }
 
-    pub fn into_vec(self) -> Vec<T> {
+    /// Convert this [`Collector`] into a [`Vec`].
+    pub(crate) fn into_vec(self) -> Vec<T> {
         self.0
     }
 
-    pub fn push(&mut self, value: T) {
+    /// Appends an element to the back of a collection.
+    pub(crate) fn push(&mut self, value: T) {
         self.0.push(value);
     }
 
-    pub fn watch<R>(&mut self, f: impl FnOnce(&mut Self) -> R) -> (&[T], R) {
+    /// Watches push operation on this collector and returns a slice over the newly added items.
+    pub(crate) fn watch<R>(&mut self, f: impl FnOnce(&mut Self) -> R) -> (&[T], R) {
         let start = self.0.len();
         let inner = f(self);
         let end = self.0.len();

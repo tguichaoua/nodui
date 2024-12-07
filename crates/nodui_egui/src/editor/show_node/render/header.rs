@@ -1,3 +1,5 @@
+//! Rendering of node's header.
+
 use std::sync::Arc;
 
 use egui::{
@@ -49,6 +51,7 @@ struct TitleHeaderContent {
 
 /* -------------------------------------------------------------------------- */
 
+/// Do computations to render the header.
 pub(crate) fn prepare(header: Header, fonts: &egui::text::Fonts) -> PreparedHeader {
     match header {
         Header::None => PreparedHeader {

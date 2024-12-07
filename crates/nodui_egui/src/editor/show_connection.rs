@@ -1,3 +1,5 @@
+//! Rendering of connections.
+
 use egui::{epaint::PathStroke, Shape};
 
 use crate::ConnectionInProgress;
@@ -7,6 +9,7 @@ use super::{stages, GraphEditor, RenderedSocket};
 /* -------------------------------------------------------------------------- */
 
 impl<S> GraphEditor<stages::Connections<S>> {
+    /// Render the connections between the sockets.
     #[inline]
     pub fn show_connections(
         self,
@@ -72,9 +75,13 @@ impl<S> GraphEditor<stages::Connections<S>> {
 
 /* -------------------------------------------------------------------------- */
 
+/// This is what you use to render the connections.
 pub struct ConnectionsUi<S> {
+    /// The painter we want to render to.
     painter: egui::Painter,
+    /// The rendered sockets.
     sockets: Vec<RenderedSocket<S>>,
+    /// A in-progress connection that have to be rendered.
     connection: Option<ConnectionInProgress<S>>,
 }
 
@@ -82,6 +89,7 @@ impl<S> ConnectionsUi<S>
 where
     S: PartialEq,
 {
+    /// Render the connection the user is currently doing.
     #[inline]
     pub fn in_progress_connection(
         &mut self,
@@ -92,6 +100,9 @@ where
         }
     }
 
+    /// Render the in-progress connection with a straight line.
+    ///
+    /// See [`in_progress_connection`].
     #[inline]
     pub fn in_progress_connection_line(&mut self, stroke: impl Into<egui::Stroke>) {
         self.in_progress_connection(|painter, connection| {
@@ -108,6 +119,29 @@ where
         });
     }
 
+    /// Render the in-progress connection with a straight line with a stroke based on
+    /// the source socket and the socket currently being hovered.
+    ///
+    /// See [`in_progress_connection`].
+    ///
+    /// # Example
+    ///
+    /// In this example, we use the feedback callback to change the color and width of the line
+    /// the signal the user the pointer is hovering a socket.
+    ///
+    /// ```
+    /// # fn foo(graph: nodui_egui::GraphEditor<nodui_egui::editor::stages::Connections>) {
+    /// graph.show_connections(|ui| {
+    ///     ui.in_progress_connection_line_with_feedback(|_, target| {
+    ///         if target.is_some() {
+    ///             egui::Stroke::new(5.0, egui::Color32::GREEN)
+    ///         } else {
+    ///             egui::Stroke::new(3.0, egui::Color32::WHITE)
+    ///         }
+    ///     });
+    /// });
+    /// # }
+    /// ```
     #[inline]
     pub fn in_progress_connection_line_with_feedback(
         &mut self,
@@ -132,7 +166,11 @@ impl<S> ConnectionsUi<S>
 where
     S: PartialEq,
 {
+    /// Render the connection between two sockets.
     ///
+    /// The method receive the id of the two sockets to connected and call the callback function
+    /// which receive the [`Painter`](egui::Painter) to render to and the [`RenderedSocket`] of the
+    /// two sockets.
     ///
     /// # Example
     ///
@@ -141,7 +179,7 @@ where
     ///
     /// ```
     /// # fn foo(ui: &mut nodui_egui::ConnectionsUi<()>, a: &(), b: &()) {
-    /// ui.connect_with(&a, &b, |painter, a, b| {
+    /// ui.connect_with(a, b, |painter, a, b| {
     ///     let stroke = if a.side == nodui_core::ui::NodeSide::Right {
     ///         egui::Stroke::new(3.0, a.color)
     ///     } else {
@@ -169,6 +207,9 @@ where
         }
     }
 
+    /// Render the connection between two sockets with a straight line.
+    ///
+    /// See [`connect_with`].
     #[inline]
     pub fn connect_line(&mut self, a: &S, b: &S, stroke: impl Into<PathStroke>) {
         self.connect_with(a, b, |painter, a, b| {
