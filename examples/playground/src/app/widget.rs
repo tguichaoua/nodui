@@ -2,11 +2,11 @@ use core::f32;
 
 use crate::graph;
 
-pub fn node_side(value: &mut nodui::ui::NodeSide) -> impl egui::Widget + '_ {
+pub fn node_side(value: &mut nodui::NodeSide) -> impl egui::Widget + '_ {
     |ui: &mut egui::Ui| {
         let (text, next) = match *value {
-            nodui::ui::NodeSide::Left => (egui::RichText::new("Left"), nodui::ui::NodeSide::Right),
-            nodui::ui::NodeSide::Right => (egui::RichText::new("Right"), nodui::ui::NodeSide::Left),
+            nodui::NodeSide::Left => (egui::RichText::new("Left"), nodui::NodeSide::Right),
+            nodui::NodeSide::Right => (egui::RichText::new("Right"), nodui::NodeSide::Left),
         };
 
         let btn = ui.add(egui::Button::new(text));
@@ -19,11 +19,11 @@ pub fn node_side(value: &mut nodui::ui::NodeSide) -> impl egui::Widget + '_ {
     }
 }
 
-pub fn node_layout(value: &mut nodui::ui::NodeLayout) -> impl egui::Widget + '_ {
+pub fn node_layout(value: &mut nodui::NodeLayout) -> impl egui::Widget + '_ {
     |ui: &mut egui::Ui| {
         ui.horizontal(|ui| {
-            ui.selectable_value(value, nodui::ui::NodeLayout::Single, "Single");
-            ui.selectable_value(value, nodui::ui::NodeLayout::Double, "Double");
+            ui.selectable_value(value, nodui::NodeLayout::Single, "Single");
+            ui.selectable_value(value, nodui::NodeLayout::Double, "Double");
         })
         .response
     }
@@ -31,30 +31,18 @@ pub fn node_layout(value: &mut nodui::ui::NodeLayout) -> impl egui::Widget + '_ 
 
 pub fn socket_shape(
     id_salt: impl std::hash::Hash,
-    value: &mut nodui::ui::SocketShape,
+    value: &mut nodui::SocketShape,
 ) -> impl egui::Widget + '_ {
     let combo_box = egui::ComboBox::from_id_salt(id_salt).selected_text(format!("{value:?}"));
     |ui: &mut egui::Ui| {
         combo_box
             .show_ui(ui, move |ui| {
-                ui.selectable_value(value, nodui::ui::SocketShape::Circle, "Circle");
-                ui.selectable_value(value, nodui::ui::SocketShape::Square, "Square");
-                ui.selectable_value(value, nodui::ui::SocketShape::Triangle, "Triangle");
+                ui.selectable_value(value, nodui::SocketShape::Circle, "Circle");
+                ui.selectable_value(value, nodui::SocketShape::Square, "Square");
+                ui.selectable_value(value, nodui::SocketShape::Triangle, "Triangle");
             })
             .response
     }
-}
-
-pub fn text_ui(ui: &mut egui::Ui, text_ui: &mut nodui::ui::TextUi) {
-    ui.horizontal(|ui| {
-        ui.add(egui::TextEdit::singleline(&mut text_ui.text).desired_width(70.0));
-        ui.color_edit_button_srgba_unmultiplied(
-            text_ui
-                .color
-                .get_or_insert(nodui::ui::Color::WHITE)
-                .as_array_mut(),
-        );
-    });
 }
 
 pub fn node_header_style(
@@ -67,6 +55,7 @@ pub fn node_header_style(
         let graph::NodeHeaderStyle {
             mode,
             title,
+            title_color,
             background,
         } = header_style;
 
@@ -90,21 +79,13 @@ pub fn node_header_style(
 
                         ui.label("Title");
                         ui.horizontal(|ui| {
-                            ui.color_edit_button_srgba_unmultiplied(
-                                title
-                                    .color
-                                    .get_or_insert(nodui::ui::Color::BLACK)
-                                    .as_array_mut(),
-                            );
-                            ui.add(
-                                egui::TextEdit::singleline(&mut title.text)
-                                    .desired_width(f32::INFINITY),
-                            );
+                            ui.color_edit_button_srgba(title_color);
+                            ui.add(egui::TextEdit::singleline(title).desired_width(f32::INFINITY));
                         });
                         ui.end_row();
 
                         ui.label("Background");
-                        ui.color_edit_button_srgba_unmultiplied(background.as_array_mut());
+                        ui.color_edit_button_srgba(background);
                         ui.end_row();
                     });
             });
@@ -114,67 +95,3 @@ pub fn node_header_style(
 }
 
 /* -------------------------------------------------------------------------- */
-
-pub fn nodui_color(value: &mut nodui::ui::Color) -> impl egui::Widget + '_ {
-    |ui: &mut egui::Ui| ui.color_edit_button_srgba_unmultiplied(value.as_array_mut())
-}
-
-pub fn nodui_stroke(value: &mut nodui::ui::Stroke) -> impl egui::Widget + '_ {
-    |ui: &mut egui::Ui| {
-        let nodui::ui::Stroke { width, color } = *value;
-        let (r, g, b, a) = color.rgba();
-
-        let mut egui_value = egui::Stroke {
-            width,
-            color: egui::Color32::from_rgba_unmultiplied(r, g, b, a),
-        };
-
-        let response = ui.add(&mut egui_value);
-
-        let egui::Stroke { width, color } = egui_value;
-        let [r, g, b, a] = color.to_srgba_unmultiplied();
-
-        *value = nodui::ui::Stroke {
-            width,
-            color: nodui::ui::Color::from_rgba(r, g, b, a),
-        };
-
-        response
-    }
-}
-
-pub fn nodui_padding(value: &mut nodui::ui::Padding) -> impl egui::Widget + '_ {
-    |ui: &mut egui::Ui| {
-        let nodui::ui::Padding {
-            top,
-            left,
-            right,
-            bottom,
-        } = *value;
-
-        let mut egui_value = egui::Margin {
-            top,
-            left,
-            right,
-            bottom,
-        };
-
-        let response = ui.add(&mut egui_value);
-
-        let egui::Margin {
-            top,
-            left,
-            right,
-            bottom,
-        } = egui_value;
-
-        *value = nodui::ui::Padding {
-            top,
-            left,
-            right,
-            bottom,
-        };
-
-        response
-    }
-}

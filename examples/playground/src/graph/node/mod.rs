@@ -1,6 +1,5 @@
 mod header;
 
-use nodui::ui::NodeUI;
 use serde::{Deserialize, Serialize};
 
 use super::{socket::SocketStyle, NodeId, Socket};
@@ -17,20 +16,17 @@ pub struct Node {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub(crate) struct NodeStyle {
-    pub body: nodui::ui::NodeBody,
+    pub body: NodeBody,
     pub header: NodeHeaderStyle,
-    pub outline: nodui::ui::Stroke,
+    pub outline: egui::Stroke,
 }
 
 impl Default for NodeStyle {
     fn default() -> Self {
         NodeStyle {
-            body: nodui::ui::NodeBody::default(),
+            body: NodeBody::default(),
             header: NodeHeaderStyle::default(),
-            outline: nodui::ui::Stroke {
-                color: nodui::ui::Color::WHITE,
-                width: 1.0,
-            },
+            outline: egui::Stroke::new(1.0, egui::Color32::WHITE),
         }
     }
 }
@@ -70,19 +66,51 @@ impl Node {
     }
 }
 
-impl From<NodeStyle> for NodeUI {
-    #[inline]
-    fn from(value: NodeStyle) -> Self {
-        let NodeStyle {
-            body,
-            header,
-            outline,
-        } = value;
+// impl From<NodeStyle> for NodeUI {
+//     #[inline]
+//     fn from(value: NodeStyle) -> Self {
+//         let NodeStyle {
+//             body,
+//             header,
+//             outline,
+//         } = value;
 
-        NodeUI {
-            header: header.into(),
-            body,
-            outline,
+//         NodeUI {
+//             header: header.into(),
+//             body,
+//             outline,
+//         }
+//     }
+// }
+
+/* -------------------------------------------------------------------------- */
+
+/// Defines how the node body should be rendered.
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+pub struct NodeBody {
+    /// The layout for the sockets.
+    pub layout: nodui::NodeLayout,
+
+    /// The background color.
+    pub background_color: egui::Color32,
+
+    /// The padding of the body.
+    pub padding: egui::Margin,
+
+    /// The space between the two columns when `layout` is [`NodeLayout::Double`].
+    pub column_gap: f32,
+}
+
+impl Default for NodeBody {
+    #[inline]
+    fn default() -> Self {
+        Self {
+            layout: nodui::NodeLayout::Double,
+            background_color: egui::Color32::from_black_alpha(170),
+            padding: egui::Margin::same(5.0),
+            column_gap: 5.0,
         }
     }
 }
+
+/* -------------------------------------------------------------------------- */
