@@ -14,6 +14,6 @@ mod viewport;
 pub use editor::{
     stages, ConnectionsUi, GraphEditor, GraphResponse, GraphUi, NodeResponse, NodeUi,
 };
-pub use node::NodeLayout;
+pub use node::{Header, NodeLayout, TitleHeader};
 pub use socket::{ConnectionInProgress, NodeSide, RenderedSocket, Socket, SocketShape};
 pub use viewport::{Pos, Viewport};

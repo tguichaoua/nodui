@@ -290,8 +290,6 @@ impl GraphApp {
                 let node_response = ui.node(node.id(), pos, |ui| {
                     if self.selected_node == Some(NodeId::from(node.id())) {
                         ui.outline((2.0, egui::Color32::RED));
-                    } else {
-                        ui.outline((1.0, egui::Color32::WHITE));
                     }
 
                     let input_sockets = node.input_socket_ids();
@@ -334,8 +332,6 @@ impl GraphApp {
                 let node_response = ui.node(node.id(), pos, |ui| {
                     if self.selected_node == Some(NodeId::from(node.id())) {
                         ui.outline((2.0, egui::Color32::RED));
-                    } else {
-                        ui.outline((1.0, egui::Color32::WHITE));
                     }
 
                     let socket_id = node.output_socket_id().into();

@@ -4,10 +4,8 @@ use crate::{misc::viewport::ViewportSize, Pos};
 
 /// Render the viewport of the graph editor.
 pub struct Settings {
-    /// The stroke of the editor's grid.
-    pub(super) grid_stroke: egui::Stroke,
-    /// The color of the background.
-    pub(super) background_color: egui::Color32,
+    /// Should show the grid.
+    pub(super) show_grid: bool,
     /// Sets the position of the viewport.
     pub(super) look_at: Option<Pos>,
     /// Can the user drag a socket to start a new connection.

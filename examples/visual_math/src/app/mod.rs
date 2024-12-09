@@ -133,6 +133,8 @@ impl App {
                 self.graph.show_nodes(ui);
             })
             .show_connections(|ui| {
+                let color = ui.preferred_color();
+
                 ui.in_progress_connection_line_with_feedback(|source, target| {
                     if let Some(target) = target {
                         let color = if crate::graph::Connections::can_connect(source.id, target.id)
@@ -144,12 +146,12 @@ impl App {
 
                         egui::Stroke::new(5.0, color)
                     } else {
-                        egui::Stroke::new(3.0, egui::Color32::WHITE)
+                        egui::Stroke::new(3.0, color)
                     }
                 });
 
                 for (a, b) in self.graph.connections().iter() {
-                    ui.connect_line(&a.into(), &b.into(), (3.0, egui::Color32::WHITE));
+                    ui.connect_line(&a.into(), &b.into(), (3.0, color));
                 }
             });
 

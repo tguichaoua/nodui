@@ -15,12 +15,16 @@ pub struct Socket<S> {
     /// The text of the socket.
     pub text: String,
     /// The color of the text.
+    ///
+    /// Note: [`Color32::PLACEHOLDER`] will be replace by [`egui::Visuals::text_color()`].
     pub text_color: Color32,
     /// Whether or not the shape should be filled.
     pub filled: bool,
     /// The shape of the socket.
     pub shape: SocketShape,
     /// The color of the shape of the socket.
+    ///
+    /// Note: [`Color32::PLACEHOLDER`] will be replace by `text_color`.
     pub color: Color32,
 }
 
@@ -32,10 +36,10 @@ impl<S> Socket<S> {
             id,
             side,
             text: String::default(),
-            text_color: Color32::WHITE,
+            text_color: Color32::PLACEHOLDER,
             filled: false,
             shape: SocketShape::default(),
-            color: Color32::WHITE,
+            color: Color32::PLACEHOLDER,
         }
     }
 

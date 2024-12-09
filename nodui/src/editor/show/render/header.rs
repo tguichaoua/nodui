@@ -7,7 +7,7 @@ use egui::{
     vec2, Color32, Pos2, Rect, Rounding, Vec2,
 };
 
-use super::super::header::{Header, TitleHeader};
+use crate::{Header, TitleHeader};
 
 /* -------------------------------------------------------------------------- */
 
@@ -52,7 +52,12 @@ struct TitleHeaderContent {
 /* -------------------------------------------------------------------------- */
 
 /// Do computations to render the header.
-pub(crate) fn prepare(header: Header, fonts: &egui::text::Fonts) -> PreparedHeader {
+pub(crate) fn prepare(
+    header: Header,
+    body_color: Color32,
+    visuals: &egui::Visuals,
+    fonts: &egui::text::Fonts,
+) -> PreparedHeader {
     match header {
         Header::None => PreparedHeader {
             content: HeaderContent::None,
@@ -61,10 +66,22 @@ pub(crate) fn prepare(header: Header, fonts: &egui::text::Fonts) -> PreparedHead
         Header::Title(TitleHeader {
             text,
             text_color,
-            background,
+            background_color: background,
         }) => {
             // TODO: allow user to customize this value ?
             let padding = egui::Margin::same(5.0);
+
+            let text_color = if text_color == Color32::PLACEHOLDER {
+                visuals.text_color()
+            } else {
+                text_color
+            };
+
+            let background = if background == Color32::PLACEHOLDER {
+                body_color
+            } else {
+                background
+            };
 
             let title = fonts.layout_job(egui::text::LayoutJob {
                 halign: egui::Align::LEFT,

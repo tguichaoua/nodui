@@ -65,9 +65,13 @@ impl eframe::App for App {
         }
 
         egui::TopBottomPanel::top("demo_app_top_bar")
-            .frame(egui::Frame::none().inner_margin(4.0))
+            .frame(egui::Frame::side_top_panel(&ctx.style()).inner_margin(4.0))
             .show(ctx, |ui| {
                 ui.horizontal_wrapped(|ui| {
+                    egui::global_theme_preference_switch(ui);
+
+                    ui.separator();
+
                     ui.visuals_mut().button_frame = false;
                     self.bar_contents(ui, frame);
                 });

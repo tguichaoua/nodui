@@ -1,6 +1,6 @@
 //! Rendering of connections.
 
-use egui::{epaint::PathStroke, Shape};
+use egui::{epaint::PathStroke, Color32, Shape};
 
 use crate::ConnectionInProgress;
 
@@ -39,12 +39,14 @@ impl<S> GraphEditor<stages::Connections<S>> {
         painter.set_layer_id(layer_id);
 
         let mut connections_ui = ConnectionsUi {
+            preferred_color: ui.visuals().strong_text_color(),
             painter,
             sockets,
             connection: in_progress,
         };
         build_fn(&mut connections_ui);
         let ConnectionsUi {
+            preferred_color,
             painter,
             sockets,
             connection: in_progress,
@@ -55,7 +57,7 @@ impl<S> GraphEditor<stages::Connections<S>> {
 
             painter.add(Shape::LineSegment {
                 points: [connection.source.pos(), connection.pointer_pos],
-                stroke: egui::Stroke::new(5.0, egui::Color32::WHITE).into(),
+                stroke: egui::Stroke::new(5.0, preferred_color).into(),
             });
         }
 
@@ -77,12 +79,22 @@ impl<S> GraphEditor<stages::Connections<S>> {
 
 /// This is what you use to render the connections.
 pub struct ConnectionsUi<S> {
+    /// A good default color for connections that matches the current theme.
+    preferred_color: Color32,
     /// The painter we want to render to.
     painter: egui::Painter,
     /// The rendered sockets.
     sockets: Vec<RenderedSocket<S>>,
     /// A in-progress connection that have to be rendered.
     connection: Option<ConnectionInProgress<S>>,
+}
+
+impl<S> ConnectionsUi<S> {
+    /// A good default color for connections that matches the current theme.
+    #[inline]
+    pub fn preferred_color(&self) -> Color32 {
+        self.preferred_color
+    }
 }
 
 impl<S> ConnectionsUi<S>

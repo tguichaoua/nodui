@@ -1,22 +1,14 @@
 //! Node rendering.
 
-use egui::{epaint::RectShape, vec2, Pos2, Rect, Response, Rounding, Vec2};
+use egui::{epaint::RectShape, vec2, Color32, Pos2, Rect, Response, Rounding, Vec2};
 
 use crate::{
     misc::{collector::Collector, layout},
-    NodeLayout, Pos, RenderedSocket, Socket,
+    Header, NodeLayout, Pos, RenderedSocket, Socket,
 };
 
-use super::{
-    header::Header,
-    render::{self, body::PreparedBody, header::PreparedHeader},
-};
-use super::{header::TitleHeader, GraphUi};
-
-/* -------------------------------------------------------------------------- */
-
-/// The rounding of a node.
-const NODE_ROUNDING: Rounding = Rounding::same(5.0);
+use super::render::{self, body::PreparedBody, header::PreparedHeader};
+use super::GraphUi;
 
 /* -------------------------------------------------------------------------- */
 
@@ -26,12 +18,16 @@ const NODE_ROUNDING: Rounding = Rounding::same(5.0);
 pub struct NodeUi<S> {
     /// The header of the node.
     header: Header,
+    /// The background color of the node.
+    ///
+    /// Note: [`Color32::PLACEHOLDER`] will be replace by [`egui::Visuals::extreme_bg_color`].
+    background_color: Color32,
     /// The layout of the sockets.
     layout: NodeLayout,
     /// The sockets.
     sockets: Vec<Socket<S>>,
     /// The outline.
-    outline: egui::Stroke,
+    outline: Option<egui::Stroke>,
 }
 
 /// What [`GraphUi::node`] returns.
@@ -62,7 +58,9 @@ impl<S> GraphUi<S> {
     {
         let mut node_ui = NodeUi::new();
         let inner = build_fn(&mut node_ui);
-        let node = self.ui.fonts(|fonts| node_ui.prepare(fonts));
+        let node = self
+            .ui
+            .fonts(|fonts| node_ui.prepare(self.ui.visuals(), fonts));
 
         let id = self.graph_id.with(id_salt);
 
@@ -130,27 +128,36 @@ impl<S> NodeUi<S> {
     fn new() -> NodeUi<S> {
         NodeUi {
             header: Header::None,
+            background_color: Color32::PLACEHOLDER,
             layout: NodeLayout::Double,
             sockets: Vec::new(),
-            outline: egui::Stroke::new(0.5, egui::Color32::WHITE),
+            outline: None,
         }
     }
 
     /// Do the computations required to render the node.
-    fn prepare(self, fonts: &egui::text::Fonts) -> PreparedNode<S> {
+    fn prepare(self, visuals: &egui::Visuals, fonts: &egui::text::Fonts) -> PreparedNode<S> {
         let Self {
             header,
+            mut background_color,
             layout,
             sockets,
             outline,
         } = self;
 
-        let header = render::header::prepare(header, fonts);
+        if background_color == Color32::PLACEHOLDER {
+            background_color = visuals.extreme_bg_color;
+        }
+
+        let outline = outline.unwrap_or(visuals.window_stroke);
+
+        let header = render::header::prepare(header, background_color, visuals, fonts);
+
         let sockets = sockets
             .into_iter()
-            .map(|s| render::socket::prepare(s, fonts))
+            .map(|s| render::socket::prepare(s, visuals, fonts))
             .collect();
-        let body = render::body::prepare(layout, sockets);
+        let body = render::body::prepare(background_color, layout, sockets);
 
         PreparedNode {
             header,
@@ -161,23 +168,16 @@ impl<S> NodeUi<S> {
 }
 
 impl<S> NodeUi<S> {
-    /// Adds a header to the node with a simple title.
+    /// Sets the header of the node.
     #[inline]
-    pub fn header_title(
-        &mut self,
-        text: impl Into<String>,
-        text_color: impl Into<egui::Color32>,
-        background: impl Into<egui::Color32>,
-    ) {
-        let text = text.into();
-        let text_color = text_color.into();
-        let background = background.into();
+    pub fn header(&mut self, header: impl Into<Header>) {
+        self.header = header.into();
+    }
 
-        self.header = Header::Title(TitleHeader {
-            text,
-            text_color,
-            background,
-        });
+    /// The background color of the node.
+    #[inline]
+    pub fn background_color(&mut self, color: impl Into<Color32>) {
+        self.background_color = color.into();
     }
 
     /// Sets the layout for the sockets.
@@ -207,7 +207,7 @@ impl<S> NodeUi<S> {
     /// Sets the outline of the node.
     #[inline]
     pub fn outline(&mut self, outline: impl Into<egui::Stroke>) {
-        self.outline = outline.into();
+        self.outline = Some(outline.into());
     }
 }
 
@@ -249,7 +249,9 @@ impl<S> PreparedNode<S> {
         let header_pos = pos;
         let body_pos = pos + vec2(0.0, header.size().y);
 
-        let (header_rounding, body_rounding) = split_rounding(NODE_ROUNDING, header.has_content());
+        let rounding = ui.visuals().window_rounding;
+
+        let (header_rounding, body_rounding) = split_rounding(rounding, header.has_content());
 
         header.show(ui, header_pos, size, header_rounding);
 
@@ -258,7 +260,7 @@ impl<S> PreparedNode<S> {
         // Add a stroke around the node to make it easier to see.
         ui.painter().add(RectShape::stroke(
             Rect::from_min_size(pos, size),
-            NODE_ROUNDING,
+            rounding,
             outline,
         ));
     }
