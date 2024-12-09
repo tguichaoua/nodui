@@ -72,8 +72,6 @@ impl GraphEditor<stages::Viewport> {
             },
         }
     }
-
-    // TODO: add methods to defines the viewport size.
 }
 
 /* -------------------------------------------------------------------------- */
