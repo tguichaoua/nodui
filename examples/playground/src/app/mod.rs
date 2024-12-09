@@ -349,8 +349,7 @@ impl App {
                 for (a, b) in connections.iter() {
                     ui.connect_line(&a, &b, (3.0, egui::Color32::WHITE));
                 }
-            })
-            .finish();
+            });
 
         graph.response.context_menu(|ui| {
             let pos = graph.viewport.viewport_to_graph(ui.min_rect().left_top());

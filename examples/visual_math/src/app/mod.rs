@@ -151,8 +151,7 @@ impl App {
                 for (a, b) in self.graph.connections().iter() {
                     ui.connect_line(&a.into(), &b.into(), (3.0, egui::Color32::WHITE));
                 }
-            })
-            .finish();
+            });
 
         graph.response.context_menu(|ui| {
             let pos = graph.viewport.viewport_to_graph(ui.min_rect().left_top());

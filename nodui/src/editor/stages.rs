@@ -35,19 +35,3 @@ pub struct Connections<S> {
     /// A user interaction with the sockets.
     pub(super) socket_interaction: crate::socket::SocketInteraction<S>,
 }
-
-/// The final stage, ready to be [`finished`](super::GraphEditor::finish).
-pub struct End<S> {
-    /// The [`egui::Ui`] used to render the editor.
-    pub(super) ui: egui::Ui,
-    /// The state of the editor.
-    pub(super) state: super::EditorState<S>,
-    /// The viewport used for coordinates conversions.
-    pub(super) viewport: super::Viewport,
-    /// The response of the editor.
-    pub(super) response: egui::Response,
-    /// The sockets that have been rendered.
-    pub(super) sockets: Vec<super::RenderedSocket<S>>,
-    /// Whether the user create a new connection between two sockets.
-    pub(super) connection: Option<(S, S)>,
-}

@@ -4,17 +4,17 @@ use egui::{epaint::PathStroke, Shape};
 
 use crate::ConnectionInProgress;
 
-use super::{stages, GraphEditor, RenderedSocket};
+use super::{stages, GraphEditor, GraphResponse, RenderedSocket};
 
 /* -------------------------------------------------------------------------- */
 
 impl<S> GraphEditor<stages::Connections<S>> {
     /// Render the connections between the sockets.
     #[inline]
-    pub fn show_connections(
-        self,
-        build_fn: impl FnOnce(&mut ConnectionsUi<S>),
-    ) -> GraphEditor<stages::End<S>> {
+    pub fn show_connections(self, build_fn: impl FnOnce(&mut ConnectionsUi<S>)) -> GraphResponse<S>
+    where
+        S: Send + Sync + Clone + 'static,
+    {
         let Self {
             id,
             stage:
@@ -59,16 +59,16 @@ impl<S> GraphEditor<stages::Connections<S>> {
             });
         }
 
-        GraphEditor {
-            id,
-            stage: stages::End {
-                ui,
-                state,
-                viewport,
-                response,
-                sockets,
-                connection,
-            },
+        let position = viewport.grid.canvas_to_graph(state.viewport_position);
+
+        state.store(ui.ctx(), id);
+
+        GraphResponse {
+            viewport,
+            response,
+            sockets,
+            connection,
+            position,
         }
     }
 }

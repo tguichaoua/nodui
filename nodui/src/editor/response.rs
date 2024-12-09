@@ -2,8 +2,6 @@
 
 use crate::{Pos, RenderedSocket, Viewport};
 
-use super::{stages, GraphEditor};
-
 /* -------------------------------------------------------------------------- */
 
 /// The result of rendering a [`GraphEditor`].
@@ -20,40 +18,6 @@ pub struct GraphResponse<S> {
     pub connection: Option<(S, S)>,
     /// The position of the viewport.
     pub position: Pos,
-}
-
-impl<S> GraphEditor<stages::End<S>>
-where
-    S: Send + Sync + Clone + 'static,
-{
-    /// End the rendering of the graph editor and returns the [`GraphResponse`].
-    #[inline]
-    pub fn finish(self) -> GraphResponse<S> {
-        let Self {
-            id,
-            stage:
-                stages::End {
-                    ui,
-                    state,
-                    viewport,
-                    response,
-                    sockets,
-                    connection,
-                },
-        } = self;
-
-        let position = viewport.grid.canvas_to_graph(state.viewport_position);
-
-        state.store(ui.ctx(), id);
-
-        GraphResponse {
-            viewport,
-            response,
-            sockets,
-            connection,
-            position,
-        }
-    }
 }
 
 /* -------------------------------------------------------------------------- */
