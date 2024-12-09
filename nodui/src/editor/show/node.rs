@@ -1,6 +1,6 @@
 //! Node rendering.
 
-use egui::{epaint::RectShape, vec2, Pos2, Rect, Response, Rounding, Vec2};
+use egui::{epaint::RectShape, vec2, Color32, Pos2, Rect, Response, Rounding, Vec2};
 
 use crate::{
     misc::{collector::Collector, layout},
@@ -23,6 +23,10 @@ const NODE_ROUNDING: Rounding = Rounding::same(5.0);
 pub struct NodeUi<S> {
     /// The header of the node.
     header: Header,
+    /// The background color of the node.
+    ///
+    /// Note: [`Color32::PLACEHOLDER`] will be replace by [`egui::Visuals::extreme_bg_color`].
+    background_color: Color32,
     /// The layout of the sockets.
     layout: NodeLayout,
     /// The sockets.
@@ -129,6 +133,7 @@ impl<S> NodeUi<S> {
     fn new() -> NodeUi<S> {
         NodeUi {
             header: Header::None,
+            background_color: Color32::PLACEHOLDER,
             layout: NodeLayout::Double,
             sockets: Vec::new(),
             outline: None,
@@ -139,19 +144,25 @@ impl<S> NodeUi<S> {
     fn prepare(self, visuals: &egui::Visuals, fonts: &egui::text::Fonts) -> PreparedNode<S> {
         let Self {
             header,
+            mut background_color,
             layout,
             sockets,
             outline,
         } = self;
 
+        if background_color == Color32::PLACEHOLDER {
+            background_color = visuals.extreme_bg_color;
+        }
+
         let outline = outline.unwrap_or(visuals.window_stroke);
+
+        let header = render::header::prepare(header, background_color, visuals, fonts);
 
         let sockets = sockets
             .into_iter()
             .map(|s| render::socket::prepare(s, visuals, fonts))
             .collect();
-        let body = render::body::prepare(visuals, layout, sockets);
-        let header = render::header::prepare(header, body.background_color(), visuals, fonts);
+        let body = render::body::prepare(background_color, layout, sockets);
 
         PreparedNode {
             header,
@@ -166,6 +177,12 @@ impl<S> NodeUi<S> {
     #[inline]
     pub fn header(&mut self, header: impl Into<Header>) {
         self.header = header.into();
+    }
+
+    /// The background color of the node.
+    #[inline]
+    pub fn background_color(&mut self, color: impl Into<Color32>) {
+        self.background_color = color.into();
     }
 
     /// Sets the layout for the sockets.

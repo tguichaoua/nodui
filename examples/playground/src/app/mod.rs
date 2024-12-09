@@ -249,6 +249,8 @@ impl App {
                             }
                         }
 
+                        ui.background_color(node.style.body.background_color);
+
                         ui.layout(node.style.body.layout);
 
                         for socket in node.sockets() {
