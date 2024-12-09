@@ -4,9 +4,9 @@ use egui::{
     epaint::RectShape, pos2, vec2, Color32, NumExt, Rect, Rounding, Shape, Stroke, UiBuilder,
 };
 
-use crate::{viewport::Viewport, Pos};
+use crate::{misc::collector::Collector, viewport::Viewport, Pos};
 
-use super::{stages, EditorState, GraphEditor};
+use super::{stages, EditorState, GraphEditor, GraphUi};
 
 /* -------------------------------------------------------------------------- */
 
@@ -71,9 +71,14 @@ impl GraphEditor<stages::Viewport> {
 
     /// Shows the viewport of the editor.
     #[inline]
-    pub fn show_viewport<S>(self, ui: &mut egui::Ui) -> GraphEditor<stages::Nodes<S>>
+    #[allow(clippy::too_many_lines)] // TODO: refactorize
+    pub fn show<S>(
+        self,
+        ui: &mut egui::Ui,
+        build_fn: impl FnOnce(&mut GraphUi<S>),
+    ) -> GraphEditor<stages::Connections<S>>
     where
-        S: Send + Sync + Clone + 'static,
+        S: PartialEq + Send + Sync + Clone + 'static,
     {
         let Self {
             id,
@@ -88,6 +93,9 @@ impl GraphEditor<stages::Viewport> {
                     min_size,
                 },
         } = self;
+
+        // TODO
+        let can_connect_socket = true;
 
         /* ---- */
 
@@ -201,13 +209,47 @@ impl GraphEditor<stages::Viewport> {
 
         /* ---- */
 
+        let mut graph_ui = GraphUi {
+            ui,
+            graph_id: id,
+            dragged_node: state.dragged_node,
+            viewport,
+            rendered_sockets: Collector::new(),
+        };
+
+        build_fn(&mut graph_ui);
+
+        let GraphUi {
+            graph_id: _,
+            dragged_node,
+            viewport,
+            ui,
+            rendered_sockets,
+        } = graph_ui;
+
+        state.dragged_node = dragged_node;
+
+        let sockets = rendered_sockets.into_vec();
+
+        let socket_interaction = if can_connect_socket {
+            crate::socket::handle_socket_responses(&mut state.dragged_socket, &sockets)
+        } else {
+            // Stop the currently dragged socket if creating connection is disabled.
+            state.dragged_socket = None;
+            crate::socket::SocketInteraction::None
+        };
+
+        /* ---- */
+
         GraphEditor {
             id,
-            stage: stages::Nodes {
+            stage: stages::Connections {
                 ui,
                 state,
                 viewport,
                 response,
+                sockets,
+                socket_interaction,
             },
         }
     }

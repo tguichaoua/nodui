@@ -2,8 +2,8 @@
 
 mod nodes;
 mod response;
+mod show;
 mod show_connection;
-mod show_viewport;
 pub mod stages;
 mod state;
 
@@ -27,8 +27,7 @@ use state::EditorState;
 /// The following methods must be called in order:
 ///
 /// - [`new`][Self::new]: Creates the graph editor.
-/// - [`show_viewport`][Self::show_viewport]: Render the viewport of the editor.
-/// - [`show_nodes`][Self::show_nodes]: Render the nodes.
+/// - [`show`][Self::show]: Allocate the space in the ui, render the viewport and the nodes.
 /// - [`show_connections`][Self::show_connections]: Render the connection between the sockets.
 /// - [`finish`][Self::finish]: Returns the [`GraphResponse`].
 ///

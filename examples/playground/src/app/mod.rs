@@ -230,8 +230,7 @@ impl App {
     #[expect(clippy::too_many_lines)]
     fn show_graph(&mut self, ui: &mut egui::Ui) {
         let graph = nodui::GraphEditor::new("graph")
-            .show_viewport(ui)
-            .show_nodes(|ui| {
+            .show(ui, |ui| {
                 let mut node_command = NodeCommand::None;
 
                 let crate::graph::ViewMut { connections, nodes } = self.graph.graph.view_mut();
