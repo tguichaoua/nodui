@@ -131,7 +131,7 @@ impl<S> NodeUi<S> {
             header: Header::None,
             layout: NodeLayout::Double,
             sockets: Vec::new(),
-            outline: egui::Stroke::new(0.5, egui::Color32::WHITE),
+            outline: egui::Stroke::NONE,
         }
     }
 
