@@ -10,6 +10,7 @@ nodui = { workspace = true, features = ["serde"] }
 
 eframe.workspace = true
 egui = { workspace = true, features = ["serde"] }
+
 uuid = { version = "1.8.0", features = ["v4", "serde"] }
 serde = { version = "1", features = ["derive"] }
 

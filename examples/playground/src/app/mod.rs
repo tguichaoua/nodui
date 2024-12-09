@@ -1,15 +1,15 @@
-mod adapter;
+mod graph;
 mod widget;
 
-use adapter::GraphAdapter;
+use graph::GraphApp;
 use nodui::Pos;
 use serde::{Deserialize, Serialize};
 
-use crate::graph::SocketId;
+use crate::graph::{NodeId, SocketId};
 
 #[derive(Serialize, Deserialize)]
 pub struct App {
-    graph: GraphAdapter,
+    graph: GraphApp,
 
     editor_bg_color: egui::Color32,
     editor_grid_stroke: egui::Stroke,
@@ -24,7 +24,7 @@ impl Default for App {
     #[inline]
     fn default() -> Self {
         Self {
-            graph: GraphAdapter::default(),
+            graph: GraphApp::default(),
             editor_bg_color: egui::Color32::BLACK,
             editor_grid_stroke: egui::Stroke::new(0.5, egui::Color32::DARK_GRAY),
             editor_pos: Pos::default(),
@@ -52,6 +52,7 @@ impl eframe::App for App {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
+            // self.show_graph(ui);
             self.show_graph(ui);
         });
 
@@ -123,7 +124,7 @@ impl App {
                     ui.end_row();
 
                     ui.label("Background");
-                    ui.add(widget::nodui_color(&mut node.style.body.background_color));
+                    ui.color_edit_button_srgba(&mut node.style.body.background_color);
                     ui.end_row();
 
                     ui.label("Layout");
@@ -131,11 +132,11 @@ impl App {
                     ui.end_row();
 
                     ui.label("Padding");
-                    ui.add(widget::nodui_padding(&mut node.style.body.padding));
+                    ui.add(&mut node.style.body.padding);
                     ui.end_row();
 
                     ui.label("Outline");
-                    ui.add(widget::nodui_stroke(&mut node.style.outline));
+                    ui.add(&mut node.style.outline);
                     ui.end_row();
                 });
 
@@ -183,9 +184,12 @@ impl App {
 
                         ui.add(egui::Label::new(socket.id().to_string()).truncate());
 
-                        widget::text_ui(ui, &mut socket.style.name);
+                        ui.horizontal(|ui| {
+                            ui.text_edit_singleline(&mut socket.style.name);
+                            ui.color_edit_button_srgba(&mut socket.style.name_color);
+                        });
 
-                        ui.color_edit_button_srgba_unmultiplied(socket.style.color.as_array_mut());
+                        ui.color_edit_button_srgba(&mut socket.style.color);
 
                         ui.add(widget::node_side(&mut socket.style.side));
 
@@ -220,73 +224,160 @@ impl App {
             SocketAction::MoveDown(socket_id) => self.graph.move_socket_down(socket_id),
         }
     }
+}
 
+impl App {
+    #[expect(clippy::too_many_lines)]
     fn show_graph(&mut self, ui: &mut egui::Ui) {
-        let graph = nodui::GraphEditor::new(&mut self.graph, "graph")
-            .background_color(self.editor_bg_color)
-            .grid_stroke(self.editor_grid_stroke)
-            .context_menu(|ui, context| {
-                if ui.button("New node").clicked() {
-                    context.graph.new_node(context.pos);
-                    ui.close_menu();
+        let graph = nodui::GraphEditor::new("graph")
+            .show(ui, |ui| {
+                let mut node_command = NodeCommand::None;
+
+                let crate::graph::ViewMut { connections, nodes } = self.graph.graph.view_mut();
+                for node in nodes {
+                    let mut pos = node.pos;
+
+                    let node_response = ui.node(node.id(), &mut pos, |ui| {
+                        match node.style.header.mode {
+                            crate::graph::HeaderMode::None => {}
+                            crate::graph::HeaderMode::Title => {
+                                ui.header_title(
+                                    &node.style.header.title,
+                                    node.style.header.title_color,
+                                    node.style.header.background,
+                                );
+                            }
+                        }
+
+                        ui.layout(node.style.body.layout);
+
+                        for socket in node.sockets() {
+                            let crate::graph::SocketStyle {
+                                side,
+                                ref name,
+                                name_color,
+                                shape,
+                                color,
+                            } = socket.style;
+
+                            let is_connected = connections.is_connected(socket.id());
+
+                            ui.socket(
+                                nodui::Socket::new(socket.id(), side)
+                                    .text(name)
+                                    .text_color(name_color)
+                                    .filled(is_connected)
+                                    .shape(shape)
+                                    .color(color),
+                            );
+                        }
+                    });
+
+                    node.pos = pos;
+
+                    for socket in node_response.sockets {
+                        socket.response.context_menu(|ui| {
+                            if ui.button("Disconnect").clicked() {
+                                connections.disconnect(socket.id);
+                                ui.close_menu();
+                            }
+                        });
+                    }
+
+                    node_response.response.context_menu(|ui| {
+                        if ui.button("Add socket").clicked() {
+                            node.add_socket();
+                            ui.close_menu();
+                        }
+
+                        if ui.button("Copy").clicked() {
+                            self.graph.clipboard = Some((
+                                node.style.clone(),
+                                node.sockets().iter().map(|s| s.style.clone()).collect(),
+                            ));
+                            ui.close_menu();
+                        }
+
+                        ui.add_enabled_ui(self.graph.clipboard.is_some(), |ui| {
+                            if ui.button("Paste style").clicked() {
+                                node_command = NodeCommand::PasteStyle(node.id());
+                                ui.close_menu();
+                            }
+
+                            if ui.button("Paste sockets").clicked() {
+                                node_command = NodeCommand::PasteSockets(node.id());
+
+                                ui.close_menu();
+                            }
+                        });
+
+                        if ui.button("Remove").clicked() {
+                            node_command = NodeCommand::Remove(node.id());
+                            ui.close_menu();
+                        }
+                    });
+
+                    if node_response.response.clicked() {
+                        self.graph.selected_node = Some(node.id());
+                    }
                 }
 
-                ui.add_enabled_ui(context.graph.clipboard.is_some(), |ui| {
-                    if ui.button("Paste node").clicked() {
-                        context.graph.paste_node(context.pos);
-                        ui.close_menu();
+                match node_command {
+                    NodeCommand::None => { /* nothing */ }
+                    NodeCommand::Remove(node_id) => {
+                        self.graph.remove_node(node_id);
+                    }
+                    NodeCommand::PasteStyle(node_id) => {
+                        self.graph.paste_node_settings_to(node_id);
+                    }
+                    NodeCommand::PasteSockets(node_id) => {
+                        self.graph.paste_sockets_to(node_id);
+                    }
+                }
+            })
+            .show_connections(|ui| {
+                ui.in_progress_connection_line_with_feedback(|_, target| {
+                    if target.is_some() {
+                        egui::Stroke::new(5.0, egui::Color32::GREEN)
+                    } else {
+                        egui::Stroke::new(3.0, egui::Color32::WHITE)
                     }
                 });
-            })
-            .node_context_menu(|ui, context| {
-                if ui.button("Add socket").clicked() {
-                    if let Some(node) = context.graph.get_node_mut(context.node_id) {
-                        node.add_socket();
-                    }
-                    ui.close_menu();
-                }
 
-                if ui.button("Copy").clicked() {
-                    context.graph.copy_node(context.node_id);
-                    ui.close_menu();
-                }
+                let connections = self.graph.connections();
 
-                ui.add_enabled_ui(context.graph.clipboard.is_some(), |ui| {
-                    if ui.button("Paste style").clicked() {
-                        context.graph.paste_node_settings_to(context.node_id);
-                        ui.close_menu();
-                    }
-
-                    if ui.button("Paste sockets").clicked() {
-                        context.graph.paste_sockets_to(context.node_id);
-                        ui.close_menu();
-                    }
-                });
-
-                if ui.button("Remove").clicked() {
-                    context.graph.remove_node(context.node_id);
-                    ui.close_menu();
-                }
-            })
-            .socket_context_menu(|ui, context| {
-                if ui.button("Disconnect").clicked() {
-                    context
-                        .graph
-                        .connections_mut()
-                        .disconnect(context.socket_id);
-                    ui.close_menu();
+                for (a, b) in connections.iter() {
+                    ui.connect_line(&a, &b, (3.0, egui::Color32::WHITE));
                 }
             });
 
-        let response = graph.show(ui);
+        graph.response.context_menu(|ui| {
+            let pos = graph.viewport.viewport_to_graph(ui.min_rect().left_top());
 
-        self.editor_pos = response.position;
-        self.cursor_pos = response.pointer_latest_pos();
+            if ui.button("New node").clicked() {
+                self.graph.new_node(pos);
+                ui.close_menu();
+            }
 
-        if let Some(selected_node_id) = response.last_interacted_node_id {
-            self.graph.selected_node = Some(selected_node_id);
+            ui.add_enabled_ui(self.graph.clipboard.is_some(), |ui| {
+                if ui.button("Paste node").clicked() {
+                    self.graph.paste_node(pos);
+                    ui.close_menu();
+                }
+            });
+        });
+
+        if let Some((a, b)) = graph.connection {
+            self.graph.connections_mut().connect(a, b);
         }
     }
+}
+
+enum NodeCommand {
+    None,
+    Remove(NodeId),
+    PasteStyle(NodeId),
+    PasteSockets(NodeId),
 }
 
 /* -------------------------------------------------------------------------- */

@@ -5,7 +5,7 @@ mod graph;
 use egui::{CentralPanel, DragValue, Grid, SidePanel, Ui};
 use nodui::Pos;
 
-use crate::graph::{BinaryOp, Op, SocketId, UnaryOp};
+use crate::graph::{BinaryOp, Op, UnaryOp};
 
 use self::graph::GraphApp;
 
@@ -80,6 +80,7 @@ impl eframe::App for App {
             });
 
         CentralPanel::default().show(ctx, |ui| {
+            // self.graph_editor(ui);
             self.graph_editor(ui);
         });
     }
@@ -127,52 +128,44 @@ impl App {
 
     /// Render the visual graph editor.
     fn graph_editor(&mut self, ui: &mut Ui) {
-        let graph = nodui::GraphEditor::new(&mut self.graph, "graph")
-            /* ---------------------------------------------------------------------------------- */
-            /* The main context menu, when the user right click on the background of the editor.  */
-            /* ---------------------------------------------------------------------------------- */
-            .context_menu(|ui, context| {
-                new_node_menu(ui, |op| {
-                    context.graph.add_op_node(context.pos, op);
+        let graph = nodui::GraphEditor::new("graph")
+            .show(ui, |ui| {
+                self.graph.show_nodes(ui);
+            })
+            .show_connections(|ui| {
+                ui.in_progress_connection_line_with_feedback(|source, target| {
+                    if let Some(target) = target {
+                        let color = if crate::graph::Connections::can_connect(source.id, target.id)
+                        {
+                            egui::Color32::GREEN
+                        } else {
+                            egui::Color32::RED
+                        };
+
+                        egui::Stroke::new(5.0, color)
+                    } else {
+                        egui::Stroke::new(3.0, egui::Color32::WHITE)
+                    }
                 });
-            })
-            /* ---------------------------------------------------------------------------------- */
-            /* The socket context menu, when the user right click on a socket.                    */
-            /* ---------------------------------------------------------------------------------- */
-            .socket_context_menu(|ui, context| match context.socket_id {
-                SocketId::Output(output_socket_id) => {
-                    if ui.button("Disconnect all").clicked() {
-                        context.graph.disconnect_all(output_socket_id);
-                        ui.close_menu();
-                    }
-                }
-                SocketId::Input(input_socket_id) => {
-                    if ui.button("Disconnect").clicked() {
-                        context.graph.disconnect(input_socket_id);
-                        ui.close_menu();
-                    }
-                }
-            })
-            /* ---------------------------------------------------------------------------------- */
-            /* The node context menu, when the user right click on a node.                        */
-            /* ---------------------------------------------------------------------------------- */
-            .node_context_menu(|ui, context| {
-                if ui.button("Select").clicked() {
-                    context.graph.set_selected_node(context.node_id);
-                    ui.close_menu();
-                }
 
-                ui.separator();
-
-                if ui.button("Remove").clicked() {
-                    context.graph.remove_node(context.node_id);
-                    ui.close_menu();
+                for (a, b) in self.graph.connections().iter() {
+                    ui.connect_line(&a.into(), &b.into(), (3.0, egui::Color32::WHITE));
                 }
             });
 
-        let response = graph.show(ui);
+        graph.response.context_menu(|ui| {
+            let pos = graph.viewport.viewport_to_graph(ui.min_rect().left_top());
 
-        self.current_graph_pos = response.position;
+            new_node_menu(ui, |op| {
+                self.graph.add_op_node(pos, op);
+            });
+        });
+
+        if let Some((a, b)) = graph.connection {
+            self.graph.connect(a, b);
+        }
+
+        self.current_graph_pos = graph.position;
     }
 }
 

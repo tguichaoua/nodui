@@ -1,0 +1,32 @@
+[package]
+name = "nodui"
+version = "0.1.0"
+description = "An egui-based visual graph editor"
+keywords = ["egui", "visual_editor", "graph"]
+categories = ["game-development", "graphics", "gui", "visualization"]
+readme = "../README.md"
+
+
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+
+
+[lints]
+workspace = true
+
+
+[features]
+serde = ["dep:serde"]
+
+
+[dependencies]
+egui.workspace = true
+
+serde = { version = "1", optional = true }
+
+
+[dev-dependencies]
+eframe.workspace = true
