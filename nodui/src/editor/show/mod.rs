@@ -47,8 +47,7 @@ impl GraphEditor<stages::Settings> {
             id,
             stage:
                 stages::Settings {
-                    grid_stroke,
-                    background_color,
+                    show_grid,
                     look_at,
                     can_connect_socket,
                     viewport,
@@ -62,6 +61,18 @@ impl GraphEditor<stages::Settings> {
         let rect = Rect::from_min_size(pos, size);
 
         ui.advance_cursor_after_rect(rect);
+
+        /* ---- */
+
+        // Paint the background (must be paint before we set the clip rect)
+        ui.painter().add(RectShape::new(
+            rect,
+            Rounding::ZERO,
+            ui.visuals().extreme_bg_color,
+            ui.visuals().widgets.noninteractive.bg_stroke,
+        ));
+
+        /* ---- */
 
         let mut ui = ui.new_child(UiBuilder::new().id_salt(id).max_rect(rect));
         ui.set_clip_rect(rect);
@@ -93,20 +104,14 @@ impl GraphEditor<stages::Settings> {
 
         /* ---- */
 
-        // Paint the background
-        ui.painter()
-            .add(RectShape::filled(rect, Rounding::ZERO, background_color));
-
-        /* ---- */
-
         // Paint the grid
-        if !grid_stroke.is_empty() {
-            show_grid(
+        if show_grid {
+            paint_grid(
                 ui.painter(),
                 rect,
                 state.viewport_position.to_vec2(),
                 state.grid.size,
-                grid_stroke,
+                egui::Stroke::new(0.5, ui.visuals().text_color()),
             );
         }
 
@@ -163,7 +168,7 @@ impl GraphEditor<stages::Settings> {
 /* -------------------------------------------------------------------------- */
 
 /// Show the editor grid.
-fn show_grid(
+fn paint_grid(
     painter: &egui::Painter,
     rect: Rect,
     position: Vec2,
@@ -201,9 +206,6 @@ fn show_grid(
             stroke: stroke.into(),
         });
     }
-
-    // Outline around the viewport
-    painter.add(RectShape::stroke(rect, Rounding::ZERO, (1.0, stroke.color)));
 }
 
 /* -------------------------------------------------------------------------- */
