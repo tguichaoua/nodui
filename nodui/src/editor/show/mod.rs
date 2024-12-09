@@ -50,12 +50,10 @@ impl GraphEditor<stages::Settings> {
                     grid_stroke,
                     background_color,
                     look_at,
+                    can_connect_socket,
                     viewport,
                 },
         } = self;
-
-        // TODO
-        let can_connect_socket = true;
 
         /* ---- */
 

@@ -60,6 +60,7 @@ impl GraphEditor<stages::Settings> {
                 grid_stroke: Stroke::new(0.5, Color32::DARK_GRAY),
                 background_color: Color32::BLACK,
                 look_at: None,
+                can_connect_socket: true,
                 viewport: ViewportSize::default(),
             },
         }
@@ -88,6 +89,18 @@ impl GraphEditor<stages::Settings> {
     #[must_use]
     pub fn background_color(mut self, background_color: impl Into<Color32>) -> Self {
         self.stage.background_color = background_color.into();
+        self
+    }
+
+    /// If `true` the user can drag-n-drop a socket to create a connection.
+    ///
+    /// Can be useful to prevent user to edit the graph.
+    ///
+    /// Default to `true`.
+    #[inline]
+    #[must_use]
+    pub fn can_connect_socket(mut self, can_connect_socket: bool) -> Self {
+        self.stage.can_connect_socket = can_connect_socket;
         self
     }
 

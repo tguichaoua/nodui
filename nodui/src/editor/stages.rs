@@ -10,6 +10,8 @@ pub struct Settings {
     pub(super) background_color: egui::Color32,
     /// Sets the position of the viewport.
     pub(super) look_at: Option<Pos>,
+    /// Can the user drag a socket to start a new connection.
+    pub(super) can_connect_socket: bool,
     /// The size of the viewport
     pub(super) viewport: ViewportSize,
 }
