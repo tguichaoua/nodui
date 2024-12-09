@@ -20,18 +20,6 @@ pub struct Viewport {
     pub(super) min_size: egui::Vec2,
 }
 
-/// Render the nodes.
-pub struct Nodes<S> {
-    /// The [`egui::Ui`] used to render the editor.
-    pub(super) ui: egui::Ui,
-    /// The state of the editor.
-    pub(super) state: super::EditorState<S>,
-    /// The viewport used for coordinates conversions.
-    pub(super) viewport: super::Viewport,
-    /// The response of the editor.
-    pub(super) response: egui::Response,
-}
-
 /// Render the connections.
 pub struct Connections<S> {
     /// The [`egui::Ui`] used to render the editor.
