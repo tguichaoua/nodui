@@ -28,7 +28,7 @@ pub struct NodeUi<S> {
     /// The sockets.
     sockets: Vec<Socket<S>>,
     /// The outline.
-    outline: egui::Stroke,
+    outline: Option<egui::Stroke>,
 }
 
 /// What [`GraphUi::node`] returns.
@@ -131,7 +131,7 @@ impl<S> NodeUi<S> {
             header: Header::None,
             layout: NodeLayout::Double,
             sockets: Vec::new(),
-            outline: egui::Stroke::NONE,
+            outline: None,
         }
     }
 
@@ -144,11 +144,13 @@ impl<S> NodeUi<S> {
             outline,
         } = self;
 
+        let outline = outline.unwrap_or(visuals.window_stroke);
+
         let sockets = sockets
             .into_iter()
-            .map(|s| render::socket::prepare(s, fonts))
+            .map(|s| render::socket::prepare(s, visuals, fonts))
             .collect();
-        let body = render::body::prepare(layout, sockets);
+        let body = render::body::prepare(visuals, layout, sockets);
         let header = render::header::prepare(header, body.background_color(), visuals, fonts);
 
         PreparedNode {
@@ -193,7 +195,7 @@ impl<S> NodeUi<S> {
     /// Sets the outline of the node.
     #[inline]
     pub fn outline(&mut self, outline: impl Into<egui::Stroke>) {
-        self.outline = outline.into();
+        self.outline = Some(outline.into());
     }
 }
 

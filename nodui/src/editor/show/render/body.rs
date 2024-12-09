@@ -41,8 +41,12 @@ impl<S> PreparedBody<S> {
 /* -------------------------------------------------------------------------- */
 
 /// Prepare the node body for its rendering.
-pub(crate) fn prepare<S>(layout: NodeLayout, sockets: Vec<PreparedSocket<S>>) -> PreparedBody<S> {
-    let background_color = Color32::from_rgba_unmultiplied(0, 0, 0, 170);
+pub(crate) fn prepare<S>(
+    visuals: &egui::Visuals,
+    layout: NodeLayout,
+    sockets: Vec<PreparedSocket<S>>,
+) -> PreparedBody<S> {
+    let background_color = visuals.extreme_bg_color;
     let padding = Margin::same(5.0);
     let column_gap = 5.0;
 
