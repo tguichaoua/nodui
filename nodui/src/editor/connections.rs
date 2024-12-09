@@ -130,7 +130,7 @@ where
     /// the signal the user the pointer is hovering a socket.
     ///
     /// ```
-    /// # fn foo<S: PartialEq>(graph: nodui::GraphEditor<nodui::stages::Connections::<S>>) {
+    /// # fn foo<S: PartialEq + Send + Sync + Clone + 'static>(graph: nodui::GraphEditor<nodui::stages::Connections::<S>>) {
     /// graph.show_connections(|ui| {
     ///     ui.in_progress_connection_line_with_feedback(|_, target| {
     ///         if target.is_some() {
