@@ -6,9 +6,10 @@ mod show;
 pub mod stages;
 mod state;
 
-use egui::{Color32, Id, Stroke, Vec2};
+use egui::{Color32, Id, Stroke};
 
 use crate::{
+    misc::viewport::ViewportSize,
     viewport::{CanvasPos, Grid, Viewport},
     Pos, RenderedSocket,
 };
@@ -59,10 +60,7 @@ impl GraphEditor<stages::Settings> {
                 grid_stroke: Stroke::new(0.5, Color32::DARK_GRAY),
                 background_color: Color32::BLACK,
                 look_at: None,
-                width: None,
-                height: None,
-                view_aspect: None,
-                min_size: Vec2::ZERO,
+                viewport: ViewportSize::default(),
             },
         }
     }
@@ -99,7 +97,7 @@ impl GraphEditor<stages::Settings> {
     #[inline]
     #[must_use]
     pub fn view_aspect(mut self, view_aspect: f32) -> Self {
-        self.stage.view_aspect = Some(view_aspect);
+        self.stage.viewport = self.stage.viewport.view_aspect(view_aspect);
         self
     }
 
@@ -109,8 +107,7 @@ impl GraphEditor<stages::Settings> {
     #[inline]
     #[must_use]
     pub fn width(mut self, width: f32) -> Self {
-        self.stage.min_size.x = width;
-        self.stage.width = Some(width);
+        self.stage.viewport = self.stage.viewport.width(width);
         self
     }
 
@@ -120,8 +117,7 @@ impl GraphEditor<stages::Settings> {
     #[inline]
     #[must_use]
     pub fn height(mut self, height: f32) -> Self {
-        self.stage.min_size.y = height;
-        self.stage.height = Some(height);
+        self.stage.viewport = self.stage.viewport.height(height);
         self
     }
 }

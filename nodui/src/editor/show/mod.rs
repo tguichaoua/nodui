@@ -4,7 +4,7 @@ mod header;
 mod node;
 mod render;
 
-use egui::{epaint::RectShape, pos2, vec2, Id, NumExt, Rect, Rounding, Shape, UiBuilder, Vec2};
+use egui::{epaint::RectShape, pos2, vec2, Id, Rect, Rounding, Shape, UiBuilder, Vec2};
 
 use crate::misc::collector::Collector;
 
@@ -35,7 +35,6 @@ pub struct GraphUi<S> {
 impl GraphEditor<stages::Settings> {
     /// Shows the viewport of the editor.
     #[inline]
-    #[expect(clippy::too_many_lines)] // TODO: refactorize
     pub fn show<S>(
         self,
         ui: &mut egui::Ui,
@@ -51,10 +50,7 @@ impl GraphEditor<stages::Settings> {
                     grid_stroke,
                     background_color,
                     look_at,
-                    width,
-                    height,
-                    view_aspect,
-                    min_size,
+                    viewport,
                 },
         } = self;
 
@@ -64,31 +60,7 @@ impl GraphEditor<stages::Settings> {
         /* ---- */
 
         let pos = ui.available_rect_before_wrap().min;
-
-        let size = {
-            let width = width
-                .unwrap_or_else(|| {
-                    if let (Some(height), Some(aspect)) = (height, view_aspect) {
-                        height * aspect
-                    } else {
-                        ui.available_size_before_wrap().x
-                    }
-                })
-                .at_least(min_size.x);
-
-            let height = height
-                .unwrap_or_else(|| {
-                    if let Some(aspect) = view_aspect {
-                        width / aspect
-                    } else {
-                        ui.available_size_before_wrap().y
-                    }
-                })
-                .at_least(min_size.y);
-
-            vec2(width, height)
-        };
-
+        let size = viewport.compute(ui);
         let rect = Rect::from_min_size(pos, size);
 
         ui.advance_cursor_after_rect(rect);

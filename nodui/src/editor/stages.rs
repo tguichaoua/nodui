@@ -1,6 +1,6 @@
 //! Stages of [`GraphEditor`](super::GraphEditor).
 
-use crate::Pos;
+use crate::{misc::viewport::ViewportSize, Pos};
 
 /// Render the viewport of the graph editor.
 pub struct Settings {
@@ -10,14 +10,8 @@ pub struct Settings {
     pub(super) background_color: egui::Color32,
     /// Sets the position of the viewport.
     pub(super) look_at: Option<Pos>,
-    /// The desired width of the viewport.
-    pub(super) width: Option<f32>,
-    /// The desired height of the viewport.
-    pub(super) height: Option<f32>,
-    /// The desired aspect ratio of the viewport.
-    pub(super) view_aspect: Option<f32>,
-    /// The minimum size of the viewport.
-    pub(super) min_size: egui::Vec2,
+    /// The size of the viewport
+    pub(super) viewport: ViewportSize,
 }
 
 /// Render the connections.
