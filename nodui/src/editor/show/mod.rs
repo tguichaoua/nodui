@@ -132,6 +132,8 @@ impl GraphEditor<stages::Settings> {
             rendered_sockets,
         } = graph_ui;
 
+        /* ---- */
+
         state.dragged_node = dragged_node;
 
         let sockets = rendered_sockets.into_vec();
