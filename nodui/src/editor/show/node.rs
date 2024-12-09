@@ -4,14 +4,11 @@ use egui::{epaint::RectShape, vec2, Pos2, Rect, Response, Rounding, Vec2};
 
 use crate::{
     misc::{collector::Collector, layout},
-    NodeLayout, Pos, RenderedSocket, Socket,
+    Header, NodeLayout, Pos, RenderedSocket, Socket,
 };
 
-use super::{
-    header::Header,
-    render::{self, body::PreparedBody, header::PreparedHeader},
-};
-use super::{header::TitleHeader, GraphUi};
+use super::render::{self, body::PreparedBody, header::PreparedHeader};
+use super::GraphUi;
 
 /* -------------------------------------------------------------------------- */
 
@@ -62,7 +59,9 @@ impl<S> GraphUi<S> {
     {
         let mut node_ui = NodeUi::new();
         let inner = build_fn(&mut node_ui);
-        let node = self.ui.fonts(|fonts| node_ui.prepare(fonts));
+        let node = self
+            .ui
+            .fonts(|fonts| node_ui.prepare(self.ui.visuals(), fonts));
 
         let id = self.graph_id.with(id_salt);
 
@@ -137,7 +136,7 @@ impl<S> NodeUi<S> {
     }
 
     /// Do the computations required to render the node.
-    fn prepare(self, fonts: &egui::text::Fonts) -> PreparedNode<S> {
+    fn prepare(self, visuals: &egui::Visuals, fonts: &egui::text::Fonts) -> PreparedNode<S> {
         let Self {
             header,
             layout,
@@ -145,12 +144,12 @@ impl<S> NodeUi<S> {
             outline,
         } = self;
 
-        let header = render::header::prepare(header, fonts);
         let sockets = sockets
             .into_iter()
             .map(|s| render::socket::prepare(s, fonts))
             .collect();
         let body = render::body::prepare(layout, sockets);
+        let header = render::header::prepare(header, body.background_color(), visuals, fonts);
 
         PreparedNode {
             header,
@@ -161,23 +160,10 @@ impl<S> NodeUi<S> {
 }
 
 impl<S> NodeUi<S> {
-    /// Adds a header to the node with a simple title.
+    /// Sets the header of the node.
     #[inline]
-    pub fn header_title(
-        &mut self,
-        text: impl Into<String>,
-        text_color: impl Into<egui::Color32>,
-        background: impl Into<egui::Color32>,
-    ) {
-        let text = text.into();
-        let text_color = text_color.into();
-        let background = background.into();
-
-        self.header = Header::Title(TitleHeader {
-            text,
-            text_color,
-            background,
-        });
+    pub fn header(&mut self, header: impl Into<Header>) {
+        self.header = header.into();
     }
 
     /// Sets the layout for the sockets.

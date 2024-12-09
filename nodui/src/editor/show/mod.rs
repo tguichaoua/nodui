@@ -1,6 +1,5 @@
 //! The rendering of the editor's viewport and the nodes.
 
-mod header;
 mod node;
 mod render;
 

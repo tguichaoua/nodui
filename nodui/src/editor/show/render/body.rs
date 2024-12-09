@@ -31,6 +31,11 @@ impl<S> PreparedBody<S> {
     pub(crate) fn size(&self) -> Vec2 {
         self.size
     }
+
+    /// The color of the background.
+    pub(crate) fn background_color(&self) -> Color32 {
+        self.background_color
+    }
 }
 
 /* -------------------------------------------------------------------------- */

@@ -241,10 +241,10 @@ impl App {
                         match node.style.header.mode {
                             crate::graph::HeaderMode::None => {}
                             crate::graph::HeaderMode::Title => {
-                                ui.header_title(
-                                    &node.style.header.title,
-                                    node.style.header.title_color,
-                                    node.style.header.background,
+                                ui.header(
+                                    nodui::TitleHeader::new(&node.style.header.title)
+                                        .text_color(node.style.header.title_color)
+                                        .background_color(node.style.header.background),
                                 );
                             }
                         }
