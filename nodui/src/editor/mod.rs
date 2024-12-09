@@ -7,7 +7,7 @@ mod show_viewport;
 pub mod stages;
 mod state;
 
-use egui::{Id, Vec2};
+use egui::{Color32, Id, Stroke, Vec2};
 
 use crate::{
     viewport::{CanvasPos, Grid, Viewport},
@@ -62,6 +62,9 @@ impl GraphEditor<stages::Viewport> {
         Self {
             id: Id::new(id_salt),
             stage: stages::Viewport {
+                grid_stroke: Stroke::new(0.5, Color32::DARK_GRAY),
+                background_color: Color32::BLACK,
+                look_at: None,
                 width: None,
                 height: None,
                 view_aspect: None,

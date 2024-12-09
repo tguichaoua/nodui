@@ -1,7 +1,15 @@
 //! Stages of [`GraphEditor`](super::GraphEditor).
 
+use crate::Pos;
+
 /// Render the viewport of the graph editor.
 pub struct Viewport {
+    /// The stroke of the editor's grid.
+    pub(super) grid_stroke: egui::Stroke,
+    /// The color of the background.
+    pub(super) background_color: egui::Color32,
+    /// Sets the position of the viewport.
+    pub(super) look_at: Option<Pos>,
     /// The desired width of the viewport.
     pub(super) width: Option<f32>,
     /// The desired height of the viewport.
