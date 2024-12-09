@@ -12,11 +12,6 @@ use super::GraphUi;
 
 /* -------------------------------------------------------------------------- */
 
-/// The rounding of a node.
-const NODE_ROUNDING: Rounding = Rounding::same(5.0);
-
-/* -------------------------------------------------------------------------- */
-
 /// This is what you use to render a node.
 ///
 /// See [`GraphUi::node`].
@@ -254,7 +249,9 @@ impl<S> PreparedNode<S> {
         let header_pos = pos;
         let body_pos = pos + vec2(0.0, header.size().y);
 
-        let (header_rounding, body_rounding) = split_rounding(NODE_ROUNDING, header.has_content());
+        let rounding = ui.visuals().window_rounding;
+
+        let (header_rounding, body_rounding) = split_rounding(rounding, header.has_content());
 
         header.show(ui, header_pos, size, header_rounding);
 
@@ -263,7 +260,7 @@ impl<S> PreparedNode<S> {
         // Add a stroke around the node to make it easier to see.
         ui.painter().add(RectShape::stroke(
             Rect::from_min_size(pos, size),
-            NODE_ROUNDING,
+            rounding,
             outline,
         ));
     }
