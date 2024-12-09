@@ -3,7 +3,7 @@
 use crate::Pos;
 
 /// Render the viewport of the graph editor.
-pub struct Viewport {
+pub struct Settings {
     /// The stroke of the editor's grid.
     pub(super) grid_stroke: egui::Stroke,
     /// The color of the background.

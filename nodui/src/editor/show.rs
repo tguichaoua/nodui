@@ -10,7 +10,7 @@ use super::{stages, EditorState, GraphEditor, GraphUi};
 
 /* -------------------------------------------------------------------------- */
 
-impl GraphEditor<stages::Viewport> {
+impl GraphEditor<stages::Settings> {
     /// Move the viewport to make `pos` on the center of the viewport.
     #[inline]
     #[must_use]
@@ -83,7 +83,7 @@ impl GraphEditor<stages::Viewport> {
         let Self {
             id,
             stage:
-                stages::Viewport {
+                stages::Settings {
                     grid_stroke,
                     background_color,
                     look_at,

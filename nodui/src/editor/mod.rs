@@ -54,13 +54,13 @@ pub struct GraphEditor<Stage> {
     stage: Stage,
 }
 
-impl GraphEditor<stages::Viewport> {
+impl GraphEditor<stages::Settings> {
     /// Creates a new [`GraphEditor`].
     #[inline]
     pub fn new(id_salt: impl core::hash::Hash) -> Self {
         Self {
             id: Id::new(id_salt),
-            stage: stages::Viewport {
+            stage: stages::Settings {
                 grid_stroke: Stroke::new(0.5, Color32::DARK_GRAY),
                 background_color: Color32::BLACK,
                 look_at: None,
