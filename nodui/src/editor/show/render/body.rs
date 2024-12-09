@@ -142,8 +142,8 @@ fn show_single_column_body<S>(
             ),
         };
 
-        let socket_center = pos + Vec2::new(socket_x + SOCKET_WIDTH / 2.0, ROW_HEIGHT / 2.0);
-        let text_pos = pos + Vec2::new(text_x, (ROW_HEIGHT - socket.text.rect.height()) / 2.0);
+        let socket_center = pos + vec2(socket_x + SOCKET_WIDTH / 2.0, ROW_HEIGHT / 2.0);
+        let text_pos = pos + vec2(text_x, (ROW_HEIGHT - socket.text.rect.height()) / 2.0);
 
         show_socket(ui, rendered_sockets, socket_center, text_pos, socket);
 
@@ -173,8 +173,8 @@ fn show_double_column_body<S>(
             ),
         };
 
-        let socket_center = *pos + Vec2::new(socket_x + SOCKET_WIDTH / 2.0, ROW_HEIGHT / 2.0);
-        let text_pos = *pos + Vec2::new(text_x, (ROW_HEIGHT - socket.text.rect.height()) / 2.0);
+        let socket_center = *pos + vec2(socket_x + SOCKET_WIDTH / 2.0, ROW_HEIGHT / 2.0);
+        let text_pos = *pos + vec2(text_x, (ROW_HEIGHT - socket.text.rect.height()) / 2.0);
 
         show_socket(ui, rendered_sockets, socket_center, text_pos, socket);
 
