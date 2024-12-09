@@ -1,21 +1,18 @@
 [workspace]
-members = ["crates/*", "examples/*", "demo"]
+members = ["nodui", "examples/*", "demo"]
 resolver = "2"
 
 
 [workspace.package]
-version = "0.1.0"
 edition = "2021"
 authors = ["Tristan Guichaoua <tguichaoua.dev@gmail.com>"]
 repository = "https://github.com/tguichaoua/nodui"
 license = "MIT OR Apache-2.0"
-keywords = ["egui", "visual_editor", "graph"]
-categories = ["game-development", "graphics", "gui", "visualization"]
 rust-version = "1.79"
 
 
 [workspace.dependencies]
-nodui = { version = "0.1.0", path = "crates/nodui", default-features = false }
+nodui = { version = "*", path = "./nodui", default-features = false }
 
 egui = { version = "0.29", default-features = false }
 eframe = { version = "0.29", default-features = false, features = [

@@ -1,17 +1,17 @@
 [package]
 name = "nodui"
+version = "0.1.0"
 description = "An egui-based visual graph editor"
-readme = "../../README.md"
+keywords = ["egui", "visual_editor", "graph"]
+categories = ["game-development", "graphics", "gui", "visualization"]
+readme = "../README.md"
 
 
 rust-version.workspace = true
 edition.workspace = true
 authors.workspace = true
-version.workspace = true
 repository.workspace = true
 license.workspace = true
-keywords.workspace = true
-categories.workspace = true
 
 
 [lints]
