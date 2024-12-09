@@ -1,10 +1,34 @@
-//! The rendering of the viewport.
+//! The rendering of the editor's viewport and the nodes.
 
-use egui::{epaint::RectShape, pos2, vec2, NumExt, Rect, Rounding, Shape, UiBuilder};
+mod header;
+mod node;
+mod render;
 
-use crate::{misc::collector::Collector, viewport::Viewport};
+use egui::{epaint::RectShape, pos2, vec2, Id, NumExt, Rect, Rounding, Shape, UiBuilder, Vec2};
 
-use super::{stages, EditorState, GraphEditor, GraphUi};
+use crate::misc::collector::Collector;
+
+use super::{stages, state::EditorState, GraphEditor, RenderedSocket, Viewport};
+
+pub use node::{NodeResponse, NodeUi};
+
+/* -------------------------------------------------------------------------- */
+
+/// This is what you use to render the nodes.
+///
+/// See [`GraphEditor::show_nodes`].
+pub struct GraphUi<S> {
+    /// The id of the graph editor.
+    pub(super) graph_id: Id,
+    /// The id and delta position of the node being dragged, id any.
+    pub(super) dragged_node: Option<(Id, Vec2)>,
+    /// The viewport of the editor.
+    pub(super) viewport: Viewport,
+    /// The [`egui::Ui`] used to render the editor.
+    pub(super) ui: egui::Ui,
+    /// The rendered sockets.
+    pub(super) rendered_sockets: Collector<RenderedSocket<S>>,
+}
 
 /* -------------------------------------------------------------------------- */
 

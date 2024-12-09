@@ -44,6 +44,8 @@ pub struct NodeResponse<'a, R, S> {
     pub sockets: &'a [RenderedSocket<S>],
 }
 
+/* -------------------------------------------------------------------------- */
+
 impl<S> GraphUi<S> {
     /// Render a node.
     ///
