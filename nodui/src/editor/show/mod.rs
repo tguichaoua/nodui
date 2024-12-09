@@ -35,7 +35,7 @@ pub struct GraphUi<S> {
 impl GraphEditor<stages::Settings> {
     /// Shows the viewport of the editor.
     #[inline]
-    #[allow(clippy::too_many_lines)] // TODO: refactorize
+    #[expect(clippy::too_many_lines)] // TODO: refactorize
     pub fn show<S>(
         self,
         ui: &mut egui::Ui,
@@ -131,44 +131,13 @@ impl GraphEditor<stages::Settings> {
 
         // Paint the grid
         if !grid_stroke.is_empty() {
-            let dx = state.viewport_position.to_vec2().x % state.grid.size;
-            let dy = state.viewport_position.to_vec2().y % state.grid.size;
-
-            let center = rect.center() - vec2(dx, dy);
-
-            #[allow(clippy::cast_possible_truncation)]
-            let n = (size.x / state.grid.size) as i32 / 2;
-            #[allow(clippy::cast_possible_truncation)]
-            let m = (size.y / state.grid.size) as i32 / 2;
-
-            for x in (-n)..(n + 2) {
-                #[allow(clippy::cast_precision_loss)]
-                let x = x as f32;
-                let x = x.mul_add(state.grid.size, center.x);
-
-                ui.painter().add(Shape::LineSegment {
-                    points: [pos2(x, rect.min.y), pos2(x, rect.max.y)],
-                    stroke: grid_stroke.into(),
-                });
-            }
-
-            for y in (-m)..(m + 2) {
-                #[allow(clippy::cast_precision_loss)]
-                let y = y as f32;
-                let y = y.mul_add(state.grid.size, center.y);
-
-                ui.painter().add(Shape::LineSegment {
-                    points: [pos2(rect.min.x, y), pos2(rect.max.x, y)],
-                    stroke: grid_stroke.into(),
-                });
-            }
-
-            // Outline around the viewport
-            ui.painter().add(RectShape::stroke(
+            show_grid(
+                ui.painter(),
                 rect,
-                Rounding::ZERO,
-                (1.0, grid_stroke.color),
-            ));
+                state.viewport_position.to_vec2(),
+                state.grid.size,
+                grid_stroke,
+            );
         }
 
         /* ---- */
@@ -217,6 +186,52 @@ impl GraphEditor<stages::Settings> {
             },
         }
     }
+}
+
+/* -------------------------------------------------------------------------- */
+
+/// Show the editor grid.
+fn show_grid(
+    painter: &egui::Painter,
+    rect: Rect,
+    position: Vec2,
+    grid_size: f32,
+    stroke: egui::Stroke,
+) {
+    let dx = position.x % grid_size;
+    let dy = position.y % grid_size;
+
+    let center = rect.center() - vec2(dx, dy);
+
+    #[allow(clippy::cast_possible_truncation)]
+    let n = (rect.width() / grid_size) as i32 / 2;
+    #[allow(clippy::cast_possible_truncation)]
+    let m = (rect.height() / grid_size) as i32 / 2;
+
+    for x in (-n)..(n + 2) {
+        #[allow(clippy::cast_precision_loss)]
+        let x = x as f32;
+        let x = x.mul_add(grid_size, center.x);
+
+        painter.add(Shape::LineSegment {
+            points: [pos2(x, rect.min.y), pos2(x, rect.max.y)],
+            stroke: stroke.into(),
+        });
+    }
+
+    for y in (-m)..(m + 2) {
+        #[allow(clippy::cast_precision_loss)]
+        let y = y as f32;
+        let y = y.mul_add(grid_size, center.y);
+
+        painter.add(Shape::LineSegment {
+            points: [pos2(rect.min.x, y), pos2(rect.max.x, y)],
+            stroke: stroke.into(),
+        });
+    }
+
+    // Outline around the viewport
+    painter.add(RectShape::stroke(rect, Rounding::ZERO, (1.0, stroke.color)));
 }
 
 /* -------------------------------------------------------------------------- */
