@@ -10,7 +10,7 @@ use crate::misc::collector::Collector;
 
 use super::{stages, GraphEditor, RenderedSocket, Viewport};
 
-pub use node::{NodeLayout, NodeResponse, NodeUi};
+pub use node::{NodeResponse, NodeUi};
 
 /* -------------------------------------------------------------------------- */
 

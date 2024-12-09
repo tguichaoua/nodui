@@ -14,7 +14,7 @@ use crate::{
     RenderedSocket,
 };
 
-pub use nodes::{GraphUi, NodeLayout, NodeResponse, NodeUi};
+pub use nodes::{GraphUi, NodeResponse, NodeUi};
 pub use response::GraphResponse;
 pub use show_connection::ConnectionsUi;
 

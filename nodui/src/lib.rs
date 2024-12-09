@@ -7,11 +7,13 @@
 
 mod editor;
 mod misc;
+mod node;
 mod socket;
 mod viewport;
 
 pub use editor::{
-    stages, ConnectionsUi, GraphEditor, GraphResponse, GraphUi, NodeLayout, NodeResponse, NodeUi,
+    stages, ConnectionsUi, GraphEditor, GraphResponse, GraphUi, NodeResponse, NodeUi,
 };
+pub use node::NodeLayout;
 pub use socket::{ConnectionInProgress, NodeSide, RenderedSocket, Socket, SocketShape};
 pub use viewport::{Pos, Viewport};
