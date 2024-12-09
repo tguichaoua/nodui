@@ -1,8 +1,8 @@
 //! The graph editor.
 
+mod nodes;
 mod response;
 mod show_connection;
-mod show_node;
 mod show_viewport;
 pub mod stages;
 mod state;
@@ -14,9 +14,9 @@ use crate::{
     RenderedSocket,
 };
 
+pub use nodes::{GraphUi, NodeLayout, NodeResponse, NodeUi};
 pub use response::GraphResponse;
 pub use show_connection::ConnectionsUi;
-pub use show_node::{GraphUi, NodeLayout, NodeResponse, NodeUi};
 
 use state::EditorState;
 
