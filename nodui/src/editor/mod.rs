@@ -11,7 +11,7 @@ use egui::{Color32, Id, Stroke, Vec2};
 
 use crate::{
     viewport::{CanvasPos, Grid, Viewport},
-    RenderedSocket,
+    Pos, RenderedSocket,
 };
 
 pub use nodes::{GraphUi, NodeResponse, NodeUi};
@@ -70,6 +70,64 @@ impl GraphEditor<stages::Settings> {
                 min_size: Vec2::ZERO,
             },
         }
+    }
+
+    /// Move the viewport to make `pos` on the center of the viewport.
+    #[inline]
+    #[must_use]
+    pub fn look_at(mut self, pos: Pos) -> Self {
+        self.stage.look_at = Some(pos);
+        self
+    }
+
+    /// The stroke used to render the background grid.
+    ///
+    /// Use [`Stroke::NONE`] to disable the grid.
+    #[inline]
+    #[must_use]
+    pub fn grid_stroke(mut self, stroke: impl Into<Stroke>) -> Self {
+        self.stage.grid_stroke = stroke.into();
+        self
+    }
+
+    /// The color of the editor's background.
+    #[inline]
+    #[must_use]
+    pub fn background_color(mut self, background_color: impl Into<Color32>) -> Self {
+        self.stage.background_color = background_color.into();
+        self
+    }
+
+    /// `width / height` ratio of the editor region.
+    ///
+    /// By default no fixed aspect ratio is set (and width/height will fill the ui it is in).
+    #[inline]
+    #[must_use]
+    pub fn view_aspect(mut self, view_aspect: f32) -> Self {
+        self.stage.view_aspect = Some(view_aspect);
+        self
+    }
+
+    /// Width of the editor. By default it will fill the ui it is in.
+    ///
+    /// If you set [`Self::view_aspect`], the width can be calculated from the height.
+    #[inline]
+    #[must_use]
+    pub fn width(mut self, width: f32) -> Self {
+        self.stage.min_size.x = width;
+        self.stage.width = Some(width);
+        self
+    }
+
+    /// Height of the editor. By default it will fill the ui it is in.
+    ///
+    /// If you set [`Self::view_aspect`], the height can be calculated from the width.
+    #[inline]
+    #[must_use]
+    pub fn height(mut self, height: f32) -> Self {
+        self.stage.min_size.y = height;
+        self.stage.height = Some(height);
+        self
     }
 }
 
