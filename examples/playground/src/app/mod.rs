@@ -11,6 +11,8 @@ use crate::graph::{NodeId, SocketId};
 pub struct App {
     graph: GraphApp,
 
+    show_grid: bool,
+
     #[serde(skip)]
     editor_pos: Pos,
     #[serde(skip)]
@@ -22,6 +24,7 @@ impl Default for App {
     fn default() -> Self {
         Self {
             graph: GraphApp::default(),
+            show_grid: true,
             editor_pos: Pos::default(),
             cursor_pos: None,
         }
@@ -89,7 +92,11 @@ impl App {
         egui::Grid::new(ui.id().with("graph settings grid"))
             .num_columns(2)
             .striped(true)
-            .show(ui, |ui| {});
+            .show(ui, |ui| {
+                ui.label("Show Grid?");
+                ui.add(egui::Checkbox::without_text(&mut self.show_grid));
+                ui.end_row();
+            });
 
         ui.separator();
 
@@ -217,6 +224,7 @@ impl App {
     #[expect(clippy::too_many_lines)]
     fn show_graph(&mut self, ui: &mut egui::Ui) {
         let graph = nodui::GraphEditor::new("graph")
+            .show_grid(self.show_grid)
             .show(ui, |ui| {
                 let mut node_command = NodeCommand::None;
 
