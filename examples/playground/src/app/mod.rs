@@ -24,7 +24,7 @@ impl Default for App {
     fn default() -> Self {
         Self {
             graph: GraphApp::default(),
-            show_grid: true,
+            show_grid: false,
             editor_pos: Pos::default(),
             cursor_pos: None,
         }
