@@ -20,7 +20,7 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Nodui Demo",
         native_options,
-        Box::new(|cc| Ok(Box::new(nodui_demo::App::new(cc)))),
+        Box::new(|cc| Ok(Box::new(demo::App::new(cc)))),
     )
 }
 
@@ -49,7 +49,7 @@ fn main() {
             .start(
                 canvas,
                 web_options,
-                Box::new(|cc| Ok(Box::new(nodui_demo::App::new(cc)))),
+                Box::new(|cc| Ok(Box::new(demo::App::new(cc)))),
             )
             .await;
 
