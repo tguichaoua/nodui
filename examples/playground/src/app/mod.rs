@@ -11,9 +11,6 @@ use crate::graph::{NodeId, SocketId};
 pub struct App {
     graph: GraphApp,
 
-    editor_bg_color: egui::Color32,
-    editor_grid_stroke: egui::Stroke,
-
     #[serde(skip)]
     editor_pos: Pos,
     #[serde(skip)]
@@ -25,8 +22,6 @@ impl Default for App {
     fn default() -> Self {
         Self {
             graph: GraphApp::default(),
-            editor_bg_color: egui::Color32::BLACK,
-            editor_grid_stroke: egui::Stroke::new(0.5, egui::Color32::DARK_GRAY),
             editor_pos: Pos::default(),
             cursor_pos: None,
         }
@@ -94,15 +89,7 @@ impl App {
         egui::Grid::new(ui.id().with("graph settings grid"))
             .num_columns(2)
             .striped(true)
-            .show(ui, |ui| {
-                ui.label("Background Color");
-                ui.color_edit_button_srgba(&mut self.editor_bg_color);
-                ui.end_row();
-
-                ui.label("Grid");
-                ui.add(&mut self.editor_grid_stroke);
-                ui.end_row();
-            });
+            .show(ui, |ui| {});
 
         ui.separator();
 
