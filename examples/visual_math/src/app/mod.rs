@@ -2,6 +2,8 @@
 
 mod graph;
 
+use core::f32;
+
 use egui::{CentralPanel, DragValue, Grid, SidePanel, Ui};
 use nodui::Pos;
 
@@ -90,15 +92,33 @@ impl App {
     /// Render the left panel.
     fn side_panel(&mut self, ui: &mut Ui) {
         let any_input_changed = Grid::new("INPUTS GRID")
-            .min_col_width(100.0)
-            .num_columns(2)
+            .num_columns(3)
             .show(ui, |ui| {
                 let mut any_changed = false;
+                let mut input_to_remove = None;
+
                 for input in self.graph.inputs_mut() {
-                    ui.text_edit_singleline(input.name_mut());
+                    ui.horizontal(|ui| {
+                        ui.set_width(100.0);
+                        ui.add(
+                            egui::TextEdit::singleline(input.name_mut())
+                                .desired_width(f32::INFINITY),
+                        );
+                    });
+
                     any_changed |= ui.add(DragValue::new(input.value_mut())).changed();
+
+                    if ui.small_button("🗙").clicked() {
+                        input_to_remove = Some(input.id());
+                    }
+
                     ui.end_row();
                 }
+
+                if let Some(input_to_remove) = input_to_remove {
+                    self.graph.remove_node(input_to_remove.into());
+                }
+
                 any_changed
             })
             .inner;
