@@ -125,10 +125,6 @@ impl App {
                     ui.add(widget::node_layout(&mut node.style.body.layout));
                     ui.end_row();
 
-                    ui.label("Padding");
-                    ui.add(&mut node.style.body.padding);
-                    ui.end_row();
-
                     ui.label("Outline");
                     ui.add(widget::maybe(&mut node.style.outline));
                     ui.end_row();

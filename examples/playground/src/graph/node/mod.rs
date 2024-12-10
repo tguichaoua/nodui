@@ -94,9 +94,6 @@ pub struct NodeBody {
     /// The background color.
     pub background_color: Maybe<egui::Color32>,
 
-    /// The padding of the body.
-    pub padding: egui::Margin,
-
     /// The space between the two columns when `layout` is [`NodeLayout::Double`].
     pub column_gap: f32,
 }
@@ -107,7 +104,6 @@ impl Default for NodeBody {
         Self {
             layout: nodui::NodeLayout::Double,
             background_color: Maybe::disabled_with(egui::Color32::from_black_alpha(170)),
-            padding: egui::Margin::same(5.0),
             column_gap: 5.0,
         }
     }
