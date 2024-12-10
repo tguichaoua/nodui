@@ -179,7 +179,10 @@ impl App {
                         ui.add(egui::Label::new(socket.id().to_string()).truncate());
 
                         ui.horizontal(|ui| {
-                            ui.text_edit_singleline(&mut socket.style.name);
+                            ui.add(
+                                egui::TextEdit::singleline(&mut socket.style.name)
+                                    .desired_width(100.0),
+                            );
                             ui.color_edit_button_srgba(&mut socket.style.name_color);
                         });
 
