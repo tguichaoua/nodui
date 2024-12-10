@@ -171,6 +171,11 @@ impl GraphApp {
     pub fn connect(&mut self, a: SocketId, b: SocketId) {
         self.graph.connections_mut().connect(a, b);
     }
+
+    /// The position of a node.
+    pub fn position_of(&self, id: impl Into<NodeId>) -> Option<Pos> {
+        self.positions.get(&id.into()).copied()
+    }
 }
 
 impl GraphApp {

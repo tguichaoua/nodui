@@ -19,6 +19,10 @@ pub struct App {
 
     /// The current graph position of the viewport.
     current_graph_pos: Pos,
+
+    #[serde(skip)]
+    /// The position we want to look at.
+    look_at: Option<Pos>,
 }
 
 impl Default for App {
@@ -57,6 +61,7 @@ impl Default for App {
             },
 
             current_graph_pos: Pos::default(),
+            look_at: None,
         }
     }
 }
@@ -96,10 +101,11 @@ impl App {
         }
 
         let any_input_changed = Grid::new("INPUTS GRID")
-            .num_columns(3)
+            .num_columns(4)
             .show(ui, |ui| {
                 let mut any_changed = false;
                 let mut input_to_remove = None;
+                let mut input_to_look_at = None;
 
                 for input in self.graph.inputs_mut() {
                     ui.horizontal(|ui| {
@@ -116,11 +122,19 @@ impl App {
                         input_to_remove = Some(input.id());
                     }
 
+                    if ui.small_button("🎯").clicked() {
+                        input_to_look_at = Some(input.id());
+                    }
+
                     ui.end_row();
                 }
 
                 if let Some(input_to_remove) = input_to_remove {
                     self.graph.remove_node(input_to_remove.into());
+                }
+
+                if let Some(input_to_look_at) = input_to_look_at {
+                    self.look_at = self.graph.position_of(input_to_look_at);
                 }
 
                 any_changed
@@ -148,7 +162,13 @@ impl App {
 
     /// Render the visual graph editor.
     fn graph_editor(&mut self, ui: &mut Ui) {
-        let graph = nodui::GraphEditor::new("graph")
+        let mut graph = nodui::GraphEditor::new("graph");
+
+        if let Some(pos) = self.look_at.take() {
+            graph = graph.look_at(pos);
+        }
+
+        let graph = graph
             .show(ui, |ui| {
                 self.graph.show_nodes(ui);
             })
