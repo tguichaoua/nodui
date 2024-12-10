@@ -171,6 +171,11 @@ impl GraphApp {
     pub fn connect(&mut self, a: SocketId, b: SocketId) {
         self.graph.connections_mut().connect(a, b);
     }
+
+    /// The position of a node.
+    pub fn position_of(&self, id: impl Into<NodeId>) -> Option<Pos> {
+        self.positions.get(&id.into()).copied()
+    }
 }
 
 impl GraphApp {
@@ -217,8 +222,8 @@ impl GraphApp {
 
 impl GraphApp {
     /// Removes a node.
-    pub fn remove_node(&mut self, id: NodeId) {
-        self.graph.remove(id);
+    pub fn remove_node(&mut self, id: impl Into<NodeId>) {
+        self.graph.remove(id.into());
         self.may_need_to_rebuild_expr = true;
     }
 

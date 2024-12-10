@@ -2,6 +2,8 @@
 
 mod graph;
 
+use core::f32;
+
 use egui::{CentralPanel, DragValue, Grid, SidePanel, Ui};
 use nodui::Pos;
 
@@ -17,6 +19,10 @@ pub struct App {
 
     /// The current graph position of the viewport.
     current_graph_pos: Pos,
+
+    #[serde(skip)]
+    /// The position we want to look at.
+    look_at: Option<Pos>,
 }
 
 impl Default for App {
@@ -55,6 +61,7 @@ impl Default for App {
             },
 
             current_graph_pos: Pos::default(),
+            look_at: None,
         }
     }
 }
@@ -89,23 +96,55 @@ impl eframe::App for App {
 impl App {
     /// Render the left panel.
     fn side_panel(&mut self, ui: &mut Ui) {
+        if ui.button("➕ New Input").clicked() {
+            self.graph.add_input(self.current_graph_pos, "x", 0.0);
+        }
+
         let any_input_changed = Grid::new("INPUTS GRID")
-            .min_col_width(100.0)
-            .num_columns(2)
+            .num_columns(4)
+            .min_col_width(0.0)
             .show(ui, |ui| {
                 let mut any_changed = false;
+                let mut input_to_remove = None;
+                let mut input_to_look_at = None;
+
                 for input in self.graph.inputs_mut() {
-                    ui.text_edit_singleline(input.name_mut());
+                    ui.horizontal(|ui| {
+                        ui.set_width(100.0);
+                        ui.add(
+                            egui::TextEdit::singleline(input.name_mut())
+                                .desired_width(f32::INFINITY),
+                        );
+                    });
+
                     any_changed |= ui.add(DragValue::new(input.value_mut())).changed();
+
+                    if ui.small_button("🗙").clicked() {
+                        input_to_remove = Some(input.id());
+                    }
+
+                    if ui
+                        .small_button("🎯")
+                        .on_hover_text("Move the viewport to this input node")
+                        .clicked()
+                    {
+                        input_to_look_at = Some(input.id());
+                    }
+
                     ui.end_row();
                 }
+
+                if let Some(input_to_remove) = input_to_remove {
+                    self.graph.remove_node(input_to_remove);
+                }
+
+                if let Some(input_to_look_at) = input_to_look_at {
+                    self.look_at = self.graph.position_of(input_to_look_at);
+                }
+
                 any_changed
             })
             .inner;
-
-        if ui.button("Add input").clicked() {
-            self.graph.add_input(self.current_graph_pos, "x", 0.0);
-        }
 
         ui.separator();
 
@@ -128,7 +167,13 @@ impl App {
 
     /// Render the visual graph editor.
     fn graph_editor(&mut self, ui: &mut Ui) {
-        let graph = nodui::GraphEditor::new("graph")
+        let mut graph = nodui::GraphEditor::new("graph");
+
+        if let Some(pos) = self.look_at.take() {
+            graph = graph.look_at(pos);
+        }
+
+        let graph = graph
             .show(ui, |ui| {
                 self.graph.show_nodes(ui);
             })
