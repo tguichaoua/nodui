@@ -356,18 +356,20 @@ impl App {
                 }
             })
             .show_connections(|ui| {
+                let color = ui.preferred_color();
+
                 ui.in_progress_connection_line_with_feedback(|_, target| {
                     if target.is_some() {
                         egui::Stroke::new(5.0, egui::Color32::GREEN)
                     } else {
-                        egui::Stroke::new(3.0, egui::Color32::WHITE)
+                        egui::Stroke::new(3.0, color)
                     }
                 });
 
                 let connections = self.graph.connections();
 
                 for (a, b) in connections.iter() {
-                    ui.connect_line(&a, &b, (3.0, egui::Color32::WHITE));
+                    ui.connect_line(&a, &b, (3.0, color));
                 }
             });
 
