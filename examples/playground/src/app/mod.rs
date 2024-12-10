@@ -11,8 +11,7 @@ use crate::graph::{NodeId, SocketId};
 pub struct App {
     graph: GraphApp,
 
-    editor_bg_color: egui::Color32,
-    editor_grid_stroke: egui::Stroke,
+    show_grid: bool,
 
     #[serde(skip)]
     editor_pos: Pos,
@@ -25,8 +24,7 @@ impl Default for App {
     fn default() -> Self {
         Self {
             graph: GraphApp::default(),
-            editor_bg_color: egui::Color32::BLACK,
-            editor_grid_stroke: egui::Stroke::new(0.5, egui::Color32::DARK_GRAY),
+            show_grid: false,
             editor_pos: Pos::default(),
             cursor_pos: None,
         }
@@ -95,12 +93,8 @@ impl App {
             .num_columns(2)
             .striped(true)
             .show(ui, |ui| {
-                ui.label("Background Color");
-                ui.color_edit_button_srgba(&mut self.editor_bg_color);
-                ui.end_row();
-
-                ui.label("Grid");
-                ui.add(&mut self.editor_grid_stroke);
+                ui.label("Show Grid?");
+                ui.add(egui::Checkbox::without_text(&mut self.show_grid));
                 ui.end_row();
             });
 
@@ -124,19 +118,15 @@ impl App {
                     ui.end_row();
 
                     ui.label("Background");
-                    ui.color_edit_button_srgba(&mut node.style.body.background_color);
+                    ui.add(widget::maybe_color(&mut node.style.body.background_color));
                     ui.end_row();
 
                     ui.label("Layout");
                     ui.add(widget::node_layout(&mut node.style.body.layout));
                     ui.end_row();
 
-                    ui.label("Padding");
-                    ui.add(&mut node.style.body.padding);
-                    ui.end_row();
-
                     ui.label("Outline");
-                    ui.add(&mut node.style.outline);
+                    ui.add(widget::maybe(&mut node.style.outline));
                     ui.end_row();
                 });
 
@@ -185,11 +175,14 @@ impl App {
                         ui.add(egui::Label::new(socket.id().to_string()).truncate());
 
                         ui.horizontal(|ui| {
-                            ui.text_edit_singleline(&mut socket.style.name);
-                            ui.color_edit_button_srgba(&mut socket.style.name_color);
+                            ui.add(
+                                egui::TextEdit::singleline(&mut socket.style.name)
+                                    .desired_width(100.0),
+                            );
+                            ui.add(widget::maybe_color(&mut socket.style.name_color));
                         });
 
-                        ui.color_edit_button_srgba(&mut socket.style.color);
+                        ui.add(widget::maybe_color(&mut socket.style.color));
 
                         ui.add(widget::node_side(&mut socket.style.side));
 
@@ -230,6 +223,7 @@ impl App {
     #[expect(clippy::too_many_lines)]
     fn show_graph(&mut self, ui: &mut egui::Ui) {
         let graph = nodui::GraphEditor::new("graph")
+            .show_grid(self.show_grid)
             .show(ui, |ui| {
                 let mut node_command = NodeCommand::None;
 
@@ -241,15 +235,33 @@ impl App {
                         match node.style.header.mode {
                             crate::graph::HeaderMode::None => {}
                             crate::graph::HeaderMode::Title => {
-                                ui.header(
-                                    nodui::TitleHeader::new(&node.style.header.title)
-                                        .text_color(node.style.header.title_color)
-                                        .background_color(node.style.header.background),
-                                );
+                                let mut header = nodui::TitleHeader::new(&node.style.header.title);
+
+                                if let Some(text_color) =
+                                    node.style.header.title_color.get().copied()
+                                {
+                                    header = header.text_color(text_color);
+                                }
+
+                                if let Some(background) =
+                                    node.style.header.background.get().copied()
+                                {
+                                    header = header.background_color(background);
+                                }
+
+                                ui.header(header);
                             }
                         }
 
-                        ui.background_color(node.style.body.background_color);
+                        if let Some(outline) = node.style.outline.get().copied() {
+                            ui.outline(outline);
+                        }
+
+                        if let Some(background_color) =
+                            node.style.body.background_color.get().copied()
+                        {
+                            ui.background_color(background_color);
+                        }
 
                         ui.layout(node.style.body.layout);
 
@@ -264,14 +276,20 @@ impl App {
 
                             let is_connected = connections.is_connected(socket.id());
 
-                            ui.socket(
-                                nodui::Socket::new(socket.id(), side)
-                                    .text(name)
-                                    .text_color(name_color)
-                                    .filled(is_connected)
-                                    .shape(shape)
-                                    .color(color),
-                            );
+                            let mut socket = nodui::Socket::new(socket.id(), side)
+                                .text(name)
+                                .shape(shape)
+                                .filled(is_connected);
+
+                            if let Some(name_color) = name_color.get().copied() {
+                                socket = socket.text_color(name_color);
+                            }
+
+                            if let Some(color) = color.get().copied() {
+                                socket = socket.color(color);
+                            }
+
+                            ui.socket(socket);
                         }
                     });
 
@@ -338,18 +356,20 @@ impl App {
                 }
             })
             .show_connections(|ui| {
+                let color = ui.preferred_color();
+
                 ui.in_progress_connection_line_with_feedback(|_, target| {
                     if target.is_some() {
                         egui::Stroke::new(5.0, egui::Color32::GREEN)
                     } else {
-                        egui::Stroke::new(3.0, egui::Color32::WHITE)
+                        egui::Stroke::new(3.0, color)
                     }
                 });
 
                 let connections = self.graph.connections();
 
                 for (a, b) in connections.iter() {
-                    ui.connect_line(&a, &b, (3.0, egui::Color32::WHITE));
+                    ui.connect_line(&a, &b, (3.0, color));
                 }
             });
 

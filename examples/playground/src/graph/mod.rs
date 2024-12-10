@@ -112,3 +112,26 @@ impl Graph {
         }
     }
 }
+
+/* -------------------------------------------------------------------------- */
+
+#[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
+pub struct Maybe<T> {
+    pub enabled: bool,
+    pub value: T,
+}
+
+impl<T> Maybe<T> {
+    pub fn disabled_with(value: T) -> Self {
+        Self {
+            enabled: false,
+            value,
+        }
+    }
+
+    pub fn get(&self) -> Option<&T> {
+        self.enabled.then_some(&self.value)
+    }
+}
+
+/* -------------------------------------------------------------------------- */

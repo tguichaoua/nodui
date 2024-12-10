@@ -1,6 +1,8 @@
 use core::f32;
 
-use crate::graph;
+use egui::vec2;
+
+use crate::graph::{self, Maybe};
 
 pub fn node_side(value: &mut nodui::NodeSide) -> impl egui::Widget + '_ {
     |ui: &mut egui::Ui| {
@@ -9,7 +11,7 @@ pub fn node_side(value: &mut nodui::NodeSide) -> impl egui::Widget + '_ {
             nodui::NodeSide::Right => (egui::RichText::new("Right"), nodui::NodeSide::Left),
         };
 
-        let btn = ui.add(egui::Button::new(text));
+        let btn = ui.add(egui::Button::new(text).min_size(vec2(50.0, 0.0)));
 
         if btn.clicked() {
             *value = next;
@@ -79,19 +81,53 @@ pub fn node_header_style(
 
                         ui.label("Title");
                         ui.horizontal(|ui| {
-                            ui.color_edit_button_srgba(title_color);
+                            ui.add(maybe_color(title_color));
                             ui.add(egui::TextEdit::singleline(title).desired_width(f32::INFINITY));
                         });
                         ui.end_row();
 
                         ui.label("Background");
-                        ui.color_edit_button_srgba(background);
+                        ui.add(maybe_color(background));
                         ui.end_row();
                     });
             });
         })
         .response
     }
+}
+
+/* -------------------------------------------------------------------------- */
+
+pub fn maybe_with<'a, T>(
+    value: &'a mut Maybe<T>,
+    widget: impl FnOnce(&mut egui::Ui, &mut T) + 'a,
+) -> impl egui::Widget + 'a {
+    move |ui: &mut egui::Ui| {
+        egui::Frame::group(ui.style())
+            .inner_margin(egui::Margin::same(3.0))
+            .show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    ui.add(egui::Checkbox::without_text(&mut value.enabled));
+                    widget(ui, &mut value.value);
+                })
+            })
+            .response
+    }
+}
+
+pub fn maybe<T>(value: &mut Maybe<T>) -> impl egui::Widget + '_
+where
+    for<'a> &'a mut T: egui::Widget,
+{
+    maybe_with(value, |ui, value| {
+        ui.add(value);
+    })
+}
+
+pub fn maybe_color(value: &mut Maybe<egui::Color32>) -> impl egui::Widget + '_ {
+    maybe_with(value, |ui, value| {
+        ui.color_edit_button_srgba(value);
+    })
 }
 
 /* -------------------------------------------------------------------------- */
