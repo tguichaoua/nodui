@@ -130,7 +130,7 @@ impl App {
                 }
 
                 if let Some(input_to_remove) = input_to_remove {
-                    self.graph.remove_node(input_to_remove.into());
+                    self.graph.remove_node(input_to_remove);
                 }
 
                 if let Some(input_to_look_at) = input_to_look_at {

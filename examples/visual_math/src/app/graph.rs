@@ -222,8 +222,8 @@ impl GraphApp {
 
 impl GraphApp {
     /// Removes a node.
-    pub fn remove_node(&mut self, id: NodeId) {
-        self.graph.remove(id);
+    pub fn remove_node(&mut self, id: impl Into<NodeId>) {
+        self.graph.remove(id.into());
         self.may_need_to_rebuild_expr = true;
     }
 
