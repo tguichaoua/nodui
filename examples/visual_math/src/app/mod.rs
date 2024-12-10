@@ -91,6 +91,10 @@ impl eframe::App for App {
 impl App {
     /// Render the left panel.
     fn side_panel(&mut self, ui: &mut Ui) {
+        if ui.button("➕ New Input").clicked() {
+            self.graph.add_input(self.current_graph_pos, "x", 0.0);
+        }
+
         let any_input_changed = Grid::new("INPUTS GRID")
             .num_columns(3)
             .show(ui, |ui| {
@@ -122,10 +126,6 @@ impl App {
                 any_changed
             })
             .inner;
-
-        if ui.button("Add input").clicked() {
-            self.graph.add_input(self.current_graph_pos, "x", 0.0);
-        }
 
         ui.separator();
 
