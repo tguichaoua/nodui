@@ -102,6 +102,7 @@ impl App {
 
         let any_input_changed = Grid::new("INPUTS GRID")
             .num_columns(4)
+            .min_col_width(0.0)
             .show(ui, |ui| {
                 let mut any_changed = false;
                 let mut input_to_remove = None;
