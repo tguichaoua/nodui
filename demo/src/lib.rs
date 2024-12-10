@@ -23,6 +23,7 @@ struct State {
     strum::EnumString,
     strum::IntoStaticStr,
 )]
+#[strum(serialize_all = "lowercase", ascii_case_insensitive)]
 enum Anchor {
     #[default]
     Playground,
@@ -58,8 +59,7 @@ impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         #[cfg(target_arch = "wasm32")]
         if let Some(anchor) = frame.info().web_info.location.hash.strip_prefix('#') {
-            let anchor = anchor.parse().ok();
-            if let Some(anchor) = anchor {
+            if let Ok(anchor) = core::str::FromStr::from_str(anchor) {
                 self.state.selected_anchor = anchor;
             }
         }
