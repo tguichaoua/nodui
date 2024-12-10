@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use egui::{vec2, Vec2};
+use egui::{vec2, Color32, Vec2};
 
 use crate::{misc::layout, NodeSide, Socket, SocketShape};
 
@@ -21,7 +21,7 @@ pub(crate) struct PreparedSocket<SocketId> {
     /// Whether or not this socket's shape should be filled.
     pub(super) filled: bool,
     /// The color of the socket's handle.
-    pub(super) color: egui::Color32,
+    pub(super) color: Color32,
     /// The shape of the socket's handle.
     pub(super) shape: SocketShape,
 }
@@ -47,16 +47,28 @@ impl<S> PreparedSocket<S> {
 /* -------------------------------------------------------------------------- */
 
 /// Do computations to render a socket.
-pub(crate) fn prepare<S>(socket: Socket<S>, fonts: &egui::text::Fonts) -> PreparedSocket<S> {
+pub(crate) fn prepare<S>(
+    socket: Socket<S>,
+    visuals: &egui::Visuals,
+    fonts: &egui::text::Fonts,
+) -> PreparedSocket<S> {
     let Socket {
         id,
         side,
         text,
-        text_color,
+        mut text_color,
         filled,
         shape,
-        color,
+        mut color,
     } = socket;
+
+    if text_color == Color32::PLACEHOLDER {
+        text_color = visuals.strong_text_color();
+    }
+
+    if color == Color32::PLACEHOLDER {
+        color = text_color;
+    }
 
     let text = fonts.layout_job(egui::text::LayoutJob {
         halign: match side {

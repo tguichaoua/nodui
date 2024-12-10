@@ -6,7 +6,7 @@ mod show;
 pub mod stages;
 mod state;
 
-use egui::{Color32, Id, Stroke};
+use egui::Id;
 
 use crate::{
     misc::viewport::ViewportSize,
@@ -57,8 +57,7 @@ impl GraphEditor<stages::Settings> {
         Self {
             id: Id::new(id_salt),
             stage: stages::Settings {
-                grid_stroke: Stroke::new(0.5, Color32::DARK_GRAY),
-                background_color: Color32::BLACK,
+                show_grid: true,
                 look_at: None,
                 can_connect_socket: true,
                 viewport: ViewportSize::default(),
@@ -74,21 +73,13 @@ impl GraphEditor<stages::Settings> {
         self
     }
 
-    /// The stroke used to render the background grid.
+    /// Should show the grid.
     ///
-    /// Use [`Stroke::NONE`] to disable the grid.
+    /// Default to `true`.
     #[inline]
     #[must_use]
-    pub fn grid_stroke(mut self, stroke: impl Into<Stroke>) -> Self {
-        self.stage.grid_stroke = stroke.into();
-        self
-    }
-
-    /// The color of the editor's background.
-    #[inline]
-    #[must_use]
-    pub fn background_color(mut self, background_color: impl Into<Color32>) -> Self {
-        self.stage.background_color = background_color.into();
+    pub fn show_grid(mut self, show_grid: bool) -> Self {
+        self.stage.show_grid = show_grid;
         self
     }
 
