@@ -144,10 +144,10 @@ impl App {
                     ui.horizontal(|_| {});
                     ui.horizontal(|_| {});
                     ui.label("Id");
-                    ui.label("Name");
                     ui.label("Color");
                     ui.label("Side");
                     ui.label("Shape");
+                    ui.label("Name");
                     ui.end_row();
 
                     let len = node.sockets().len();
@@ -174,14 +174,6 @@ impl App {
 
                         ui.add(egui::Label::new(socket.id().to_string()).truncate());
 
-                        ui.horizontal(|ui| {
-                            ui.add(
-                                egui::TextEdit::singleline(&mut socket.style.name)
-                                    .desired_width(100.0),
-                            );
-                            ui.add(widget::maybe_color(&mut socket.style.name_color));
-                        });
-
                         ui.add(widget::maybe_color(&mut socket.style.color));
 
                         ui.add(widget::node_side(&mut socket.style.side));
@@ -190,6 +182,14 @@ impl App {
                             ui.id().with(socket.id()),
                             &mut socket.style.shape,
                         ));
+
+                        ui.horizontal(|ui| {
+                            ui.add(widget::maybe_color(&mut socket.style.name_color));
+                            ui.add(
+                                egui::TextEdit::singleline(&mut socket.style.name)
+                                    .desired_width(f32::INFINITY),
+                            );
+                        });
 
                         ui.end_row();
                     }
