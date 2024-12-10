@@ -1,5 +1,7 @@
 use core::f32;
 
+use egui::vec2;
+
 use crate::graph::{self, Maybe};
 
 pub fn node_side(value: &mut nodui::NodeSide) -> impl egui::Widget + '_ {
@@ -9,7 +11,7 @@ pub fn node_side(value: &mut nodui::NodeSide) -> impl egui::Widget + '_ {
             nodui::NodeSide::Right => (egui::RichText::new("Right"), nodui::NodeSide::Left),
         };
 
-        let btn = ui.add(egui::Button::new(text));
+        let btn = ui.add(egui::Button::new(text).min_size(vec2(50.0, 0.0)));
 
         if btn.clicked() {
             *value = next;
