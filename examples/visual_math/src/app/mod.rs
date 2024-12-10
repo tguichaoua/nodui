@@ -123,7 +123,11 @@ impl App {
                         input_to_remove = Some(input.id());
                     }
 
-                    if ui.small_button("🎯").clicked() {
+                    if ui
+                        .small_button("🎯")
+                        .on_hover_text("Move the viewport to this input node")
+                        .clicked()
+                    {
                         input_to_look_at = Some(input.id());
                     }
 
