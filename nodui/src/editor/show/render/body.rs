@@ -7,7 +7,9 @@ use crate::{
     NodeLayout, NodeSide, RenderedSocket,
 };
 
-use super::{socket::PreparedSocket, ROW_HEIGHT, SOCKET_NAME_GAP, SOCKET_WIDTH};
+use super::{
+    socket::PreparedSocket, DOUBLE_COLUMNS_GAP, ROW_HEIGHT, SOCKET_NAME_GAP, SOCKET_WIDTH,
+};
 
 /* -------------------------------------------------------------------------- */
 
@@ -42,7 +44,6 @@ pub(crate) fn prepare<S>(
     sockets: Vec<PreparedSocket<S>>,
 ) -> PreparedBody<S> {
     let padding = Margin::same(5.0);
-    let column_gap = 5.0;
 
     let size: Vec2 = match layout {
         NodeLayout::Single => {
@@ -61,7 +62,11 @@ pub(crate) fn prepare<S>(
                 *size = layout::stack_vertically([*size, s.compute_size()]);
             }
 
-            let column_gap = vec2(0.0, column_gap);
+            let column_gap = if left == Vec2::ZERO || right == Vec2::ZERO {
+                Vec2::ZERO
+            } else {
+                vec2(DOUBLE_COLUMNS_GAP, 0.0)
+            };
 
             layout::stack_horizontally([left, column_gap, right])
         }
