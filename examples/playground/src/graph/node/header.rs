@@ -1,11 +1,13 @@
 use serde::{Deserialize, Serialize};
 
+use crate::graph::Maybe;
+
 #[derive(Clone, Serialize, Deserialize)]
 pub(crate) struct NodeHeaderStyle {
     pub mode: HeaderMode,
     pub title: String,
-    pub title_color: egui::Color32,
-    pub background: egui::Color32,
+    pub title_color: Maybe<egui::Color32>,
+    pub background: Maybe<egui::Color32>,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -19,8 +21,8 @@ impl Default for NodeHeaderStyle {
         Self {
             mode: HeaderMode::Title,
             title: String::from("New Node"),
-            title_color: egui::Color32::BLACK,
-            background: egui::Color32::KHAKI,
+            title_color: Maybe::disabled_with(egui::Color32::BLACK),
+            background: Maybe::disabled_with(egui::Color32::KHAKI),
         }
     }
 }

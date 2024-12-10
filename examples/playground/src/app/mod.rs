@@ -118,7 +118,7 @@ impl App {
                     ui.end_row();
 
                     ui.label("Background");
-                    ui.color_edit_button_srgba(&mut node.style.body.background_color);
+                    ui.add(widget::maybe_color(&mut node.style.body.background_color));
                     ui.end_row();
 
                     ui.label("Layout");
@@ -130,7 +130,7 @@ impl App {
                     ui.end_row();
 
                     ui.label("Outline");
-                    ui.add(&mut node.style.outline);
+                    ui.add(widget::maybe(&mut node.style.outline));
                     ui.end_row();
                 });
 
@@ -239,15 +239,29 @@ impl App {
                         match node.style.header.mode {
                             crate::graph::HeaderMode::None => {}
                             crate::graph::HeaderMode::Title => {
-                                ui.header(
-                                    nodui::TitleHeader::new(&node.style.header.title)
-                                        .text_color(node.style.header.title_color)
-                                        .background_color(node.style.header.background),
-                                );
+                                let mut header = nodui::TitleHeader::new(&node.style.header.title);
+
+                                if let Some(text_color) =
+                                    node.style.header.title_color.get().copied()
+                                {
+                                    header = header.text_color(text_color);
+                                }
+
+                                if let Some(background) =
+                                    node.style.header.background.get().copied()
+                                {
+                                    header = header.background_color(background);
+                                }
+
+                                ui.header(header);
                             }
                         }
 
-                        ui.background_color(node.style.body.background_color);
+                        if let Some(background_color) =
+                            node.style.body.background_color.get().copied()
+                        {
+                            ui.background_color(background_color);
+                        }
 
                         ui.layout(node.style.body.layout);
 

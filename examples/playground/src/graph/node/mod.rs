@@ -2,7 +2,7 @@ mod header;
 
 use serde::{Deserialize, Serialize};
 
-use super::{socket::SocketStyle, NodeId, Socket};
+use super::{socket::SocketStyle, Maybe, NodeId, Socket};
 
 pub(crate) use header::{HeaderMode, NodeHeaderStyle};
 
@@ -18,7 +18,7 @@ pub struct Node {
 pub(crate) struct NodeStyle {
     pub body: NodeBody,
     pub header: NodeHeaderStyle,
-    pub outline: egui::Stroke,
+    pub outline: Maybe<egui::Stroke>,
 }
 
 impl Default for NodeStyle {
@@ -26,7 +26,7 @@ impl Default for NodeStyle {
         NodeStyle {
             body: NodeBody::default(),
             header: NodeHeaderStyle::default(),
-            outline: egui::Stroke::new(1.0, egui::Color32::WHITE),
+            outline: Maybe::disabled_with(egui::Stroke::new(1.0, egui::Color32::WHITE)),
         }
     }
 }
@@ -92,7 +92,7 @@ pub struct NodeBody {
     pub layout: nodui::NodeLayout,
 
     /// The background color.
-    pub background_color: egui::Color32,
+    pub background_color: Maybe<egui::Color32>,
 
     /// The padding of the body.
     pub padding: egui::Margin,
@@ -106,7 +106,7 @@ impl Default for NodeBody {
     fn default() -> Self {
         Self {
             layout: nodui::NodeLayout::Double,
-            background_color: egui::Color32::from_black_alpha(170),
+            background_color: Maybe::disabled_with(egui::Color32::from_black_alpha(170)),
             padding: egui::Margin::same(5.0),
             column_gap: 5.0,
         }
