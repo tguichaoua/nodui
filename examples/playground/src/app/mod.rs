@@ -253,6 +253,10 @@ impl App {
                             }
                         }
 
+                        if let Some(outline) = node.style.outline.get().copied() {
+                            ui.outline(outline);
+                        }
+
                         if let Some(background_color) =
                             node.style.body.background_color.get().copied()
                         {
