@@ -286,7 +286,7 @@ impl App {
                             }
 
                             if let Some(color) = color.get().copied() {
-                                socket = socket.text_color(color);
+                                socket = socket.color(color);
                             }
 
                             ui.socket(socket);
