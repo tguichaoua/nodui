@@ -104,6 +104,7 @@ pub fn maybe_with<'a, T>(
 ) -> impl egui::Widget + 'a {
     move |ui: &mut egui::Ui| {
         egui::Frame::group(ui.style())
+            .inner_margin(egui::Margin::same(3.0))
             .show(ui, |ui| {
                 ui.horizontal(|ui| {
                     ui.add(egui::Checkbox::without_text(&mut value.enabled));

@@ -179,10 +179,10 @@ impl App {
                                 egui::TextEdit::singleline(&mut socket.style.name)
                                     .desired_width(100.0),
                             );
-                            ui.color_edit_button_srgba(&mut socket.style.name_color);
+                            ui.add(widget::maybe_color(&mut socket.style.name_color));
                         });
 
-                        ui.color_edit_button_srgba(&mut socket.style.color);
+                        ui.add(widget::maybe_color(&mut socket.style.color));
 
                         ui.add(widget::node_side(&mut socket.style.side));
 
@@ -276,14 +276,20 @@ impl App {
 
                             let is_connected = connections.is_connected(socket.id());
 
-                            ui.socket(
-                                nodui::Socket::new(socket.id(), side)
-                                    .text(name)
-                                    .text_color(name_color)
-                                    .filled(is_connected)
-                                    .shape(shape)
-                                    .color(color),
-                            );
+                            let mut socket = nodui::Socket::new(socket.id(), side)
+                                .text(name)
+                                .shape(shape)
+                                .filled(is_connected);
+
+                            if let Some(name_color) = name_color.get().copied() {
+                                socket = socket.text_color(name_color);
+                            }
+
+                            if let Some(color) = color.get().copied() {
+                                socket = socket.text_color(color);
+                            }
+
+                            ui.socket(socket);
                         }
                     });
 
