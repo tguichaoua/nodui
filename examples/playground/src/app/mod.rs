@@ -398,6 +398,31 @@ impl App {
         }
 
         self.viewport_position = graph.position;
+
+        {
+            let mut ui = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(graph.response.rect)
+                    .layout(egui::Layout::bottom_up(egui::Align::Min)),
+            );
+
+            ui.with_layer_id(
+                egui::LayerId::new(egui::Order::Tooltip, graph.response.id),
+                |ui| {
+                    egui::Frame::group(ui.style())
+                        .rounding(egui::Rounding::ZERO)
+                        .fill(ui.visuals().extreme_bg_color)
+                        .show(ui, |ui| {
+                            ui.add(egui::Label::new(format!(
+                                "{}, {}",
+                                self.viewport_position.x, self.viewport_position.y
+                            )));
+
+                            ui.set_min_width(50.0);
+                        });
+                },
+            );
+        }
     }
 }
 
