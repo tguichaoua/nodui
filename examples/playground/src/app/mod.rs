@@ -135,27 +135,15 @@ impl App {
             if ui.button("➕").clicked() {
                 node.add_socket();
             }
+
             egui::ScrollArea::vertical().show(ui, |ui| {
-                egui::Grid::new(ui.id().with("socket node inspector grid"))
-                    .num_columns(8)
-                    .min_col_width(0.0)
-                    .show(ui, |ui| {
-                        ui.horizontal(|_| {});
-                        ui.horizontal(|_| {});
-                        ui.horizontal(|_| {});
-                        ui.label("Id");
-                        ui.label("Color");
-                        ui.label("Side");
-                        ui.label("Shape");
-                        ui.label("Name");
-                        ui.end_row();
+                let len = node.sockets().len();
+                for (i, socket) in node.sockets_mut().iter_mut().enumerate() {
+                    let is_first = i == 0;
+                    let is_last = i == len - 1;
 
-                        let len = node.sockets().len();
-
-                        for (i, socket) in node.sockets_mut().iter_mut().enumerate() {
-                            let is_first = i == 0;
-                            let is_last = i == len - 1;
-
+                    egui::Frame::group(ui.style()).show(ui, |ui| {
+                        ui.horizontal(|ui| {
                             if ui.button("🗙").clicked() {
                                 socket_action = SocketAction::Remove(socket.id());
                             }
@@ -173,16 +161,17 @@ impl App {
                             });
 
                             ui.add(egui::Label::new(socket.id().to_string()).truncate());
+                        });
 
-                            ui.add(widget::maybe_color(&mut socket.style.color));
-
-                            ui.add(widget::node_side(&mut socket.style.side));
-
-                            ui.add(widget::socket_shape(
-                                ui.id().with(socket.id()),
-                                &mut socket.style.shape,
-                            ));
-
+                        egui::Grid::new(
+                            ui.id().with("socket node inspector grid").with(socket.id()),
+                        )
+                        .striped(true)
+                        .num_columns(2)
+                        .min_col_width(0.0)
+                        .min_row_height(25.0)
+                        .show(ui, |ui| {
+                            ui.label("Name");
                             ui.horizontal(|ui| {
                                 ui.add(widget::maybe_color(&mut socket.style.name_color));
                                 ui.add(
@@ -190,10 +179,24 @@ impl App {
                                         .desired_width(f32::INFINITY),
                                 );
                             });
-
                             ui.end_row();
-                        }
+
+                            ui.label("Shape");
+                            ui.horizontal(|ui| {
+                                ui.add(widget::maybe_color(&mut socket.style.color));
+                                ui.add(widget::socket_shape(
+                                    ui.id().with(socket.id()),
+                                    &mut socket.style.shape,
+                                ));
+                            });
+                            ui.end_row();
+
+                            ui.label("Side");
+                            ui.add(widget::node_side(&mut socket.style.side));
+                            ui.end_row();
+                        });
                     });
+                }
             });
         } else {
             egui::Frame::group(ui.style()).show(ui, |ui| {
