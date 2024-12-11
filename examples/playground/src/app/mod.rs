@@ -14,7 +14,7 @@ pub struct App {
     show_grid: bool,
 
     #[serde(skip)]
-    editor_pos: Pos,
+    viewport_position: Pos,
     #[serde(skip)]
     cursor_pos: Option<Pos>,
 }
@@ -25,7 +25,7 @@ impl Default for App {
         Self {
             graph: GraphApp::default(),
             show_grid: false,
-            editor_pos: Pos::default(),
+            viewport_position: Pos::default(),
             cursor_pos: None,
         }
     }
@@ -205,7 +205,7 @@ impl App {
 
                     ui.label("Click on a node or ");
                     if ui.link("create one").clicked() {
-                        self.graph.new_node(self.editor_pos);
+                        self.graph.new_node(self.viewport_position);
                     }
                     ui.label(" to edit it.");
 
@@ -396,6 +396,8 @@ impl App {
         if let Some((a, b)) = graph.connection {
             self.graph.connections_mut().connect(a, b);
         }
+
+        self.viewport_position = graph.position;
     }
 }
 
