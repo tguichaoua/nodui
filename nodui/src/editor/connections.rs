@@ -1,6 +1,6 @@
 //! Rendering of connections.
 
-use egui::{epaint::PathStroke, Color32, Shape};
+use egui::{epaint::PathStroke, Color32, LayerId, Shape};
 
 use crate::ConnectionInProgress;
 
@@ -34,7 +34,7 @@ impl<S> GraphEditor<stages::Connections<S>> {
             crate::socket::SocketInteraction::InProgress(in_progress) => (None, Some(in_progress)),
         };
 
-        let layer_id = egui::LayerId::new(egui::Order::Background, id);
+        let layer_id = LayerId::new(egui::Order::Background, id);
         let mut painter = ui.painter().clone();
         painter.set_layer_id(layer_id);
 
@@ -45,21 +45,17 @@ impl<S> GraphEditor<stages::Connections<S>> {
             connection: in_progress,
         };
         build_fn(&mut connections_ui);
+
+        // If user didn't render the in progress connection, we do it for them.
+        connections_ui
+            .in_progress_connection_line(egui::Stroke::new(5.0, connections_ui.preferred_color()));
+
         let ConnectionsUi {
-            preferred_color,
-            painter,
+            preferred_color: _,
+            painter: _,
             sockets,
-            connection: in_progress,
+            connection: _,
         } = connections_ui;
-
-        if let Some(connection) = in_progress {
-            // The user didn't render the in progress connection, so we do it for them.
-
-            painter.add(Shape::LineSegment {
-                points: [connection.source.pos(), connection.pointer_pos],
-                stroke: egui::Stroke::new(5.0, preferred_color).into(),
-            });
-        }
 
         let position = viewport.grid.canvas_to_graph(state.viewport_position);
 
@@ -97,10 +93,7 @@ impl<S> ConnectionsUi<S> {
     }
 }
 
-impl<S> ConnectionsUi<S>
-where
-    S: PartialEq,
-{
+impl<S> ConnectionsUi<S> {
     /// Render the connection the user is currently doing.
     #[inline]
     pub fn in_progress_connection(
@@ -108,7 +101,12 @@ where
         show: impl FnOnce(&egui::Painter, ConnectionInProgress<S>),
     ) {
         if let Some(connection) = self.connection.take() {
-            show(&self.painter, connection);
+            let mut top_most_painter = self.painter.clone();
+            top_most_painter.set_layer_id(LayerId::new(
+                egui::Order::Tooltip,
+                self.painter.layer_id().id,
+            ));
+            show(&top_most_painter, connection);
         }
     }
 
