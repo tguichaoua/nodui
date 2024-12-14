@@ -45,21 +45,17 @@ impl<S> GraphEditor<stages::Connections<S>> {
             connection: in_progress,
         };
         build_fn(&mut connections_ui);
+
+        // If user didn't render the in progress connection, we do it for them.
+        connections_ui
+            .in_progress_connection_line(egui::Stroke::new(5.0, connections_ui.preferred_color()));
+
         let ConnectionsUi {
-            preferred_color,
-            painter,
+            preferred_color: _,
+            painter: _,
             sockets,
-            connection: in_progress,
+            connection: _,
         } = connections_ui;
-
-        if let Some(connection) = in_progress {
-            // The user didn't render the in progress connection, so we do it for them.
-
-            painter.add(Shape::LineSegment {
-                points: [connection.source.pos(), connection.pointer_pos],
-                stroke: egui::Stroke::new(5.0, preferred_color).into(),
-            });
-        }
 
         let position = viewport.grid.canvas_to_graph(state.viewport_position);
 
@@ -97,10 +93,7 @@ impl<S> ConnectionsUi<S> {
     }
 }
 
-impl<S> ConnectionsUi<S>
-where
-    S: PartialEq,
-{
+impl<S> ConnectionsUi<S> {
     /// Render the connection the user is currently doing.
     #[inline]
     pub fn in_progress_connection(
