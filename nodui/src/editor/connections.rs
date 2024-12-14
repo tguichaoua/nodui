@@ -149,11 +149,12 @@ impl<S> ConnectionsUi<S> {
     /// ```
     /// # fn foo<S: PartialEq + Send + Sync + Clone + 'static>(graph: nodui::GraphEditor<nodui::stages::Connections::<S>>) {
     /// graph.show_connections(|ui| {
+    ///     let preferred_color = ui.preferred_color();
     ///     ui.in_progress_connection_line_with_feedback(|_, target| {
     ///         if target.is_some() {
     ///             egui::Stroke::new(5.0, egui::Color32::GREEN)
     ///         } else {
-    ///             egui::Stroke::new(3.0, egui::Color32::WHITE)
+    ///             egui::Stroke::new(3.0, preferred_color)
     ///         }
     ///     });
     /// });
