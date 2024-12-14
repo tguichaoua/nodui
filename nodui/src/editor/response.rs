@@ -4,7 +4,7 @@ use crate::{Pos, RenderedSocket, Viewport};
 
 /* -------------------------------------------------------------------------- */
 
-/// The result of rendering a [`GraphEditor`].
+/// The result of rendering a [`GraphEditor`][crate::GraphEditor].
 pub struct GraphResponse<S> {
     /// The viewport of the editor.
     ///

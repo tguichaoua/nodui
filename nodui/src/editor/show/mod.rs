@@ -15,7 +15,7 @@ pub use node::{NodeResponse, NodeUi};
 
 /// This is what you use to render the nodes.
 ///
-/// See [`GraphEditor::show_nodes`].
+/// See [`GraphEditor::show`].
 pub struct GraphUi<S> {
     /// The id of the graph editor.
     pub(super) graph_id: Id,

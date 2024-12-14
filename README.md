@@ -8,16 +8,14 @@
 [![Apache](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/tguichaoua/nodui/blob/main/LICENSE-APACHE)
 [![MSRV](https://img.shields.io/badge/MSRV-1.79.0-dea584.svg?logo=rust)](https://github.com/rust-lang/rust/releases/tag/1.79.0)
 
+<div align="center">
+    ✨ <a href="https://tguichaoua.com/nodui">Live Demo</a> ✨
+</div>
+
 ---
 
-An [egui]-based visual graph editor.
+Nodui (node + ui) is an [egui]-based visual graph editor.
 
-## Example
-
-```sh
-cargo run -p visual_math
-```
-
-![math visual graph editor](media/visual_math.png)
+![alt text](media/example.png)
 
 [egui]: https://crates.io/crates/egui

@@ -95,6 +95,13 @@ impl<S> ConnectionsUi<S> {
 
 impl<S> ConnectionsUi<S> {
     /// Render the connection the user is currently doing.
+    ///
+    /// If called multiple times, only the first call will have effect.
+    ///
+    /// # Low-level API
+    ///
+    /// This methods is a low-level API, it gives you direct access to the [`egui::Painter`].
+    /// Prefer the usage of other `in_progress_connection_*` methods instead.
     #[inline]
     pub fn in_progress_connection(
         &mut self,
@@ -142,11 +149,12 @@ impl<S> ConnectionsUi<S> {
     /// ```
     /// # fn foo<S: PartialEq + Send + Sync + Clone + 'static>(graph: nodui::GraphEditor<nodui::stages::Connections::<S>>) {
     /// graph.show_connections(|ui| {
+    ///     let preferred_color = ui.preferred_color();
     ///     ui.in_progress_connection_line_with_feedback(|_, target| {
     ///         if target.is_some() {
     ///             egui::Stroke::new(5.0, egui::Color32::GREEN)
     ///         } else {
-    ///             egui::Stroke::new(3.0, egui::Color32::WHITE)
+    ///             egui::Stroke::new(3.0, preferred_color)
     ///         }
     ///     });
     /// });
@@ -203,6 +211,11 @@ where
     /// });
     /// # }
     /// ```
+    ///
+    /// # Low-level API
+    ///
+    /// This methods is a low-level API, it gives you direct access to the [`egui::Painter`].
+    /// Prefer the usage of other `connect_*` methods instead.
     #[inline]
     pub fn connect_with(
         &mut self,

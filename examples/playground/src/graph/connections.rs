@@ -8,7 +8,7 @@ use super::id::SocketId;
 /// Connection between sockets of the graph.
 #[derive(Default, Serialize, Deserialize)]
 pub struct Connections {
-    /// The connections between the [`InputSocketId`] and the [`OutputSocketId`].
+    /// The connections between two sockets.
     connections: HashSet<Pair>,
 }
 
