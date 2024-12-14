@@ -1,6 +1,6 @@
 //! Rendering of connections.
 
-use egui::{epaint::PathStroke, Color32, Shape};
+use egui::{epaint::PathStroke, Color32, LayerId, Shape};
 
 use crate::ConnectionInProgress;
 
@@ -34,7 +34,7 @@ impl<S> GraphEditor<stages::Connections<S>> {
             crate::socket::SocketInteraction::InProgress(in_progress) => (None, Some(in_progress)),
         };
 
-        let layer_id = egui::LayerId::new(egui::Order::Background, id);
+        let layer_id = LayerId::new(egui::Order::Background, id);
         let mut painter = ui.painter().clone();
         painter.set_layer_id(layer_id);
 
@@ -108,7 +108,12 @@ where
         show: impl FnOnce(&egui::Painter, ConnectionInProgress<S>),
     ) {
         if let Some(connection) = self.connection.take() {
-            show(&self.painter, connection);
+            let mut top_most_painter = self.painter.clone();
+            top_most_painter.set_layer_id(LayerId::new(
+                egui::Order::Tooltip,
+                self.painter.layer_id().id,
+            ));
+            show(&top_most_painter, connection);
         }
     }
 
