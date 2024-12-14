@@ -2,4 +2,4 @@
 target = "demo/index.html"
 
 [watch]
-watch = ["demo", "examples"]
+watch = ["demo", "examples", "nodui"]
