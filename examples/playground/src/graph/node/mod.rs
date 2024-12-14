@@ -94,7 +94,7 @@ pub struct NodeBody {
     /// The background color.
     pub background_color: Maybe<egui::Color32>,
 
-    /// The space between the two columns when `layout` is [`NodeLayout::Double`].
+    /// The space between the two columns when `layout` is [`nodui::NodeLayout::Double`].
     pub column_gap: f32,
 }
 
