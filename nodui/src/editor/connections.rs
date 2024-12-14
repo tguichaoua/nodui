@@ -95,6 +95,13 @@ impl<S> ConnectionsUi<S> {
 
 impl<S> ConnectionsUi<S> {
     /// Render the connection the user is currently doing.
+    ///
+    /// If called multiple times, only the first call will have effect.
+    ///
+    /// # Low-level API
+    ///
+    /// This methods is a low-level API, it gives you direct access to the [`egui::Painter`].
+    /// Prefer the usage of other `in_progress_connection_*` methods instead.
     #[inline]
     pub fn in_progress_connection(
         &mut self,
@@ -203,6 +210,11 @@ where
     /// });
     /// # }
     /// ```
+    ///
+    /// # Low-level API
+    ///
+    /// This methods is a low-level API, it gives you direct access to the [`egui::Painter`].
+    /// Prefer the usage of other `connect_*` methods instead.
     #[inline]
     pub fn connect_with(
         &mut self,
