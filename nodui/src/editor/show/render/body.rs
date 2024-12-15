@@ -7,9 +7,7 @@ use crate::{
     NodeLayout, NodeSide, RenderedSocket,
 };
 
-use super::{
-    socket::PreparedSocket, DOUBLE_COLUMNS_GAP, SOCKET_NAME_GAP, SOCKET_VERTICAL_GAP, SOCKET_WIDTH,
-};
+use super::{socket::PreparedSocket, SOCKET_NAME_GAP, SOCKET_WIDTH};
 
 /* -------------------------------------------------------------------------- */
 
@@ -39,16 +37,18 @@ impl<S> PreparedBody<S> {
 
 /// Prepare the node body for its rendering.
 pub(crate) fn prepare<S>(
+    spacing: &egui::Spacing,
     background_color: Color32,
     layout: NodeLayout,
     sockets: Vec<PreparedSocket<S>>,
 ) -> PreparedBody<S> {
     let padding = Margin::same(5.0);
+    let socket_vertical_gap = spacing.item_spacing.y;
 
     let size: Vec2 = match layout {
         NodeLayout::Single => layout::stack_vertically_with_gap(
             sockets.iter().map(PreparedSocket::compute_size),
-            SOCKET_VERTICAL_GAP,
+            socket_vertical_gap,
         ),
         NodeLayout::Double => {
             let left = layout::stack_vertically_with_gap(
@@ -56,7 +56,7 @@ pub(crate) fn prepare<S>(
                     .iter()
                     .filter(|s| s.side == NodeSide::Left)
                     .map(PreparedSocket::compute_size),
-                SOCKET_VERTICAL_GAP,
+                socket_vertical_gap,
             );
 
             let right = layout::stack_vertically_with_gap(
@@ -64,13 +64,13 @@ pub(crate) fn prepare<S>(
                     .iter()
                     .filter(|s| s.side == NodeSide::Right)
                     .map(PreparedSocket::compute_size),
-                SOCKET_VERTICAL_GAP,
+                socket_vertical_gap,
             );
 
             let column_gap = if left == Vec2::ZERO || right == Vec2::ZERO {
                 Vec2::ZERO
             } else {
-                vec2(DOUBLE_COLUMNS_GAP, 0.0)
+                vec2(spacing.item_spacing.x, 0.0)
             };
 
             layout::stack_horizontally([left, column_gap, right])
@@ -161,7 +161,7 @@ fn show_single_column_body<S>(
 
         show_socket(ui, rendered_sockets, socket_center, text_pos, socket);
 
-        pos.y += size.y + SOCKET_VERTICAL_GAP;
+        pos.y += size.y + ui.spacing().item_spacing.y;
     }
 }
 
@@ -193,7 +193,7 @@ fn show_double_column_body<S>(
 
         show_socket(ui, rendered_sockets, socket_center, text_pos, socket);
 
-        pos.y += size.y + SOCKET_VERTICAL_GAP;
+        pos.y += size.y + ui.spacing().item_spacing.y;
     }
 }
 

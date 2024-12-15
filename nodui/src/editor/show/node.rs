@@ -156,7 +156,7 @@ impl<S> NodeUi<S> {
             .into_iter()
             .map(|s| render::socket::prepare(ui, s))
             .collect();
-        let body = render::body::prepare(background_color, layout, sockets);
+        let body = render::body::prepare(ui.spacing(), background_color, layout, sockets);
 
         PreparedNode {
             header,
