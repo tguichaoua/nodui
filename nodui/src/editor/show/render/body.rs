@@ -8,7 +8,7 @@ use crate::{
 };
 
 use super::{
-    socket::PreparedSocket, DOUBLE_COLUMNS_GAP, ROW_HEIGHT, SOCKET_NAME_GAP, SOCKET_WIDTH,
+    socket::PreparedSocket, DOUBLE_COLUMNS_GAP, SOCKET_NAME_GAP, SOCKET_VERTICAL_GAP, SOCKET_WIDTH,
 };
 
 /* -------------------------------------------------------------------------- */
@@ -46,21 +46,26 @@ pub(crate) fn prepare<S>(
     let padding = Margin::same(5.0);
 
     let size: Vec2 = match layout {
-        NodeLayout::Single => {
-            layout::stack_vertically(sockets.iter().map(PreparedSocket::compute_size))
-        }
+        NodeLayout::Single => layout::stack_vertically_with_gap(
+            sockets.iter().map(PreparedSocket::compute_size),
+            SOCKET_VERTICAL_GAP,
+        ),
         NodeLayout::Double => {
-            let mut left = Vec2::ZERO;
-            let mut right = Vec2::ZERO;
+            let left = layout::stack_vertically_with_gap(
+                sockets
+                    .iter()
+                    .filter(|s| s.side == NodeSide::Left)
+                    .map(PreparedSocket::compute_size),
+                SOCKET_VERTICAL_GAP,
+            );
 
-            for s in &sockets {
-                let size = match s.side {
-                    NodeSide::Left => &mut left,
-                    NodeSide::Right => &mut right,
-                };
-
-                *size = layout::stack_vertically([*size, s.compute_size()]);
-            }
+            let right = layout::stack_vertically_with_gap(
+                sockets
+                    .iter()
+                    .filter(|s| s.side == NodeSide::Right)
+                    .map(PreparedSocket::compute_size),
+                SOCKET_VERTICAL_GAP,
+            );
 
             let column_gap = if left == Vec2::ZERO || right == Vec2::ZERO {
                 Vec2::ZERO
@@ -150,12 +155,13 @@ fn show_single_column_body<S>(
             ),
         };
 
-        let socket_center = pos + vec2(socket_x + SOCKET_WIDTH / 2.0, ROW_HEIGHT / 2.0);
-        let text_pos = pos + vec2(text_x, (ROW_HEIGHT - socket.text.rect.height()) / 2.0);
+        let size = socket.compute_size();
+        let socket_center = pos + vec2(socket_x + SOCKET_WIDTH / 2.0, size.y / 2.0);
+        let text_pos = pos + vec2(text_x, (size.y - socket.text.rect.height()) / 2.0);
 
         show_socket(ui, rendered_sockets, socket_center, text_pos, socket);
 
-        pos.y += ROW_HEIGHT;
+        pos.y += size.y + SOCKET_VERTICAL_GAP;
     }
 }
 
@@ -181,12 +187,13 @@ fn show_double_column_body<S>(
             ),
         };
 
-        let socket_center = *pos + vec2(socket_x + SOCKET_WIDTH / 2.0, ROW_HEIGHT / 2.0);
-        let text_pos = *pos + vec2(text_x, (ROW_HEIGHT - socket.text.rect.height()) / 2.0);
+        let size = socket.compute_size();
+        let socket_center = *pos + vec2(socket_x + SOCKET_WIDTH / 2.0, size.y / 2.0);
+        let text_pos = *pos + vec2(text_x, (size.y - socket.text.rect.height()) / 2.0);
 
         show_socket(ui, rendered_sockets, socket_center, text_pos, socket);
 
-        pos.y += ROW_HEIGHT;
+        pos.y += size.y + SOCKET_VERTICAL_GAP;
     }
 }
 
@@ -229,6 +236,9 @@ fn show_socket<S>(
         is_connected,
     ));
 
-    ui.painter()
-        .add(egui::Shape::galley(text_pos, text, Color32::WHITE));
+    ui.painter().add(egui::Shape::galley(
+        text_pos,
+        text,
+        ui.visuals().strong_text_color(),
+    ));
 }

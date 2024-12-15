@@ -13,5 +13,6 @@ const SOCKET_NAME_GAP: f32 = 5.0;
 /// Space between the two columns of a node.
 const DOUBLE_COLUMNS_GAP: f32 = 5.0;
 
-/// The height of a socket line.
-const ROW_HEIGHT: f32 = 20.0;
+// TODO: use ui.spacing instead
+/// The vertical space between each socket.
+const SOCKET_VERTICAL_GAP: f32 = 5.0;

@@ -1,30 +1,26 @@
 //! Rendering for sockets.
 
 use egui::epaint::{CircleShape, PathShape, RectShape};
-use egui::{vec2, Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Vec2};
+use egui::{vec2, Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Vec2, WidgetText};
 
 /* -------------------------------------------------------------------------- */
 
 /// A socket to be rendered.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone)]
 pub struct Socket<S> {
     /// The id of the socket.
     pub id: S,
     /// On which side of the node the socket is rendered.
     pub side: NodeSide,
     /// The text of the socket.
-    pub text: String,
-    /// The color of the text.
-    ///
-    /// Note: [`Color32::PLACEHOLDER`] will be replace by [`egui::Visuals::text_color()`].
-    pub text_color: Color32,
+    pub text: WidgetText,
     /// Whether or not the shape should be filled.
     pub filled: bool,
     /// The shape of the socket.
     pub shape: SocketShape,
     /// The color of the shape of the socket.
     ///
-    /// Note: [`Color32::PLACEHOLDER`] will be replace by `text_color`.
+    /// Note: [`Color32::PLACEHOLDER`] will be replace with [`Visuals::strong_text_color()`][egui::Visuals::strong_text_color].
     pub color: Color32,
 }
 
@@ -35,8 +31,7 @@ impl<S> Socket<S> {
         Self {
             id,
             side,
-            text: String::default(),
-            text_color: Color32::PLACEHOLDER,
+            text: WidgetText::default(),
             filled: false,
             shape: SocketShape::default(),
             color: Color32::PLACEHOLDER,
@@ -46,16 +41,8 @@ impl<S> Socket<S> {
     /// The text of the socket.
     #[must_use]
     #[inline]
-    pub fn text(mut self, text: impl Into<String>) -> Self {
+    pub fn text(mut self, text: impl Into<WidgetText>) -> Self {
         self.text = text.into();
-        self
-    }
-
-    /// The color of the text.
-    #[must_use]
-    #[inline]
-    pub fn text_color(mut self, color: impl Into<Color32>) -> Self {
-        self.text_color = color.into();
         self
     }
 
