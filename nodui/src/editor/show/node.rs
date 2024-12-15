@@ -152,12 +152,10 @@ impl<S> NodeUi<S> {
 
         let header = render::header::prepare(ui, header, background_color);
 
-        let sockets = ui.fonts(|fonts| {
-            sockets
-                .into_iter()
-                .map(|s| render::socket::prepare(s, ui.visuals(), fonts))
-                .collect()
-        });
+        let sockets = sockets
+            .into_iter()
+            .map(|s| render::socket::prepare(ui, s))
+            .collect();
         let body = render::body::prepare(background_color, layout, sockets);
 
         PreparedNode {

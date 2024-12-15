@@ -291,14 +291,16 @@ impl App {
 
                             let is_connected = connections.is_connected(socket.id());
 
-                            let mut socket = nodui::Socket::new(socket.id(), side)
-                                .text(name)
-                                .shape(shape)
-                                .filled(is_connected);
+                            let mut text = egui::RichText::new(name);
 
                             if let Some(name_color) = name_color.get().copied() {
-                                socket = socket.text_color(name_color);
+                                text = text.color(name_color);
                             }
+
+                            let mut socket = nodui::Socket::new(socket.id(), side)
+                                .text(text)
+                                .shape(shape)
+                                .filled(is_connected);
 
                             if let Some(color) = color.get().copied() {
                                 socket = socket.color(color);

@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use egui::{vec2, Color32, Vec2};
+use egui::{vec2, Color32, FontSelection, Vec2};
 
 use crate::{misc::layout, NodeSide, Socket, SocketShape};
 
@@ -45,35 +45,30 @@ impl<S> PreparedSocket<S> {
 /* -------------------------------------------------------------------------- */
 
 /// Do computations to render a socket.
-pub(crate) fn prepare<S>(
-    socket: Socket<S>,
-    visuals: &egui::Visuals,
-    fonts: &egui::text::Fonts,
-) -> PreparedSocket<S> {
+pub(crate) fn prepare<S>(ui: &egui::Ui, socket: Socket<S>) -> PreparedSocket<S> {
     let Socket {
         id,
         side,
         text,
-        mut text_color,
         filled,
         shape,
         mut color,
     } = socket;
 
-    if text_color == Color32::PLACEHOLDER {
-        text_color = visuals.strong_text_color();
-    }
-
     if color == Color32::PLACEHOLDER {
-        color = text_color;
+        color = ui.visuals().strong_text_color();
     }
 
-    let text = fonts.layout_job(egui::text::LayoutJob {
-        halign: match side {
-            NodeSide::Left => egui::Align::LEFT,
-            NodeSide::Right => egui::Align::RIGHT,
-        },
-        ..egui::text::LayoutJob::simple_singleline(text, egui::FontId::monospace(12.0), text_color)
+    let layout_job = text.into_layout_job(ui.style(), FontSelection::Default, ui.text_valign());
+
+    let text = ui.fonts(|fonts| {
+        fonts.layout_job(egui::text::LayoutJob {
+            halign: match side {
+                NodeSide::Left => egui::Align::LEFT,
+                NodeSide::Right => egui::Align::RIGHT,
+            },
+            ..layout_job
+        })
     });
 
     PreparedSocket {

@@ -229,6 +229,9 @@ fn show_socket<S>(
         is_connected,
     ));
 
-    ui.painter()
-        .add(egui::Shape::galley(text_pos, text, Color32::WHITE));
+    ui.painter().add(egui::Shape::galley(
+        text_pos,
+        text,
+        ui.visuals().strong_text_color(),
+    ));
 }
