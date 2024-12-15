@@ -58,9 +58,7 @@ impl<S> GraphUi<S> {
     {
         let mut node_ui = NodeUi::new();
         let inner = build_fn(&mut node_ui);
-        let node = self
-            .ui
-            .fonts(|fonts| node_ui.prepare(self.ui.visuals(), fonts));
+        let node = node_ui.prepare(&self.ui);
 
         let id = self.graph_id.with(id_salt);
 
@@ -137,7 +135,7 @@ impl<S> NodeUi<S> {
     }
 
     /// Do the computations required to render the node.
-    fn prepare(self, visuals: &egui::Visuals, fonts: &egui::text::Fonts) -> PreparedNode<S> {
+    fn prepare(self, ui: &egui::Ui) -> PreparedNode<S> {
         let Self {
             header,
             mut background_color,
@@ -147,17 +145,19 @@ impl<S> NodeUi<S> {
         } = self;
 
         if background_color == Color32::PLACEHOLDER {
-            background_color = visuals.extreme_bg_color;
+            background_color = ui.visuals().extreme_bg_color;
         }
 
-        let outline = outline.unwrap_or(visuals.window_stroke);
+        let outline = outline.unwrap_or(ui.visuals().window_stroke);
 
-        let header = render::header::prepare(header, background_color, visuals, fonts);
+        let header = render::header::prepare(ui, header, background_color);
 
-        let sockets = sockets
-            .into_iter()
-            .map(|s| render::socket::prepare(s, visuals, fonts))
-            .collect();
+        let sockets = ui.fonts(|fonts| {
+            sockets
+                .into_iter()
+                .map(|s| render::socket::prepare(s, ui.visuals(), fonts))
+                .collect()
+        });
         let body = render::body::prepare(background_color, layout, sockets);
 
         PreparedNode {

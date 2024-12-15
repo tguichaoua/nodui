@@ -50,7 +50,6 @@ impl eframe::App for App {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            // self.show_graph(ui);
             self.show_graph(ui);
         });
 
@@ -245,13 +244,19 @@ impl App {
                         match node.style.header.mode {
                             crate::graph::HeaderMode::None => {}
                             crate::graph::HeaderMode::Title => {
-                                let mut header = nodui::TitleHeader::new(&node.style.header.title);
+                                let text_color = node
+                                    .style
+                                    .header
+                                    .title_color
+                                    .get()
+                                    .copied()
+                                    .unwrap_or(egui::Color32::PLACEHOLDER);
 
-                                if let Some(text_color) =
-                                    node.style.header.title_color.get().copied()
-                                {
-                                    header = header.text_color(text_color);
-                                }
+                                let mut header = nodui::TitleHeader::new(
+                                    egui::RichText::new(&node.style.header.title)
+                                        .color(text_color)
+                                        .monospace(),
+                                );
 
                                 if let Some(background) =
                                     node.style.header.background.get().copied()

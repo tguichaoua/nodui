@@ -2,7 +2,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-use egui::Color32;
+use egui::{Color32, WidgetText};
 
 /// The layout for the body part of a node.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -38,44 +38,21 @@ impl From<TitleHeader> for Header {
 /// A simple header with a title.
 pub struct TitleHeader {
     /// The text of the title.
-    pub text: String,
-    /// The color of the title.
-    ///
-    /// Note: [`Color32::PLACEHOLDER`] will be replace by [`egui::Visuals::text_color()`].
-    pub text_color: Color32,
+    pub text: WidgetText,
     /// The background color of the header.
     ///
     /// Note: [`Color32::PLACEHOLDER`] will be replace by the node body's color.
     pub background_color: Color32,
 }
 
-impl Default for TitleHeader {
-    #[inline]
-    fn default() -> Self {
-        Self {
-            text: String::new(),
-            text_color: Color32::PLACEHOLDER,
-            background_color: Color32::PLACEHOLDER,
-        }
-    }
-}
-
 impl TitleHeader {
-    /// Create a [`TitleHeader`].
+    /// Creates a [`TitleHeader`].
     #[inline]
-    pub fn new(text: impl Into<String>) -> Self {
+    pub fn new(text: impl Into<WidgetText>) -> Self {
         Self {
             text: text.into(),
-            ..Default::default()
+            background_color: Color32::PLACEHOLDER,
         }
-    }
-
-    /// The color of the title.
-    #[must_use]
-    #[inline]
-    pub fn text_color(mut self, color: impl Into<Color32>) -> Self {
-        self.text_color = color.into();
-        self
     }
 
     /// The background color of the header.

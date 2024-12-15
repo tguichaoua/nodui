@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use egui::{
     epaint::{RectShape, TextShape},
-    vec2, Color32, Pos2, Rect, Rounding, Vec2,
+    vec2, Color32, FontSelection, Pos2, Rect, Rounding, Vec2,
 };
 
 use crate::{Header, TitleHeader};
@@ -52,12 +52,7 @@ struct TitleHeaderContent {
 /* -------------------------------------------------------------------------- */
 
 /// Do computations to render the header.
-pub(crate) fn prepare(
-    header: Header,
-    body_color: Color32,
-    visuals: &egui::Visuals,
-    fonts: &egui::text::Fonts,
-) -> PreparedHeader {
+pub(crate) fn prepare(ui: &egui::Ui, header: Header, body_color: Color32) -> PreparedHeader {
     match header {
         Header::None => PreparedHeader {
             content: HeaderContent::None,
@@ -65,17 +60,10 @@ pub(crate) fn prepare(
         },
         Header::Title(TitleHeader {
             text,
-            text_color,
             background_color: background,
         }) => {
             // TODO: allow user to customize this value ?
             let padding = egui::Margin::same(5.0);
-
-            let text_color = if text_color == Color32::PLACEHOLDER {
-                visuals.text_color()
-            } else {
-                text_color
-            };
 
             let background = if background == Color32::PLACEHOLDER {
                 body_color
@@ -83,14 +71,7 @@ pub(crate) fn prepare(
                 background
             };
 
-            let title = fonts.layout_job(egui::text::LayoutJob {
-                halign: egui::Align::LEFT,
-                ..egui::text::LayoutJob::simple_singleline(
-                    text,
-                    egui::FontId::monospace(12.0),
-                    text_color,
-                )
-            });
+            let title = text.into_galley(ui, None, f32::INFINITY, FontSelection::Default);
 
             let size = padding.sum() + title.rect.size();
 
@@ -130,10 +111,11 @@ impl PreparedHeader {
                 ui.painter()
                     .add(RectShape::filled(rect, rounding, background));
 
+                // TODO: use `title.job` for correct positioning (e.g. halign).
                 ui.painter().add(TextShape::new(
                     pos + padding.left_top(),
                     title,
-                    Color32::WHITE,
+                    ui.visuals().text_color(),
                 ));
             }
         }
