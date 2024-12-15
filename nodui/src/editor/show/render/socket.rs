@@ -6,7 +6,7 @@ use egui::{vec2, Color32, FontSelection, Vec2};
 
 use crate::{misc::layout, NodeSide, Socket, SocketShape};
 
-use super::{ROW_HEIGHT, SOCKET_NAME_GAP, SOCKET_WIDTH};
+use super::{SOCKET_NAME_GAP, SOCKET_WIDTH};
 
 /* -------------------------------------------------------------------------- */
 
@@ -33,12 +33,7 @@ impl<S> PreparedSocket<S> {
         let socket_text_gap = vec2(SOCKET_NAME_GAP, 0.0);
         let text_size = self.text.size();
 
-        let mut size = layout::stack_horizontally([socket_size, socket_text_gap, text_size]);
-
-        // FIXME: it work will the computed height is lower than `ROW_HEIGHT`.
-        size.y = ROW_HEIGHT;
-
-        size
+        layout::stack_horizontally([socket_size, socket_text_gap, text_size])
     }
 }
 
