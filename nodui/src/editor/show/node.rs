@@ -111,6 +111,7 @@ impl<S> GraphUi<S> {
 
         if response.clicked || response.fake_primary_click || response.dragged() {
             self.ui.ctx().move_to_top(layer_id);
+            response.request_focus();
         }
 
         NodeResponse {
