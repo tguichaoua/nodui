@@ -133,6 +133,38 @@ where
     }
 }
 
+/// Defines the position of the elements of a socket.
+#[derive(Clone, Copy)]
+struct SocketGeometry {
+    /// The `x` coordinates of the socket's shape relative from the socket position.
+    socket_x: f32,
+    /// The `x` coordinates of the socket's name relative from the socket position.
+    text_x: f32,
+}
+
+/// Defines the position of the elements of the sockets.
+#[derive(Clone, Copy)]
+struct SocketGeometries {
+    /// The geometry of a left socket.
+    left: SocketGeometry,
+    /// The geometry of a right socket.
+    right: SocketGeometry,
+}
+
+/// Computes the socket geometry based on the width available.
+fn compute_socket_geometries(width: f32) -> SocketGeometries {
+    SocketGeometries {
+        left: SocketGeometry {
+            socket_x: 0.0,
+            text_x: SOCKET_WIDTH + SOCKET_NAME_GAP,
+        },
+        right: SocketGeometry {
+            socket_x: width - SOCKET_WIDTH,
+            text_x: width - (SOCKET_WIDTH + SOCKET_NAME_GAP),
+        },
+    }
+}
+
 /// Render the node body with a single column layout.
 fn show_single_column_body<S>(
     ui: &mut egui::Ui,
@@ -142,26 +174,16 @@ fn show_single_column_body<S>(
 ) where
     S: core::hash::Hash,
 {
+    let geometry = compute_socket_geometries(rect.width());
     let mut pos = rect.min;
 
     for socket in sockets {
-        // TODO: may be refactored
-        // TODO: DRY this part and the other from `show_double_column_body`
-        let (socket_x, text_x) = match socket.side {
-            NodeSide::Left => (0.0, SOCKET_WIDTH + SOCKET_NAME_GAP),
-            NodeSide::Right => (
-                rect.width() - SOCKET_WIDTH,
-                rect.width() - (SOCKET_WIDTH + SOCKET_NAME_GAP),
-            ),
+        let geometry = match socket.side {
+            NodeSide::Left => geometry.left,
+            NodeSide::Right => geometry.right,
         };
 
-        let size = socket.compute_size();
-        let socket_center = pos + vec2(socket_x + SOCKET_WIDTH / 2.0, size.y / 2.0);
-        let text_pos = pos + vec2(text_x, (size.y - socket.text.rect.height()) / 2.0);
-
-        show_socket(ui, rendered_sockets, socket_center, text_pos, socket);
-
-        pos.y += size.y + ui.spacing().item_spacing.y;
+        show_socket(ui, rendered_sockets, &mut pos, geometry, socket);
     }
 }
 
@@ -174,26 +196,17 @@ fn show_double_column_body<S>(
 ) where
     S: core::hash::Hash,
 {
+    let geometry = compute_socket_geometries(rect.width());
     let mut left = rect.min;
     let mut right = rect.min;
 
     for socket in sockets {
-        let (pos, socket_x, text_x) = match socket.side {
-            NodeSide::Left => (&mut left, 0.0, SOCKET_WIDTH + SOCKET_NAME_GAP),
-            NodeSide::Right => (
-                &mut right,
-                rect.width() - SOCKET_WIDTH,
-                rect.width() - (SOCKET_WIDTH + SOCKET_NAME_GAP),
-            ),
+        let (pos, geometry) = match socket.side {
+            NodeSide::Left => (&mut left, geometry.left),
+            NodeSide::Right => (&mut right, geometry.right),
         };
 
-        let size = socket.compute_size();
-        let socket_center = *pos + vec2(socket_x + SOCKET_WIDTH / 2.0, size.y / 2.0);
-        let text_pos = *pos + vec2(text_x, (size.y - socket.text.rect.height()) / 2.0);
-
-        show_socket(ui, rendered_sockets, socket_center, text_pos, socket);
-
-        pos.y += size.y + ui.spacing().item_spacing.y;
+        show_socket(ui, rendered_sockets, pos, geometry, socket);
     }
 }
 
@@ -201,12 +214,18 @@ fn show_double_column_body<S>(
 fn show_socket<S>(
     ui: &mut egui::Ui,
     rendered_sockets: &mut Collector<RenderedSocket<S>>,
-    socket_center: Pos2,
-    text_pos: Pos2,
+    pos: &mut Pos2,
+    geometry: SocketGeometry,
     socket: PreparedSocket<S>,
 ) where
     S: core::hash::Hash,
 {
+    let size = socket.compute_size();
+    let socket_center = *pos + vec2(geometry.socket_x + SOCKET_WIDTH / 2.0, size.y / 2.0);
+    let text_pos = *pos + vec2(geometry.text_x, (size.y - socket.text.rect.height()) / 2.0);
+
+    pos.y += size.y + ui.spacing().item_spacing.y;
+
     let PreparedSocket {
         id,
         side,
