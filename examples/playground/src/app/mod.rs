@@ -54,12 +54,18 @@ impl eframe::App for App {
             self.show_graph(ui);
         });
 
+        // Check that the selected node has the focus to avoid conflict with text field keyboard shortcut.
+        let focused_node = self
+            .graph
+            .selected_node
+            .and_then(|(node_id, id)| ctx.memory(|mem| mem.has_focus(id)).then_some(node_id));
+
         ctx.input_mut(|input| {
             for ev in &input.events {
                 #[allow(clippy::wildcard_enum_match_arm)]
                 match ev {
                     egui::Event::Copy => {
-                        if let Some(node_id) = self.graph.selected_node {
+                        if let Some(node_id) = focused_node {
                             self.graph.copy_node(node_id);
                         }
                     }
@@ -69,7 +75,7 @@ impl eframe::App for App {
                         }
                     }
                     egui::Event::Cut => {
-                        if let Some(node_id) = self.graph.selected_node {
+                        if let Some(node_id) = focused_node {
                             self.graph.copy_node(node_id);
                             self.graph.remove_node(node_id);
                         }
@@ -341,8 +347,8 @@ impl App {
                         }
                     });
 
-                    if node_response.response.clicked() {
-                        self.graph.selected_node = Some(node.id());
+                    if node_response.response.has_focus() {
+                        self.graph.selected_node = Some((node.id(), node_response.response.id));
                     }
                 }
 

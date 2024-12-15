@@ -7,7 +7,7 @@ use crate::graph;
 #[derive(Default, Serialize, Deserialize)]
 pub struct GraphApp {
     pub graph: graph::Graph,
-    pub selected_node: Option<graph::NodeId>,
+    pub selected_node: Option<(graph::NodeId, egui::Id)>,
     pub clipboard: Option<(graph::NodeStyle, Vec<graph::SocketStyle>)>,
 }
 
@@ -28,18 +28,18 @@ impl DerefMut for GraphApp {
 impl GraphApp {
     pub fn selected_node(&mut self) -> Option<&mut graph::Node> {
         self.selected_node
-            .and_then(|node_id| self.graph.get_node_mut(node_id))
+            .and_then(|(node_id, _)| self.graph.get_node_mut(node_id))
     }
 
     pub fn delete_selected_node(&mut self) {
-        if let Some(node_id) = self.selected_node.take() {
+        if let Some((node_id, _)) = self.selected_node.take() {
             self.graph.remove_node(node_id);
         }
     }
 
     pub fn new_node(&mut self, pos: nodui::Pos) {
         let node = self.add_node(pos, graph::NodeStyle::default(), []);
-        self.selected_node = Some(node.id());
+        self.selected_node = Some((node.id(), egui::Id::NULL));
     }
 
     pub fn copy_node(&mut self, node_id: graph::NodeId) {
@@ -56,7 +56,7 @@ impl GraphApp {
             let node = self
                 .graph
                 .add_node(pos, settings.clone(), sockets.iter().cloned());
-            self.selected_node = Some(node.id());
+            self.selected_node = Some((node.id(), egui::Id::NULL));
         }
     }
 
