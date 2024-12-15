@@ -405,6 +405,12 @@ impl App {
 
         self.viewport_position = graph.position;
 
+        self.cursor_pos = graph
+            .response
+            .ctx
+            .pointer_latest_pos()
+            .map(|pointer| graph.viewport.viewport_to_graph(pointer));
+
         {
             let mut ui = ui.new_child(
                 egui::UiBuilder::new()
