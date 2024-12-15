@@ -54,7 +54,11 @@ pub(crate) fn prepare<S>(ui: &egui::Ui, socket: Socket<S>) -> PreparedSocket<S> 
         color = ui.visuals().strong_text_color();
     }
 
-    let layout_job = text.into_layout_job(ui.style(), FontSelection::Default, ui.text_valign());
+    let layout_job = text.into_layout_job(
+        ui.style(),
+        FontSelection::Style(egui::TextStyle::Monospace),
+        egui::Align::BOTTOM,
+    );
 
     let text = ui.fonts(|fonts| {
         fonts.layout_job(egui::text::LayoutJob {
