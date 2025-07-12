@@ -3,7 +3,9 @@
 mod node;
 mod render;
 
-use egui::{epaint::RectShape, pos2, vec2, Id, Rect, Rounding, Shape, UiBuilder, Vec2};
+use egui::{
+    epaint::RectShape, pos2, vec2, CornerRadius, Id, Rect, Shape, StrokeKind, UiBuilder, Vec2,
+};
 
 use crate::misc::collector::Collector;
 
@@ -66,9 +68,10 @@ impl GraphEditor<stages::Settings> {
         // Paint the background (must be paint before we set the clip rect)
         ui.painter().add(RectShape::new(
             rect,
-            Rounding::ZERO,
+            CornerRadius::ZERO,
             ui.visuals().extreme_bg_color,
             ui.visuals().widgets.noninteractive.bg_stroke,
+            StrokeKind::Inside,
         ));
 
         /* ---- */
@@ -191,7 +194,7 @@ fn paint_grid(
 
         painter.add(Shape::LineSegment {
             points: [pos2(x, rect.min.y), pos2(x, rect.max.y)],
-            stroke: stroke.into(),
+            stroke,
         });
     }
 
@@ -202,7 +205,7 @@ fn paint_grid(
 
         painter.add(Shape::LineSegment {
             points: [pos2(rect.min.x, y), pos2(rect.max.x, y)],
-            stroke: stroke.into(),
+            stroke,
         });
     }
 }

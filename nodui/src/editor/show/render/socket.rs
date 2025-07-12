@@ -66,7 +66,8 @@ pub(crate) fn prepare<S>(ui: &egui::Ui, socket: Socket<S>) -> PreparedSocket<S> 
                 NodeSide::Left => egui::Align::LEFT,
                 NodeSide::Right => egui::Align::RIGHT,
             },
-            ..layout_job
+            // FIXME: is it possible to change the `halign` without having to clone the layout_job?
+            ..(*layout_job).clone()
         })
     });
 

@@ -267,7 +267,6 @@ impl GraphApp {
                     socket.response.context_menu(|ui| {
                         if ui.button("Disconnect").clicked() {
                             command = Command::Disconnect(socket.id);
-                            ui.close_menu();
                         }
                     });
                 }
@@ -275,15 +274,12 @@ impl GraphApp {
                 node_response.response.context_menu(|ui| {
                     if ui.button("Select").clicked() {
                         command = Command::Select(node_id);
-
-                        ui.close_menu();
                     }
 
                     ui.separator();
 
                     if ui.button("Remove").clicked() {
                         command = Command::Remove(node_id);
-                        ui.close_menu();
                     }
                 });
             };

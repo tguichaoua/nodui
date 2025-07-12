@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use egui::{
     epaint::{RectShape, TextShape},
-    vec2, Color32, FontSelection, Pos2, Rect, Rounding, Vec2,
+    vec2, Color32, CornerRadius, FontSelection, Pos2, Rect, Vec2,
 };
 
 use crate::{Header, TitleHeader};
@@ -63,7 +63,7 @@ pub(crate) fn prepare(ui: &egui::Ui, header: Header, body_color: Color32) -> Pre
             background_color: background,
         }) => {
             // TODO: allow user to customize this value ?
-            let padding = egui::Margin::same(5.0);
+            let padding = egui::Margin::same(5);
 
             let background = if background == Color32::PLACEHOLDER {
                 body_color
@@ -96,7 +96,7 @@ impl PreparedHeader {
         ui: &egui::Ui,
         pos: Pos2,
         node_size: Vec2,
-        rounding: Rounding,
+        corner_radius: CornerRadius,
     ) {
         let Self { content, size } = self;
 
@@ -109,7 +109,7 @@ impl PreparedHeader {
             }) => {
                 let rect = Rect::from_min_size(pos, vec2(node_size.x, size.y));
                 ui.painter()
-                    .add(RectShape::filled(rect, rounding, background));
+                    .add(RectShape::filled(rect, corner_radius, background));
 
                 // TODO: use `title.job` for correct positioning (e.g. halign).
                 ui.painter().add(TextShape::new(
