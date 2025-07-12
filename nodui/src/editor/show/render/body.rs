@@ -1,6 +1,6 @@
 //! Rendering of node's body.
 
-use egui::{epaint::RectShape, vec2, Color32, Margin, Pos2, Rect, Rounding, Vec2};
+use egui::{epaint::RectShape, vec2, Color32, CornerRadius, Margin, Pos2, Rect, Vec2};
 
 use crate::{
     misc::{collector::Collector, layout},
@@ -42,7 +42,7 @@ pub(crate) fn prepare<S>(
     layout: NodeLayout,
     sockets: Vec<PreparedSocket<S>>,
 ) -> PreparedBody<S> {
-    let padding = Margin::same(5.0);
+    let padding = Margin::same(5);
     let socket_vertical_gap = spacing.item_spacing.y;
 
     let size: Vec2 = match layout {
@@ -102,7 +102,7 @@ where
         ui: &mut egui::Ui,
         pos: Pos2,
         node_size: Vec2,
-        rounding: Rounding,
+        corner_radius: CornerRadius,
         rendered_sockets: &mut Collector<RenderedSocket<S>>,
     ) {
         let Self {
@@ -115,7 +115,7 @@ where
 
         let rect = Rect::from_min_size(pos, vec2(node_size.x, size.y));
         ui.painter()
-            .add(RectShape::filled(rect, rounding, background_color));
+            .add(RectShape::filled(rect, corner_radius, background_color));
 
         {
             let rect = Rect::from_min_size(pos, vec2(node_size.x, size.y));

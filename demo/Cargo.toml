@@ -11,7 +11,9 @@ publish = false
 
 [dependencies]
 egui.workspace = true
-eframe = { workspace = true, features = ["persistence"] }
+eframe = { workspace = true, default-features = true, features = [
+    "persistence",
+] }
 log = "0.4"
 
 serde = { version = "1", features = ["derive"] }

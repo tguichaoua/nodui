@@ -1,7 +1,7 @@
 //! Rendering for sockets.
 
 use egui::epaint::{CircleShape, PathShape, RectShape};
-use egui::{vec2, Color32, Pos2, Rect, Response, Rounding, Shape, Stroke, Vec2, WidgetText};
+use egui::{vec2, Color32, CornerRadius, Pos2, Rect, Response, Shape, Stroke, Vec2, WidgetText};
 
 /* -------------------------------------------------------------------------- */
 
@@ -98,6 +98,8 @@ impl<S> RenderedSocket<S> {
 /* -------------------------------------------------------------------------- */
 
 /// An interaction the user may have with the sockets.
+// TODO: do performance test on boxing the large variant
+#[expect(clippy::large_enum_variant, reason = "require test on performance")]
 pub(crate) enum SocketInteraction<S> {
     /// No interaction.
     None,
@@ -242,9 +244,10 @@ pub(crate) fn make_shape(
             rect: Rect::from_center_size(center, Vec2::splat(width * FRAC_1_SQRT_2)),
             fill,
             stroke,
-            rounding: Rounding::default(),
-            fill_texture_id: egui::TextureId::default(),
-            uv: Rect::ZERO,
+            corner_radius: CornerRadius::default(),
+            round_to_pixels: None,
+            brush: None,
+            stroke_kind: egui::StrokeKind::Inside,
             blur_width: 0.0,
         }),
 

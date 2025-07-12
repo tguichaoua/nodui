@@ -8,7 +8,7 @@ publish = false
 [dependencies]
 nodui = { workspace = true, features = ["serde"] }
 
-eframe.workspace = true
+eframe = { workspace = true, default-features = true }
 egui.workspace = true
 
 uuid = { version = "1.8.0", features = ["v4", "serde"] }

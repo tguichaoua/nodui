@@ -1,6 +1,6 @@
 //! Rendering of connections.
 
-use egui::{epaint::PathStroke, Color32, LayerId, Shape};
+use egui::{Color32, LayerId, Shape, Stroke};
 
 use crate::ConnectionInProgress;
 
@@ -48,7 +48,7 @@ impl<S> GraphEditor<stages::Connections<S>> {
 
         // If user didn't render the in progress connection, we do it for them.
         connections_ui
-            .in_progress_connection_line(egui::Stroke::new(5.0, connections_ui.preferred_color()));
+            .in_progress_connection_line(Stroke::new(5.0, connections_ui.preferred_color()));
 
         let ConnectionsUi {
             preferred_color: _,
@@ -121,7 +121,7 @@ impl<S> ConnectionsUi<S> {
     ///
     /// See [`Self::in_progress_connection`].
     #[inline]
-    pub fn in_progress_connection_line(&mut self, stroke: impl Into<egui::Stroke>) {
+    pub fn in_progress_connection_line(&mut self, stroke: impl Into<Stroke>) {
         self.in_progress_connection(|painter, connection| {
             let ConnectionInProgress {
                 source,
@@ -130,7 +130,7 @@ impl<S> ConnectionsUi<S> {
             } = connection;
 
             let points = [source.pos(), pointer_pos];
-            let stroke = stroke.into().into();
+            let stroke = stroke.into();
 
             painter.add(Shape::LineSegment { points, stroke });
         });
@@ -163,7 +163,7 @@ impl<S> ConnectionsUi<S> {
     #[inline]
     pub fn in_progress_connection_line_with_feedback(
         &mut self,
-        stroke: impl FnOnce(RenderedSocket<S>, Option<RenderedSocket<S>>) -> egui::Stroke,
+        stroke: impl FnOnce(RenderedSocket<S>, Option<RenderedSocket<S>>) -> Stroke,
     ) {
         self.in_progress_connection(|painter, connection| {
             let ConnectionInProgress {
@@ -173,7 +173,7 @@ impl<S> ConnectionsUi<S> {
             } = connection;
 
             let points = [source.pos(), pointer_pos];
-            let stroke = stroke(source, target).into();
+            let stroke = stroke(source, target);
 
             painter.add(Shape::LineSegment { points, stroke });
         });
@@ -234,7 +234,7 @@ where
     ///
     /// See [`Self::connect_with`].
     #[inline]
-    pub fn connect_line(&mut self, a: &S, b: &S, stroke: impl Into<PathStroke>) {
+    pub fn connect_line(&mut self, a: &S, b: &S, stroke: impl Into<Stroke>) {
         self.connect_with(a, b, |painter, a, b| {
             let stroke = stroke.into();
             painter.add(Shape::LineSegment {

@@ -223,27 +223,22 @@ fn new_node_menu(ui: &mut Ui, mut on_clicked: impl FnMut(Op)) {
     ui.menu_button("New", |ui| {
         if ui.button("Neg").clicked() {
             on_clicked(UnaryOp::Neg.into());
-            ui.close_menu();
         }
 
         if ui.button("Add").clicked() {
             on_clicked(BinaryOp::Add.into());
-            ui.close_menu();
         }
 
         if ui.button("Sub").clicked() {
             on_clicked(BinaryOp::Sub.into());
-            ui.close_menu();
         }
 
         if ui.button("Mul").clicked() {
             on_clicked(BinaryOp::Mul.into());
-            ui.close_menu();
         }
 
         if ui.button("Div").clicked() {
             on_clicked(BinaryOp::Div.into());
-            ui.close_menu();
         }
     });
 }

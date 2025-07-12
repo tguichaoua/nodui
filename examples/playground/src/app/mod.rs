@@ -1,6 +1,7 @@
 mod graph;
 mod widget;
 
+use egui::{CornerRadius, UiBuilder};
 use graph::GraphApp;
 use nodui::Pos;
 use serde::{Deserialize, Serialize};
@@ -316,7 +317,6 @@ impl App {
                         socket.response.context_menu(|ui| {
                             if ui.button("Disconnect").clicked() {
                                 connections.disconnect(socket.id);
-                                ui.close_menu();
                             }
                         });
                     }
@@ -324,7 +324,6 @@ impl App {
                     node_response.response.context_menu(|ui| {
                         if ui.button("Add socket").clicked() {
                             node.add_socket();
-                            ui.close_menu();
                         }
 
                         if ui.button("Copy").clicked() {
@@ -332,25 +331,20 @@ impl App {
                                 node.style.clone(),
                                 node.sockets().iter().map(|s| s.style.clone()).collect(),
                             ));
-                            ui.close_menu();
                         }
 
                         ui.add_enabled_ui(self.graph.clipboard.is_some(), |ui| {
                             if ui.button("Paste style").clicked() {
                                 node_command = NodeCommand::PasteStyle(node.id());
-                                ui.close_menu();
                             }
 
                             if ui.button("Paste sockets").clicked() {
                                 node_command = NodeCommand::PasteSockets(node.id());
-
-                                ui.close_menu();
                             }
                         });
 
                         if ui.button("Remove").clicked() {
                             node_command = NodeCommand::Remove(node.id());
-                            ui.close_menu();
                         }
                     });
 
@@ -395,13 +389,11 @@ impl App {
 
             if ui.button("New node").clicked() {
                 self.graph.new_node(pos);
-                ui.close_menu();
             }
 
             ui.add_enabled_ui(self.graph.clipboard.is_some(), |ui| {
                 if ui.button("Paste node").clicked() {
                     self.graph.paste_node(pos);
-                    ui.close_menu();
                 }
             });
         });
@@ -420,16 +412,17 @@ impl App {
 
         {
             let mut ui = ui.new_child(
-                egui::UiBuilder::new()
+                UiBuilder::new()
                     .max_rect(graph.response.rect)
                     .layout(egui::Layout::bottom_up(egui::Align::Min)),
             );
 
-            ui.with_layer_id(
-                egui::LayerId::new(egui::Order::Tooltip, graph.response.id),
+            ui.scope_builder(
+                UiBuilder::new()
+                    .layer_id(egui::LayerId::new(egui::Order::Tooltip, graph.response.id)),
                 |ui| {
                     egui::Frame::group(ui.style())
-                        .rounding(egui::Rounding::ZERO)
+                        .corner_radius(CornerRadius::ZERO)
                         .fill(ui.visuals().extreme_bg_color)
                         .show(ui, |ui| {
                             ui.add(egui::Label::new(format!(

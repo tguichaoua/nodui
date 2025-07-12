@@ -1,6 +1,9 @@
 //! Node rendering.
 
-use egui::{epaint::RectShape, vec2, Color32, Pos2, Rect, Response, Rounding, Vec2};
+use egui::{
+    epaint::RectShape, vec2, Color32, CornerRadius, Pos2, Rect, Response, StrokeKind, UiBuilder,
+    Vec2,
+};
 
 use crate::{
     misc::{collector::Collector, layout},
@@ -79,7 +82,7 @@ impl<S> GraphUi<S> {
 
         let (response, sockets) = self
             .ui
-            .with_layer_id(layer_id, |ui| {
+            .scope_builder(UiBuilder::new().layer_id(layer_id), |ui| {
                 let response = ui.interact(
                     Rect::from_min_size(ui_pos, node_size),
                     id,
@@ -107,7 +110,12 @@ impl<S> GraphUi<S> {
             }
         }
 
-        if response.clicked || response.fake_primary_click || response.dragged() {
+        if response.flags.contains(egui::response::Flags::CLICKED)
+            || response
+                .flags
+                .contains(egui::response::Flags::FAKE_PRIMARY_CLICKED)
+            || response.dragged()
+        {
             self.ui.ctx().move_to_top(layer_id);
             response.request_focus();
         }
@@ -248,9 +256,10 @@ impl<S> PreparedNode<S> {
         let header_pos = pos;
         let body_pos = pos + vec2(0.0, header.size().y);
 
-        let rounding = ui.visuals().window_rounding;
+        let corner_radius = ui.visuals().window_corner_radius;
 
-        let (header_rounding, body_rounding) = split_rounding(rounding, header.has_content());
+        let (header_rounding, body_rounding) =
+            split_corner_radius(corner_radius, header.has_content());
 
         header.show(ui, header_pos, size, header_rounding);
 
@@ -259,8 +268,9 @@ impl<S> PreparedNode<S> {
         // Add a stroke around the node to make it easier to see.
         ui.painter().add(RectShape::stroke(
             Rect::from_min_size(pos, size),
-            rounding,
+            corner_radius,
             outline,
+            StrokeKind::Inside,
         ));
     }
 }
@@ -268,16 +278,19 @@ impl<S> PreparedNode<S> {
 /* -------------------------------------------------------------------------- */
 
 /// Split the node rounding to the different parts of the node.
-fn split_rounding(node_rounding: Rounding, has_header: bool) -> (Rounding, Rounding) {
-    let Rounding { nw, ne, sw, se } = node_rounding;
+fn split_corner_radius(
+    node_corner_radius: CornerRadius,
+    has_header: bool,
+) -> (CornerRadius, CornerRadius) {
+    let CornerRadius { nw, ne, sw, se } = node_corner_radius;
 
-    let top = Rounding {
+    let top = CornerRadius {
         nw,
         ne,
         ..Default::default()
     };
 
-    let bottom = Rounding {
+    let bottom = CornerRadius {
         sw,
         se,
         ..Default::default()
@@ -286,7 +299,7 @@ fn split_rounding(node_rounding: Rounding, has_header: bool) -> (Rounding, Round
     if has_header {
         (top, bottom)
     } else {
-        (Rounding::ZERO, node_rounding)
+        (CornerRadius::ZERO, node_corner_radius)
     }
 }
 
