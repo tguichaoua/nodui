@@ -245,12 +245,9 @@ pub(crate) fn make_shape(
             fill,
             stroke,
             corner_radius: CornerRadius::default(),
-
-            // FIXME: check those settings
-            brush: None,
             round_to_pixels: None,
+            brush: None,
             stroke_kind: egui::StrokeKind::Inside,
-
             blur_width: 0.0,
         }),
 
