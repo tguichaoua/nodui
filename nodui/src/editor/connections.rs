@@ -248,26 +248,47 @@ where
     ///
     /// See [`Self::connect_with`].
     #[inline]
-    pub fn connect_bezier(&mut self, a: &S, b: &S, stroke: impl Into<PathStroke>) {
+    pub fn connect_bezier(&mut self, a: &S, b: &S, stroke: impl Into<Stroke>) {
         self.connect_with(a, b, |painter, src, dst| {
             let src_pos = src.pos();
             let dst_pos = dst.pos();
 
-            let control_scale = (dst_pos.x - src_pos.x) * 1.0 / 2.0;
-            let src_control = egui::Pos2 {
-                x: src_pos.x + control_scale,
-                y: src_pos.y,
-            };
-            let dst_control = egui::Pos2 {
-                x: dst_pos.x - control_scale,
-                y: dst_pos.y,
-            };
+            // Special cases: draw straight lines when points are aligned
+            if (src_pos.x - dst_pos.x).abs() < 5.0 || (src_pos.y - dst_pos.y).abs() < 5.0 {
+                // Draw a straight line for vertical or horizontal connections
+                let line_stroke = stroke.into();
+                painter.add(Shape::LineSegment {
+                    points: [src_pos, dst_pos],
+                    stroke: line_stroke,
+                });
+                return;
+            }
 
+            // Constants for S-curve calculation
+            let t = 0.25; // tangential handle fraction
+
+            // Calculate delta vector and length
+            let delta = dst_pos - src_pos;
+            let length = delta.length();
+
+            // Adjust curvature direction based on relative position
+            let c = -0.15 * delta.x.signum() * delta.y.signum();
+
+            // Calculate unit vector u and normal vector n
+            let u = delta / length;
+            let n = egui::Vec2::new(-delta.y, delta.x) / length; // perpendicular normal
+
+            // Calculate control points C1 and C2 for S-curve
+            let src_control = src_pos + u * (t * length) + n * (c * length); // C1
+            let dst_control = dst_pos - u * (t * length) - n * (c * length); // C2
+
+            let stroke = stroke.into();
+            let path_stroke = PathStroke::new(stroke.width, stroke.color);
             let bezier = egui::epaint::CubicBezierShape::from_points_stroke(
                 [src_pos, src_control, dst_control, dst_pos],
                 false,
                 Color32::TRANSPARENT,
-                stroke,
+                path_stroke,
             );
 
             painter.add(bezier);
