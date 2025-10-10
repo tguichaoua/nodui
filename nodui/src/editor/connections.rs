@@ -265,22 +265,18 @@ where
             }
 
             // Constants for S-curve calculation
-            let t = 0.25; // tangential handle fraction
-
-            // Calculate delta vector and length
+            let tangential_handle = 0.25; 
             let delta = dst_pos - src_pos;
             let length = delta.length();
-
-            // Adjust curvature direction based on relative position
-            let c = -0.15 * delta.x.signum() * delta.y.signum();
-
-            // Calculate unit vector u and normal vector n
-            let u = delta / length;
-            let n = egui::Vec2::new(-delta.y, delta.x) / length; // perpendicular normal
+            let curvature = -0.15 * delta.x.signum() * delta.y.signum();
+            let unit_vector = delta / length;
+            let normal_vector = egui::Vec2::new(-delta.y, delta.x) / length; // perpendicular normal
 
             // Calculate control points C1 and C2 for S-curve
-            let src_control = src_pos + u * (t * length) + n * (c * length); // C1
-            let dst_control = dst_pos - u * (t * length) - n * (c * length); // C2
+            let src_control = src_pos + unit_vector * (tangential_handle * length) 
+                + normal_vector * (curvature * length); // C1
+            let dst_control = dst_pos - unit_vector * (tangential_handle * length) 
+                - normal_vector * (curvature * length); // C2
 
             let stroke = stroke.into();
             let path_stroke = PathStroke::new(stroke.width, stroke.color);
