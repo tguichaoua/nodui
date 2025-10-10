@@ -265,7 +265,7 @@ where
             }
 
             // Constants for S-curve calculation
-            let tangential_handle = 0.25; 
+            let tangential_handle = 0.25;
             let delta = dst_pos - src_pos;
             let length = delta.length();
             let curvature = -0.15 * delta.x.signum() * delta.y.signum();
@@ -273,9 +273,11 @@ where
             let normal_vector = egui::Vec2::new(-delta.y, delta.x) / length; // perpendicular normal
 
             // Calculate control points C1 and C2 for S-curve
-            let src_control = src_pos + unit_vector * (tangential_handle * length) 
+            let src_control = src_pos
+                + unit_vector * (tangential_handle * length)
                 + normal_vector * (curvature * length); // C1
-            let dst_control = dst_pos - unit_vector * (tangential_handle * length) 
+            let dst_control = dst_pos
+                - unit_vector * (tangential_handle * length)
                 - normal_vector * (curvature * length); // C2
 
             let stroke = stroke.into();
