@@ -247,13 +247,8 @@ fn show_socket<S>(
         });
     }
 
-    ui.painter().add(crate::socket::make_shape(
-        shape,
-        socket_center,
-        SOCKET_WIDTH,
-        color,
-        is_connected,
-    ));
+    ui.painter()
+        .add(shape.to_shape(socket_center, SOCKET_WIDTH, color, is_connected));
 
     ui.painter().add(egui::Shape::galley(
         text_pos,
