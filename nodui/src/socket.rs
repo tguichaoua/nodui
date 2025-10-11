@@ -200,6 +200,56 @@ pub enum SocketShape {
     Triangle,
 }
 
+impl SocketShape {
+    /// Create a [`Shape`] for a socket.
+    ///
+    /// The shape will be contained inside a square area of side `width` and centered on `center`.
+    #[inline]
+    pub fn to_shape(&self, center: Pos2, width: f32, color: Color32, filled: bool) -> Shape {
+        use std::f32::consts::{FRAC_1_SQRT_2, FRAC_PI_3};
+
+        let fill = if filled { color } else { Color32::default() };
+
+        let stroke = Stroke::new(1.0, color);
+
+        match self {
+            SocketShape::Circle => Shape::Circle(CircleShape {
+                center,
+                radius: width / 2.0,
+                fill,
+                stroke,
+            }),
+
+            SocketShape::Square => Shape::Rect(RectShape {
+                rect: Rect::from_center_size(center, Vec2::splat(width * FRAC_1_SQRT_2)),
+                fill,
+                stroke,
+                corner_radius: CornerRadius::default(),
+                round_to_pixels: None,
+                brush: None,
+                stroke_kind: egui::StrokeKind::Inside,
+                blur_width: 0.0,
+            }),
+
+            SocketShape::Triangle => Shape::Path(PathShape {
+                points: vec![
+                    center + (width / 2.0) * vec2(f32::cos(0.0), f32::sin(0.0)),
+                    center
+                        + (width / 2.0)
+                            * vec2(f32::cos(2.0 * FRAC_PI_3), f32::sin(2.0 * FRAC_PI_3)),
+                    center
+                        + (width / 2.0)
+                            * vec2(f32::cos(4.0 * FRAC_PI_3), f32::sin(4.0 * FRAC_PI_3)),
+                ],
+
+                closed: true,
+                fill,
+                stroke: stroke.into(),
+            }),
+        }
+    }
+}
+
 /* -------------------------------------------------------------------------- */
 
 /// The node side where a socket is rendered.
@@ -210,59 +260,6 @@ pub enum NodeSide {
     Left,
     /// The socket is rendered on the right side of the node.
     Right,
-}
-
-/* -------------------------------------------------------------------------- */
-
-/// Create a [`Shape`] for a socket.
-pub(crate) fn make_shape(
-    shape: SocketShape,
-    center: Pos2,
-    width: f32,
-    color: Color32,
-    is_connected: bool,
-) -> Shape {
-    use std::f32::consts::{FRAC_1_SQRT_2, FRAC_PI_3};
-
-    let fill = if is_connected {
-        color
-    } else {
-        Color32::default()
-    };
-
-    let stroke = Stroke::new(1.0, color);
-
-    match shape {
-        SocketShape::Circle => Shape::Circle(CircleShape {
-            center,
-            radius: width / 2.0,
-            fill,
-            stroke,
-        }),
-
-        SocketShape::Square => Shape::Rect(RectShape {
-            rect: Rect::from_center_size(center, Vec2::splat(width * FRAC_1_SQRT_2)),
-            fill,
-            stroke,
-            corner_radius: CornerRadius::default(),
-            round_to_pixels: None,
-            brush: None,
-            stroke_kind: egui::StrokeKind::Inside,
-            blur_width: 0.0,
-        }),
-
-        SocketShape::Triangle => Shape::Path(PathShape {
-            points: vec![
-                center + (width / 2.0) * vec2(f32::cos(0.0), f32::sin(0.0)),
-                center + (width / 2.0) * vec2(f32::cos(2.0 * FRAC_PI_3), f32::sin(2.0 * FRAC_PI_3)),
-                center + (width / 2.0) * vec2(f32::cos(4.0 * FRAC_PI_3), f32::sin(4.0 * FRAC_PI_3)),
-            ],
-
-            closed: true,
-            fill,
-            stroke: stroke.into(),
-        }),
-    }
 }
 
 /* -------------------------------------------------------------------------- */
