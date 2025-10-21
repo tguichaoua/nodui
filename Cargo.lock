@@ -735,7 +735,7 @@ checksum = "f27ae1dd37df86211c42e150270f82743308803d90a6f6e6651cd730d5e1732f"
 
 [[package]]
 name = "demo"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "eframe",
  "egui",
@@ -1765,7 +1765,7 @@ dependencies = [
 
 [[package]]
 name = "nodui"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "eframe",
  "egui",
@@ -2207,7 +2207,7 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 
 [[package]]
 name = "playground"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "eframe",
  "egui",
@@ -2899,7 +2899,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "visual_math"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "eframe",
  "egui",
