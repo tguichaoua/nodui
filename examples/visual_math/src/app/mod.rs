@@ -174,6 +174,7 @@ impl App {
         }
 
         let graph = graph
+            .show_grid(false)
             .show(ui, |ui| {
                 self.graph.show_nodes(ui);
             })
@@ -196,7 +197,7 @@ impl App {
                 });
 
                 for (a, b) in self.graph.connections().iter() {
-                    ui.connect_line(&a.into(), &b.into(), (3.0, color));
+                    ui.connect_bezier(&a.into(), &b.into(), (3.0, color));
                 }
             });
 
