@@ -1,6 +1,6 @@
 //! Rendering of connections.
 
-use egui::{Color32, LayerId, Shape, Stroke};
+use egui::{epaint::PathStroke, Color32, LayerId, Shape, Stroke};
 
 use crate::ConnectionInProgress;
 
@@ -241,6 +241,36 @@ where
                 points: [a.pos(), b.pos()],
                 stroke,
             });
+        });
+    }
+
+    /// Render the connection between two sockets with a bezier curve.
+    ///
+    /// See [`Self::connect_with`].
+    #[inline]
+    pub fn connect_bezier(&mut self, a: &S, b: &S, stroke: impl Into<PathStroke>) {
+        self.connect_with(a, b, |painter, src, dst| {
+            let src_pos = src.pos();
+            let dst_pos = dst.pos();
+
+            let control_scale = (dst_pos.x - src_pos.x) * 1.0 / 2.0;
+            let src_control = egui::Pos2 {
+                x: src_pos.x + control_scale,
+                y: src_pos.y,
+            };
+            let dst_control = egui::Pos2 {
+                x: dst_pos.x - control_scale,
+                y: dst_pos.y,
+            };
+
+            let bezier = egui::epaint::CubicBezierShape::from_points_stroke(
+                [src_pos, src_control, dst_control, dst_pos],
+                false,
+                Color32::TRANSPARENT,
+                stroke,
+            );
+
+            painter.add(bezier);
         });
     }
 }
