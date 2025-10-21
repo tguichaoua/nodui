@@ -54,6 +54,7 @@ jobs:
           # --no-push: do not push the update commits
           # --execute: not a dry run
           cargo release ${{ inputs.level }} \
+          --package nodui \
           --no-publish \
           --no-tag \
           --no-push \
