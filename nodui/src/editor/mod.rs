@@ -57,7 +57,7 @@ impl GraphEditor<stages::Settings> {
         Self {
             id: Id::new(id_salt),
             stage: stages::Settings {
-                show_grid: true,
+                show_grid: false,
                 look_at: None,
                 can_connect_socket: true,
                 viewport: ViewportSize::default(),
@@ -75,7 +75,7 @@ impl GraphEditor<stages::Settings> {
 
     /// Should show the grid.
     ///
-    /// Default to `true`.
+    /// Default to `false`.
     #[inline]
     #[must_use]
     pub fn show_grid(mut self, show_grid: bool) -> Self {
