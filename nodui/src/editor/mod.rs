@@ -75,7 +75,7 @@ impl GraphEditor<stages::Settings> {
 
     /// Should show the grid.
     ///
-    /// Default to `true`.
+    /// Default to `false`.
     #[inline]
     #[must_use]
     pub fn show_grid(mut self, show_grid: bool) -> Self {
