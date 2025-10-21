@@ -2,7 +2,25 @@ use core::f32;
 
 use egui::vec2;
 
-use crate::graph::{self, Maybe};
+use crate::{
+    app::ConnectionShape,
+    graph::{self, Maybe},
+};
+
+pub fn connection_shape(
+    id_salt: impl std::hash::Hash,
+    value: &mut ConnectionShape,
+) -> impl egui::Widget + '_ {
+    let combo_box = egui::ComboBox::from_id_salt(id_salt).selected_text(format!("{value:?}"));
+    |ui: &mut egui::Ui| {
+        combo_box
+            .show_ui(ui, move |ui| {
+                ui.selectable_value(value, ConnectionShape::Line, "Line");
+                ui.selectable_value(value, ConnectionShape::Bezier, "Bezier");
+            })
+            .response
+    }
+}
 
 pub fn node_side(value: &mut nodui::NodeSide) -> impl egui::Widget + '_ {
     |ui: &mut egui::Ui| {
