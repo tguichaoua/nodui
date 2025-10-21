@@ -13,6 +13,7 @@ pub struct App {
     graph: GraphApp,
 
     show_grid: bool,
+    connections_shape: ConnectionShape,
 
     #[serde(skip)]
     viewport_position: Pos,
@@ -26,6 +27,7 @@ impl Default for App {
         Self {
             graph: GraphApp::default(),
             show_grid: false,
+            connections_shape: ConnectionShape::Bezier,
             viewport_position: Pos::default(),
             cursor_pos: None,
         }
@@ -101,6 +103,13 @@ impl App {
             .show(ui, |ui| {
                 ui.label("Show Grid?");
                 ui.add(egui::Checkbox::without_text(&mut self.show_grid));
+                ui.end_row();
+
+                ui.label("Connection shape");
+                ui.add(widget::connection_shape(
+                    "connection shape",
+                    &mut self.connections_shape,
+                ));
                 ui.end_row();
             });
 
@@ -379,8 +388,15 @@ impl App {
 
                 let connections = self.graph.connections();
 
-                for (a, b) in connections.iter() {
-                    ui.connect_line(&a, &b, (3.0, color));
+                let stroke = egui::Stroke::new(3.0, color);
+
+                match self.connections_shape {
+                    ConnectionShape::Line => connections
+                        .iter()
+                        .for_each(|(a, b)| ui.connect_line(&a, &b, stroke)),
+                    ConnectionShape::Bezier => connections
+                        .iter()
+                        .for_each(|(a, b)| ui.connect_bezier(&a, &b, stroke)),
                 }
             });
 
@@ -452,6 +468,14 @@ enum SocketAction {
     Remove(SocketId),
     MoveUp(SocketId),
     MoveDown(SocketId),
+}
+
+/* -------------------------------------------------------------------------- */
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+enum ConnectionShape {
+    Line,
+    Bezier,
 }
 
 /* -------------------------------------------------------------------------- */
