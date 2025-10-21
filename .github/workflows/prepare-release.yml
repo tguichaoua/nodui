@@ -64,6 +64,7 @@ jobs:
         id: cargo-get
         uses: nicolaiunrein/cargo-get@master
         with:
+          flags: '--entry="./nodui/Cargo.toml"'
           subcommand: package.version
 
       - name: Create PR
@@ -71,10 +72,10 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
           delete-branch: true
-          base: "main"
-          branch: "release/${{ steps.cargo-get.outputs.metadata }}"
-          labels: "C-Release"
-          title: "Preparing Release ${{ steps.cargo-get.outputs.metadata }}"
+          base: 'main'
+          branch: 'release/${{ steps.cargo-get.outputs.metadata }}'
+          labels: 'C-Release'
+          title: 'Preparing Release ${{ steps.cargo-get.outputs.metadata }}'
           body: |
             Preparing the release of `${{ steps.cargo-get.outputs.metadata }}`
             This PR has been auto-generated
