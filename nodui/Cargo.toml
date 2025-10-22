@@ -1,6 +1,6 @@
 [package]
 name = "nodui"
-version = "0.1.0"
+version = "0.2.0"
 description = "An egui-based visual graph editor"
 keywords = ["egui", "visual_editor", "graph"]
 categories = ["game-development", "graphics", "gui", "visualization"]
