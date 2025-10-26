@@ -249,22 +249,32 @@ where
     /// See [`Self::connect_with`].
     #[inline]
     pub fn connect_bezier(&mut self, a: &S, b: &S, stroke: impl Into<PathStroke>) {
-        self.connect_with(a, b, |painter, src, dst| {
-            let src_pos = src.pos();
-            let dst_pos = dst.pos();
+        self.connect_with(a, b, |painter, a, b| {
+            let a_pos = a.pos();
+            let b_pos = b.pos();
 
-            let control_scale = (dst_pos.x - src_pos.x) * 1.0 / 2.0;
-            let src_control = egui::Pos2 {
-                x: src_pos.x + control_scale,
-                y: src_pos.y,
+            let control_scale = (a_pos.x - b_pos.x).abs() * 1.0 / 2.0;
+
+            let a_control = match a.side {
+                crate::NodeSide::Left => -control_scale,
+                crate::NodeSide::Right => control_scale,
             };
-            let dst_control = egui::Pos2 {
-                x: dst_pos.x - control_scale,
-                y: dst_pos.y,
+            let b_control = match b.side {
+                crate::NodeSide::Left => -control_scale,
+                crate::NodeSide::Right => control_scale,
+            };
+
+            let a_control = egui::Pos2 {
+                x: a_pos.x + a_control,
+                y: a_pos.y,
+            };
+            let b_control = egui::Pos2 {
+                x: b_pos.x + b_control,
+                y: b_pos.y,
             };
 
             let bezier = egui::epaint::CubicBezierShape::from_points_stroke(
-                [src_pos, src_control, dst_control, dst_pos],
+                [a_pos, a_control, b_control, b_pos],
                 false,
                 Color32::TRANSPARENT,
                 stroke,
