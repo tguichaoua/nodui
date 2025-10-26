@@ -5,12 +5,15 @@ changelog:
       - C-Release
       - C-Code-Quality
   categories:
-      - title: 💥 Breaking Changes
-        labels:
-          - R-Breaking
-      - title: ✨ New Features
-        labels:
-          - C-Enhancement
-      - title: Other Changes
-        labels:
-          - "*"
+    - title: 💥 Breaking Changes
+      labels:
+        - R-Breaking
+    - title: ✨ New Features
+      labels:
+        - C-Enhancement
+    - title: 🐛 Fixes
+      labels:
+        - C-Bug
+    - title: Other Changes
+      labels:
+        - '*'
