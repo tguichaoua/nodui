@@ -231,12 +231,23 @@ where
     }
 
     /// Render the connection between two sockets with a straight line.
-    ///
-    /// See [`Self::connect_with`].
     #[inline]
     pub fn connect_line(&mut self, a: &S, b: &S, stroke: impl Into<Stroke>) {
+        self.connect_line_with(a, b, |_, _| stroke.into());
+    }
+
+    /// Render the connection between two sockets with a straight line.
+    ///
+    /// The stroke of the line can be derived from the [`RenderedSocket`] of the two sockets.
+    #[inline]
+    pub fn connect_line_with(
+        &mut self,
+        a: &S,
+        b: &S,
+        stroke: impl FnOnce(&RenderedSocket<S>, &RenderedSocket<S>) -> Stroke,
+    ) {
         self.connect_with(a, b, |painter, a, b| {
-            let stroke = stroke.into();
+            let stroke = stroke(a, b);
             painter.add(Shape::LineSegment {
                 points: [a.pos(), b.pos()],
                 stroke,
@@ -245,11 +256,24 @@ where
     }
 
     /// Render the connection between two sockets with a bezier curve.
-    ///
-    /// See [`Self::connect_with`].
     #[inline]
     pub fn connect_bezier(&mut self, a: &S, b: &S, stroke: impl Into<PathStroke>) {
+        self.connect_bezier_with(a, b, |_, _| stroke.into());
+    }
+
+    /// Render the connection between two sockets with a bezier curve.
+    ///
+    /// The stroke of the path can be derived from the [`RenderedSocket`] of the two sockets.
+    #[inline]
+    pub fn connect_bezier_with(
+        &mut self,
+        a: &S,
+        b: &S,
+        stroke: impl FnOnce(&RenderedSocket<S>, &RenderedSocket<S>) -> PathStroke,
+    ) {
         self.connect_with(a, b, |painter, a, b| {
+            let stroke = stroke(a, b);
+
             let a_pos = a.pos();
             let b_pos = b.pos();
 
